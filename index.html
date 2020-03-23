@@ -19,13 +19,11 @@
 </head>
 
 <body>
-
-
   <main id="app">
-    <v-nav class="navbar-x">
+    <nav class="navbar-x">
       <ul class="navbar-nav-x">
         <li class="logo">
-          <router-link to="/main" class="nav-link-x">
+          <router-link to="/" class="nav-link-x">
             <span class="link-text logo-text">Grade</span>
             <svg aria-hidden="true" focusable="false" data-prefix="fad" data-icon="angle-double-right" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-angle-double-right fa-w-14 fa-5x">
               <g class="fa-group">
@@ -38,7 +36,7 @@
           </router-link>
         </li>
         <li class="nav-item-x">
-          <router-link to="/" class="nav-link-x">
+          <router-link to="/main" class="nav-link-x">
             <svg id="lnr-home" viewBox="0 0 1024 1024" class="lnr lnr-home">
               <g class="fa-group">
                 <use xlink:href="#lnr-home"></use>
@@ -51,7 +49,7 @@
           </router-link>
         </li>
         <li class="nav-item-x">
-          <router-link to="/profile" class="nav-link-x">
+          <router-link to="/user" class="nav-link-x">
             <svg id="lnr-user" viewBox="0 0 1024 1024" class="lnr lnr-user">
               <g class="fa-group">
                 <use xlink:href="#lnr-user"></use>
@@ -83,34 +81,115 @@
           </router-link>
         </li>
       </ul>
-    </v-nav>
+    </nav>
     <v-app>
       <v-card class="mb-1" height="50px">
-      <v-toolbar flat>
-        <v-btn icon>
-          <v-icon>mdi-apps</v-icon>
-        </v-btn>
-        <v-spacer></v-spacer>
-        <v-btn icon>
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn>
-      </v-toolbar>
+        <v-toolbar flat>
+          <v-btn icon>
+            <v-icon>mdi-apps</v-icon>
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn icon>
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </v-toolbar>
       </v-card>
-    <section class="main">
-      <transition>
-        <keep-alive>
+      <section class="main">
+        <transition>
           <router-view></router-view>
-      </keep-alive>
-    </transition>
-    </section>
-  </v-app>
-</main>
+        </transition>
+      </section>
+    </v-app>
+  </main>
+
+  <template id="dev-main">
+    <div>
+    <v-card-title class="row">
+      <v-text-field class="col-xs-12 col-md-9" v-model="search" append-icon="mdi-magnify" label="Пошук" single-line hide-details></v-text-field>
+      <v-switch
+      v-if="options.studyStatus === true"
+      v-model="options.studyStatus" flat
+      label="Чи навчаються: Так" dense
+      class="col-xs-3 mx-auto"
+      color="teal darken-4"
+      ></v-switch>
+      <v-switch
+      v-else
+      v-model="options.studyStatus" flat
+      label="Чи навчаються: Ні" dense
+      class="col-xs-3 mx-auto"
+      color="teal darken-4"
+      ></v-switch>
+      <v-alert
+      type="success"
+      v-model="alert"
+      icon="mdi-check-circle"
+      outlined text light tile
+      transition="scale-transition"
+      >Текст успішно скопійовано.
+      </v-alert>
+    </v-card-title>
+    <v-data-table
+    :headers="headers"
+    :items="students"
+    :item-key="itemKey"
+    :sort-by="sortBy"
+    multi-sort
+    :search="search"
+    :single-expand="singleExpand"
+    no-results-text="Не знайдено відповідних записів"
+    show-expand
+    expand-icon="mdi-chart-timeline"
+    :options.sync="options"
+    :items-per-page="itemsPerPage"
+    @page-count="pageCount = $event"
+    @click:row="moreInfo"
+    class="elevation-1"
+    hide-default-footer
+    :loading="loading"
+    loading-text="Завантаження... Будь ласка, зачекайте"
+    >
+      <div v-slot:items="props">
+        <td>$props.item.name</td>
+        <td>$props.item.group</td>
+        <td>$props.item.specialty</td>
+        <td>$props.item.phone</td>
+        <td>$props.item.birth</td>
+      </div>
+      <div v-slot:expanded-item="{ headers, item }">
+        <td :colspan="headers.length" class="pt-3">
+          <p @click="doCopy" :title="item.email" class="btn-copy">Email: {{ item.email }}</p>
+        </td>
+      </div>
+    </v-data-table>
+    <v-pagination
+    class="font-weight-black"
+    v-model="options.page"
+    :total-visible="7"
+    :length="pageCount"
+    @click.native="scrollToTop"
+    dark color="teal darken-4"
+    ></v-pagination>
+    <v-text-field
+    v-model="totalItems"
+    @click:prepend-inner="changeIcon"
+    :prepend-inner-icon="icon"
+    solo readonly
+    ></v-text-field>
+    </div>
+  </template>
+
+  <template id="dev-person">
+    <div>
+      <v-img
+      :src="person.picture"
+      :aspect-ratio="3/4"
+      width="150"
+      ></v-img>
+    </div>
+  </template>
 
   <span class="lnr lnr-chevron-up" onclick="goToTop()" id="go-top-btn"></span>
-  <script id="students" type="text/template">
-
-</script>
-
   <script src="js/main.js" type="text/javascript"></script>
   <script type="text/javascript">
     function goToTop() {
