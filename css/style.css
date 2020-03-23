@@ -30,13 +30,19 @@ body::-webkit-scrollbar-thumb {
   background: var(--scroll-thumb);
 }
 
-main {
+.main {
   margin-left: 5rem;
   padding: 5px;
 }
 
-.elevation-1 tr:hover {
-  color: var(--icon-hover);
+.v-alert {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+}
+
+tr:hover{
+  cursor: pointer;
 }
 
 .navbar-x {
@@ -179,7 +185,7 @@ main {
     justify-content: center;
   }
 
-  main {
+  .main {
     margin-left: 0;
     margin-bottom: 5rem;
   }
