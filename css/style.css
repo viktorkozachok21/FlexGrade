@@ -45,6 +45,16 @@ tr:hover{
   cursor: pointer;
 }
 
+.lnr-crop {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.lnr-frame-contract {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
 .navbar-x {
   position: fixed;
   background-color: var(--bg-primary);
@@ -87,6 +97,7 @@ tr:hover{
 }
 
 .link-text {
+  cursor: default;
   display: none;
   margin-left: 1rem;
   font-weight: 1000;

@@ -1,66 +1,79 @@
-// dataTable Vue
-const Main = Vue.component('main', {
-  template: document.getElementById('dev-main'),
-  data: () => ({
-    totalItems: '',
-    search: '',
-    alert: false,
-    showToolbar: false,
-    students: [],
-    itemKey: 'code',
-    loading: false,
-    pageCount: 0,
-    options: {
-      page: 1,
-      studyStatus: true,
-    },
-    sortBy: 'name',
-    itemsPerPage: 30,
-    singleExpand: true,
-    iconIndex: 4,
-    icons: [
-      'mdi-emoticon',
-      'mdi-emoticon-cool',
-      'mdi-emoticon-dead',
-      'mdi-emoticon-devil',
-      'mdi-emoticon-happy',
-      'mdi-emoticon-excited',
-      'mdi-emoticon-neutral',
-      'mdi-emoticon-sad',
-      'mdi-emoticon-tongue',
+// Students Table Vue
+const MainDataStudents = {
+  template: document.getElementById('main-data-students'),
+  data() {
+    return {
+      totalItems: '',
+      search: '',
+      alert: false,
+      showToolbar: false,
+      students: [],
+      itemKey: 'code',
+      loading: false,
+      pageCount: 0,
+      options: {
+        page: 1,
+        studyStatus: true,
+      },
+      sortBy: 'name',
+      itemsPerPage: 30,
+      singleExpand: true,
+      selected: [],
+      singleSelect: false,
+      iconIndex: 4,
+      watched: {},
+      icons: [
+        'mdi-emoticon',
+        'mdi-emoticon-cool',
+        'mdi-emoticon-dead',
+        'mdi-emoticon-devil',
+        'mdi-emoticon-happy',
+        'mdi-emoticon-excited',
+        'mdi-emoticon-neutral',
+        'mdi-emoticon-sad',
+        'mdi-emoticon-tongue',
+        'lnr-mustache',
 
-    ],
-    headers: [{
-        text: 'П.І.П.',
-        align: 'left',
-        value: 'name',
-      },
-      {
-        text: 'Група',
-        alidn: 'center',
-        width: '10%',
-        value: 'group'
-      },
-      {
-        text: 'Спеціальність',
-        align: 'left',
-        value: 'specialty'
-      },
-      {
-        text: 'Телефон',
-        sortable: false,
-        alidn: 'center',
-        width: '11%',
-        value: 'phone'
-      },
-      {
-        text: 'Дата народження',
-        alidn: 'center',
-        width: '11%',
-        value: 'birth'
-      }
-    ],
-  }),
+      ],
+      headers: [{
+          text: 'П.І.П.',
+          align: 'left',
+          value: 'name',
+        },
+        {
+          text: 'Група',
+          alidn: 'center',
+          width: '10%',
+          value: 'group'
+        },
+        {
+          text: 'Спеціальність',
+          align: 'left',
+          value: 'specialty'
+        },
+        {
+          text: 'Телефон',
+          sortable: false,
+          alidn: 'center',
+          width: '11%',
+          value: 'phone'
+        },
+        {
+          text: 'Дата народження',
+          alidn: 'center',
+          width: '11%',
+          value: 'birth'
+        }
+      ],
+    }
+  },
+  created() {
+    this.getDataFromApi()
+      .then(data => {
+        this.students = data.sorted
+        this.totalItems = " Загальна кількість студентів: " + data.total;
+      })
+  },
   watch: {
     options: {
       handler() {
@@ -72,6 +85,7 @@ const Main = Vue.component('main', {
       },
       deep: true,
     },
+    '$route': 'getDataFromApi'
   },
   mounted() {
     this.getDataFromApi()
@@ -83,19 +97,22 @@ const Main = Vue.component('main', {
   computed: {
     icon() {
       return this.icons[this.iconIndex]
-    },
+    }
   },
   methods: {
     getDataFromApi() {
       this.loading = true
       return new Promise((resolve, reject) => {
-        const {
+        let {
           studyStatus,
           page
         } = this.options
         let sorted = []
-        let loaded = this.$root.$data.dataBase
-        loaded.forEach(item => {
+        fetch('../data/list.json')
+            .then(stream => stream.json())
+            .then(data => {
+              const loaded = data.app.students
+              loaded.forEach(item => {
                 if (item.isActive === studyStatus) {
                   sorted.push(item);
                 }
@@ -108,12 +125,15 @@ const Main = Vue.component('main', {
                   total,
                 })
               }, 1000)
+            })
+            .catch(error => console.error(error))
       })
     },
     scrollToTop() {
       window.scrollTo(0, 0);
     },
     moreInfo(student) {
+      store.state.watched = student
       router.push({
         name: 'person',
         params: {
@@ -130,35 +150,45 @@ const Main = Vue.component('main', {
     doCopy() {
       new ClipboardJS('.btn-copy', {
         text: (trigger => {
-          return trigger.getAttribute('title');
+          return trigger.getAttribute('alt');
         })
       });
       this.alert = true;
       setTimeout(() => {
         this.alert = false
       }, 1500)
-    },
+    }
+  }
+};
+// ---> Students Table Vue
+// More Student Detail Vue
+const MainDataStudentsPerson = {
+  template: document.getElementById('main-data-students-person'),
+  data() {
+    return {
+      person: {},
+    }
   },
-});
-// ---> dataTable Vue
-// More detail Vue
-const Person = Vue.component('person',{
-  template: document.getElementById('dev-person'),
-  data: ()=>({
-    person: {},
-  }),
   mounted() {
     this.person = this.$route.params.profile
-  },
-});
-// ---> More detail Vue
+  }
+};
+// ---> More Student Detail Vue
+
+const Home = {
+  template: `
+  <div class="user ml-10">
+    <h2>User {{ store.state.user}}</h2>
+    <router-link to="/students">Show Students</router-link>
+    <router-view></router-view>
+  </div>
+  `
+}
 
 const Login = {
   template: '<p>Login</p>'
 }
-const Home = {
-  template: '<p>Home</p>'
-}
+
 const Profile = {
   template: '<p>Profile</p>'
 }
@@ -172,26 +202,26 @@ const NotFound = {
 }
 
 const router = new VueRouter({
-  // mode: 'history',
-  routes: [{
-      name: 'home',
+  routes: [
+    {
       path: '/',
-      component: Home
+      name: 'main',
+      component: Home,
+    },
+    {
+      path: '/students',
+      name: 'students',
+      component: MainDataStudents,
+    },
+    {
+      path: '/students/person/:id',
+      name: 'person',
+      component: MainDataStudentsPerson
     },
     {
       name: 'login',
       path: '/login',
       component: Login
-    },
-    {
-      name: 'main',
-      path: '/main',
-      component: Main
-    },
-    {
-      name: 'person',
-      path: '/person/:id',
-      component: Person
     },
     {
       name: 'user',
@@ -206,18 +236,18 @@ const router = new VueRouter({
   ]
 })
 
-const app = new Vue({
-  vuetify: new Vuetify(),
-  data: ()=>({
-    dataBase: [],
-  }),
-  mounted() {
-    fetch('data/list.json')
-        .then(stream => stream.json())
-        .then(data => {
-          this.dataBase = data;
-        })
-        .catch(error => console.error(error))
+const store = new Vuex.Store({
+  state: {
+    user: 'Viktor',
   },
+  mutations: {
+
+  }
+})
+
+router.push({name:'students'})
+
+const app = new Vue({
   router,
+  vuetify: new Vuetify()
 }).$mount('#app')

@@ -12,10 +12,7 @@
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://cdn.linearicons.com/free/1.0.0/icon-font.min.css">
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-  <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+
 </head>
 
 <body>
@@ -23,7 +20,7 @@
     <nav class="navbar-x">
       <ul class="navbar-nav-x">
         <li class="logo">
-          <router-link to="/" class="nav-link-x">
+          <div title="Flex Grade" class="nav-link-x">
             <span class="link-text logo-text">Grade</span>
             <svg aria-hidden="true" focusable="false" data-prefix="fad" data-icon="angle-double-right" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-angle-double-right fa-w-14 fa-5x">
               <g class="fa-group">
@@ -33,10 +30,10 @@
                   class="fa-primary-x"></path>
               </g>
             </svg>
-          </router-link>
+          </div>
         </li>
         <li class="nav-item-x">
-          <router-link to="/main" class="nav-link-x">
+          <router-link to="/" title="На головну" class="nav-link-x">
             <svg id="lnr-home" viewBox="0 0 1024 1024" class="lnr lnr-home">
               <g class="fa-group">
                 <use xlink:href="#lnr-home"></use>
@@ -49,7 +46,7 @@
           </router-link>
         </li>
         <li class="nav-item-x">
-          <router-link to="/user" class="nav-link-x">
+          <router-link to="/user" title="Ваш профіль" class="nav-link-x">
             <svg id="lnr-user" viewBox="0 0 1024 1024" class="lnr lnr-user">
               <g class="fa-group">
                 <use xlink:href="#lnr-user"></use>
@@ -65,7 +62,7 @@
           </router-link>
         </li>
         <li class="nav-item-x">
-          <router-link to="/contact" class="nav-link-x">
+          <router-link to="/contact" title="Довідкова інформація" class="nav-link-x">
             <svg id="lnr-phone-handset" viewBox="0 0 1024 1024" class="lnr lnr-phone-handset">
               <g class="fa-group">
                 <use xlink:href="#lnr-phone-handset"></use>
@@ -89,37 +86,37 @@
             <v-icon>mdi-apps</v-icon>
           </v-btn>
           <v-spacer></v-spacer>
-          <v-btn icon>
-            <v-icon>mdi-dots-vertical</v-icon>
+          <v-btn id="full-toggle" title="Toggle fullscreen" icon>
+            <span class="lnr lnr-crop"></span>
           </v-btn>
         </v-toolbar>
       </v-card>
       <section class="main">
-        <transition>
-          <router-view></router-view>
-        </transition>
+        <router-view></router-view>
       </section>
     </v-app>
   </main>
 
-  <template id="dev-main">
-    <div>
-    <v-card-title class="row">
-      <v-text-field class="col-xs-12 col-md-9" v-model="search" append-icon="mdi-magnify" label="Пошук" single-line hide-details></v-text-field>
+  <template id="main-data-students">
+    <section>
+    <v-row>
+      <v-text-field
+      class="col-xs-12 col-md-9 px-5"
+      v-model="search"
+      append-icon="mdi-magnify"
+      label="Пошук"
+      single-line hide-details
+      ></v-text-field>
+      <v-flex class="col-xs-3 d-flex align-center justify-center">
       <v-switch
-      v-if="options.studyStatus === true"
+      id="switch"
       v-model="options.studyStatus" flat
-      label="Чи навчаються: Так" dense
-      class="col-xs-3 mx-auto"
+      dense
       color="teal darken-4"
       ></v-switch>
-      <v-switch
-      v-else
-      v-model="options.studyStatus" flat
-      label="Чи навчаються: Ні" dense
-      class="col-xs-3 mx-auto"
-      color="teal darken-4"
-      ></v-switch>
+      <v-label v-if="options.studyStatus === true">Чи навчаються: Так</v-label>
+      <v-label v-else>Чи навчаються: Ні</v-label>
+    </v-flex>
       <v-alert
       type="success"
       v-model="alert"
@@ -128,7 +125,7 @@
       transition="scale-transition"
       >Текст успішно скопійовано.
       </v-alert>
-    </v-card-title>
+    </v-row>
     <v-data-table
     :headers="headers"
     :items="students"
@@ -139,6 +136,9 @@
     :single-expand="singleExpand"
     no-results-text="Не знайдено відповідних записів"
     show-expand
+    v-model="selected"
+    :single-select="singleSelect"
+    show-select
     expand-icon="mdi-chart-timeline"
     :options.sync="options"
     :items-per-page="itemsPerPage"
@@ -149,18 +149,18 @@
     :loading="loading"
     loading-text="Завантаження... Будь ласка, зачекайте"
     >
-      <div v-slot:items="props">
+      <template #items="props">
         <td>$props.item.name</td>
         <td>$props.item.group</td>
         <td>$props.item.specialty</td>
         <td>$props.item.phone</td>
         <td>$props.item.birth</td>
-      </div>
-      <div v-slot:expanded-item="{ headers, item }">
+      </template>
+      <template #expanded-item="{ headers, item }">
         <td :colspan="headers.length" class="pt-3">
-          <p @click="doCopy" :title="item.email" class="btn-copy">Email: {{ item.email }}</p>
+          <p @click="doCopy" :alt="item.email" title="Click to copy" class="btn-copy">Email: {{ item.email }}</p>
         </td>
-      </div>
+      </template>
     </v-data-table>
     <v-pagination
     class="font-weight-black"
@@ -176,20 +176,27 @@
     :prepend-inner-icon="icon"
     solo readonly
     ></v-text-field>
-    </div>
+    <router-view></router-view>
+  </section>
   </template>
 
-  <template id="dev-person">
-    <div>
+  <template id="main-data-students-person">
+    <section>
       <v-img
       :src="person.picture"
       :aspect-ratio="3/4"
       width="150"
       ></v-img>
-    </div>
+    </section>
+    <router-view></router-view>
   </template>
 
   <span class="lnr lnr-chevron-up" onclick="goToTop()" id="go-top-btn"></span>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vuex/3.1.3/vuex.min.js"></script>
   <script src="js/main.js" type="text/javascript"></script>
   <script type="text/javascript">
     function goToTop() {
@@ -207,6 +214,25 @@
         goTop.style.display = "none";
       }
     };
+    const toggle = document.getElementById("full-toggle");
+    document.addEventListener('fullscreenchange', (event) => {
+      if (!document.fullscreenElement) {
+        toggle.innerHTML = '<span class="lnr lnr-crop"></span>';
+      } else {
+        if (document.exitFullscreen) {
+          toggle.innerHTML = '<span class="lnr lnr-frame-contract"></span>';
+        }
+      }
+    });
+    toggle.addEventListener('click', (event) => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
   </script>
 </body>
 
