@@ -1,3 +1,15 @@
+// Home Page Vue
+const Home = {
+  template: `
+  <div class="user ml-10">
+    <h2>User {{ store.state.user }}</h2>
+    <router-link to="/students">Show Students</router-link>
+    <router-link to="/teachers">Show Teachers</router-link>
+    <router-view></router-view>
+  </div>
+  `
+}
+// ---> Home Page Vue
 // Students Table Vue
 const MainDataStudents = {
   template: document.getElementById('main-data-students'),
@@ -5,8 +17,6 @@ const MainDataStudents = {
     return {
       totalItems: '',
       search: '',
-      alert: false,
-      showToolbar: false,
       students: [],
       itemKey: 'code',
       loading: false,
@@ -17,11 +27,9 @@ const MainDataStudents = {
       },
       sortBy: 'name',
       itemsPerPage: 30,
-      singleExpand: true,
       selected: [],
       singleSelect: false,
       iconIndex: 4,
-      watched: {},
       icons: [
         'mdi-emoticon',
         'mdi-emoticon-cool',
@@ -32,8 +40,6 @@ const MainDataStudents = {
         'mdi-emoticon-neutral',
         'mdi-emoticon-sad',
         'mdi-emoticon-tongue',
-        'lnr-mustache',
-
       ],
       headers: [{
           text: 'П.І.П.',
@@ -41,28 +47,28 @@ const MainDataStudents = {
           value: 'name',
         },
         {
-          text: 'Група',
-          alidn: 'center',
-          width: '10%',
-          value: 'group'
-        },
-        {
           text: 'Спеціальність',
           align: 'left',
+          width: '45%',
           value: 'specialty'
         },
         {
-          text: 'Телефон',
-          sortable: false,
+          text: 'Група',
           alidn: 'center',
-          width: '11%',
-          value: 'phone'
+          width: '8%',
+          value: 'group'
         },
         {
-          text: 'Дата народження',
-          alidn: 'center',
-          width: '11%',
-          value: 'birth'
+          text: 'Рівень',
+          align: 'center',
+          width: '8%',
+          value: 'degree'
+        },
+        {
+          text: 'Форма',
+          align: 'center',
+          width: '8%',
+          value: 'trainingForm'
         }
       ],
     }
@@ -108,7 +114,7 @@ const MainDataStudents = {
           page
         } = this.options
         let sorted = []
-        fetch('../data/list.json')
+        fetch('../data/base.json')
             .then(stream => stream.json())
             .then(data => {
               const loaded = data.app.students
@@ -124,7 +130,7 @@ const MainDataStudents = {
                   sorted,
                   total,
                 })
-              }, 1000)
+              }, 0)
             })
             .catch(error => console.error(error))
       })
@@ -133,30 +139,18 @@ const MainDataStudents = {
       window.scrollTo(0, 0);
     },
     moreInfo(student) {
-      store.state.watched = student
       router.push({
-        name: 'person',
+        name: 'student',
         params: {
           'id': student.code,
-          'profile': student
         }
-      });
+      })
+      store.state.student = student
     },
     changeIcon() {
       this.iconIndex === this.icons.length - 1 ?
         this.iconIndex = 0 :
         this.iconIndex++
-    },
-    doCopy() {
-      new ClipboardJS('.btn-copy', {
-        text: (trigger => {
-          return trigger.getAttribute('alt');
-        })
-      });
-      this.alert = true;
-      setTimeout(() => {
-        this.alert = false
-      }, 1500)
     }
   }
 };
@@ -167,23 +161,301 @@ const MainDataStudentsPerson = {
   data() {
     return {
       person: {},
+      itemKey: 'number',
+      examinatins: [],
+      gotData: true,
+      subjects: [],
+      headers: [
+        {
+          text: '№',
+          align: 'center',
+          width: '1%',
+          divider: true,
+          sortable: false,
+          value: 'number'
+        },
+        {
+          text: 'Навчальна дисципліна',
+          align: 'left',
+          divider: true,
+          sortable: false,
+          value: 'subject'
+        },
+        {
+          text: 'Форма',
+          align: 'center',
+          divider: true,
+          sortable: false,
+          value: 'form'
+        },
+        {
+          text: 'Годин',
+          align: 'center',
+          width: '1%',
+          divider: true,
+          sortable: false,
+          value: 'hours'
+        },
+        {
+          text: 'Кредитів',
+          align: 'center',
+          width: '1%',
+          divider: true,
+          sortable: false,
+          value: 'credits'
+        },
+        {
+          text: 'Балів',
+          align: 'center',
+          width: '1%',
+          divider: true,
+          sortable: false,
+          value: 'score'
+        },
+        {
+          text: 'Оцінка',
+          align: 'center',
+          width: '1%',
+          divider: true,
+          sortable: false,
+          value: 'grade'
+        },
+        {
+          text: 'Дата',
+          align: 'center',
+          width: '1%',
+          divider: true,
+          sortable: false,
+          value: 'date'
+        },
+        {
+          text: 'Викладач',
+          align: 'left',
+          divider: true,
+          sortable: false,
+          value: 'teacher'
+        }
+      ],
     }
   },
   mounted() {
-    this.person = this.$route.params.profile
-  }
+    this.person = store.state.student
+    this.getDataFromApi()
+      .then(data => {
+        this.examinatins = data.mine
+        console.log(this.examinatins)
+        if(data.mine.length > 0){
+          this.gotData = true
+        } else {
+          this.gotData = false
+        }
+      })
+  },
+  methods: {
+  getDataFromApi() {
+    return new Promise((resolve, reject) => {
+      fetch('../data/base.json')
+        .then(stream => stream.json())
+        .then(data => {
+          const loaded = data.app.examinations
+          let mine = []
+          loaded.forEach(item => {
+            if (item.code === store.state.student.code) {
+              mine.push(item);
+            }
+          })
+          resolve({
+            mine,
+          })
+        })
+        .catch(error => console.error(error))
+    })
+  },
+  teacherInfo(examination) {
+    console.log(store.state.teacherName)
+    router.push({
+      name: 'teachers',
+      params: {
+        'teacherName': examination.teacher,
+      }
+    });
+  },
+}
 };
 // ---> More Student Detail Vue
-
-const Home = {
-  template: `
-  <div class="user ml-10">
-    <h2>User {{ store.state.user}}</h2>
-    <router-link to="/students">Show Students</router-link>
-    <router-view></router-view>
-  </div>
-  `
+// Teachers Data Vue
+const MainDataTeachers = {
+  template: document.getElementById('main-data-teachers'),
+  data() {
+    return {
+      totalItems: '',
+      search: '',
+      teachers: [],
+      itemKey: 'code',
+      loading: false,
+      pageCount: 0,
+      page: 1,
+      sortBy: 'name',
+      selected: [],
+      singleSelect: false,
+      itemsPerPage: 30,
+      iconIndex: 4,
+      icons: [
+        'mdi-emoticon',
+        'mdi-emoticon-cool',
+        'mdi-emoticon-dead',
+        'mdi-emoticon-devil',
+        'mdi-emoticon-happy',
+        'mdi-emoticon-excited',
+        'mdi-emoticon-neutral',
+        'mdi-emoticon-sad',
+        'mdi-emoticon-tongue',
+      ],
+      headers: [{
+          text: 'П.І.П.',
+          align: 'left',
+          value: 'name',
+        },
+        {
+          text: 'Телефон',
+          align: 'center',
+          sortable: false,
+          value: 'phone'
+        }
+      ],
+    }
+  },
+  created() {
+    this.getDataFromApi()
+      .then(data => {
+        this.teachers = data.loaded
+        this.totalItems = " Загальна кількість викладачів: " + data.total;
+      })
+  },
+  watch: {
+    options: {
+      handler() {
+        this.getDataFromApi()
+          .then(data => {
+            this.teachers = data.loaded
+            this.totalItems = " Загальна кількість викладачів: " + data.total;
+          })
+      },
+      deep: true,
+    },
+    '$route': 'getDataFromApi'
+  },
+  mounted() {
+    if(this.$route.params.teacherName != null)
+    {
+      this.search = this.$route.params.teacherName
+    } else {
+      this.search = ''
+    }
+    this.getDataFromApi()
+      .then(data => {
+        this.teachers = data.loaded
+        this.totalItems = " Загальна кількість викладачів: " + data.total;
+      })
+  },
+  computed: {
+    icon() {
+      return this.icons[this.iconIndex]
+    }
+  },
+  methods: {
+    getDataFromApi() {
+      this.loading = true
+      return new Promise((resolve, reject) => {
+        fetch('../data/base.json')
+            .then(stream => stream.json())
+            .then(data => {
+              const loaded = data.app.teachers
+              let total = loaded.length
+              setTimeout(() => {
+                this.loading = false
+                resolve({
+                  loaded,
+                  total,
+                })
+              }, 0)
+            })
+            .catch(error => console.error(error))
+      })
+    },
+    scrollToTop() {
+      window.scrollTo(0, 0);
+    },
+    moreInfo(teacher) {
+      router.push({
+        name: 'teacher',
+        params: {
+          'id': teacher.code,
+        }
+      })
+      store.state.teacher = teacher
+    },
+    changeIcon() {
+      this.iconIndex === this.icons.length - 1 ?
+        this.iconIndex = 0 :
+        this.iconIndex++
+    }
+  }
 }
+// ---> Teachers Data Vue
+// More Teacher Detail Vue
+const MainDataTeachersPerson = {
+  template: document.getElementById('main-data-teachers-person'),
+  data() {
+    return {
+      person: {},
+      itemKey: 'id',
+      gotData: true,
+      subjects: [],
+      headers: [
+        {
+          text: 'Навчальна дисципліна',
+          sortable: false,
+          value: 'name'
+        }
+      ]
+    }
+  },
+  mounted() {
+    this.person = store.state.teacher
+    this.getDataFromApi()
+      .then(data => {
+        this.subjects = data.mine
+        if(data.mine.length > 0){
+          this.gotData = true
+        } else {
+          this.gotData = false
+        }
+      })
+  },
+  methods: {
+  getDataFromApi() {
+    return new Promise((resolve, reject) => {
+      fetch('../data/base.json')
+        .then(stream => stream.json())
+        .then(data => {
+          const loaded = data.app.teachers
+          let mine = []
+          loaded.forEach(item => {
+            if (item.code === store.state.teacher.code) {
+              mine = item.subjects;
+            }
+          })
+          resolve({
+            mine,
+          })
+        })
+        .catch(error => console.error(error))
+    })
+  }
+}
+}
+// ---> More Teacher Detail Vue
 
 const Login = {
   template: '<p>Login</p>'
@@ -207,16 +479,31 @@ const router = new VueRouter({
       path: '/',
       name: 'main',
       component: Home,
+      meta: { showBack: false }
     },
     {
       path: '/students',
       name: 'students',
       component: MainDataStudents,
+      meta: { showBack: true }
     },
     {
       path: '/students/person/:id',
-      name: 'person',
-      component: MainDataStudentsPerson
+      name: 'student',
+      component: MainDataStudentsPerson,
+      meta: { showBack: true }
+    },
+    {
+      path: '/teachers',
+      name: 'teachers',
+      component: MainDataTeachers,
+      meta: { showBack: true }
+    },
+    {
+      path: '/teachers/person/:id',
+      name: 'teacher',
+      component: MainDataTeachersPerson,
+      meta: { showBack: true }
     },
     {
       name: 'login',
@@ -236,16 +523,18 @@ const router = new VueRouter({
   ]
 })
 
+Vue.use(Vuex)
+
 const store = new Vuex.Store({
   state: {
     user: 'Viktor',
-  },
-  mutations: {
-
+    status: 'student',
+    student: {},
+    teacher: {}
   }
 })
 
-router.push({name:'students'})
+router.replace({ path: '/', redirect: '/' })
 
 const app = new Vue({
   router,

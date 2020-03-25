@@ -35,23 +35,12 @@ body::-webkit-scrollbar-thumb {
   padding: 5px;
 }
 
-.v-alert {
-  position: absolute;
-  top: .5rem;
-  right: .5rem;
-}
-
-tr:hover{
+.people tr:hover{
   cursor: pointer;
 }
 
-.lnr-crop {
+.mdi-fullscreen, .mdi-fullscreen-exit {
   font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.lnr-frame-contract {
-  font-size: 2rem;
   font-weight: bold;
 }
 
@@ -91,13 +80,13 @@ tr:hover{
 }
 
 .nav-link-x:hover {
-  filter: grayscale(0%) opacity(1);
+  filter: grayscale(0%) opacity(1.1);
   background: var(--bg-secondary);
   color: var(--text-secondary);
 }
 
 .link-text {
-  cursor: default;
+  cursor: pointer;
   display: none;
   margin-left: 1rem;
   font-weight: 1000;
@@ -146,6 +135,7 @@ tr:hover{
 
 .logo-text
 {
+  cursor: default;
   display: inline;
   position: absolute;
   left: -999px;
@@ -214,7 +204,7 @@ tr:hover{
   }
 
   .navbar-x:hover {
-    width: 16rem;
+    width: 15rem;
   }
 
   .navbar-x:hover .link-text {
