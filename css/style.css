@@ -1,6 +1,6 @@
 :root {
   font-size: 1.1rem;
-  font-family: 'Open Sans';
+  font-family: 'Ubuntu';
   --text-primary: #b6b6b6;
   --text-secondary: #ececec;
   --bg-primary: #23232e;
@@ -28,6 +28,24 @@ body::-webkit-scrollbar-track {
 
 body::-webkit-scrollbar-thumb {
   background: var(--scroll-thumb);
+}
+
+.home-link, .home-link a{
+  text-decoration: none;
+  color: var(--scroll-thumb) !important;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+}
+
+.home-link:hover {
+  transform: scale(1.1);
+}
+
+.home-link:hover a{
+  color: var(--icon-hover)!important;
 }
 
 .main {
@@ -167,11 +185,29 @@ body::-webkit-scrollbar-thumb {
   color: var(--icon-hover);
 }
 
+footer {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  padding: 0;
+}
+
+.v-footer {
+  padding: 5px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
 @media only screen and (max-width: 600px) {
   .navbar-x {
     bottom: 0;
     width: 100vw;
     height: 5rem;
+  }
+
+  .v-footer {
+    bottom: 5rem;
+    margin: 0;
   }
 
   .logo {
@@ -197,6 +233,10 @@ body::-webkit-scrollbar-thumb {
 }
 
 @media only screen and (min-width: 600px) {
+  .v-footer {
+    margin-left: 5rem;
+  }
+
   .navbar-x {
     top: 0;
     width: 5rem;

@@ -1,13 +1,6 @@
 // Home Page Vue
 const Home = {
-  template: `
-  <div class="user ml-10">
-    <h2>User {{ store.state.user }}</h2>
-    <router-link to="/students">Show Students</router-link>
-    <router-link to="/teachers">Show Teachers</router-link>
-    <router-view></router-view>
-  </div>
-  `
+  template: document.getElementById('main-data-home')
 }
 // ---> Home Page Vue
 // Students Table Vue
@@ -314,7 +307,14 @@ const MainDataTeachers = {
       headers: [{
           text: 'П.І.П.',
           align: 'left',
+          width: '40%',
           value: 'name',
+        },
+        {
+          text: 'Email',
+          align: 'left',
+          sortable: false,
+          value: 'email'
         },
         {
           text: 'Телефон',
