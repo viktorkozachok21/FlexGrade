@@ -8432,6 +8432,24 @@
       }
     ],
     "students": [{
+      "guid": "3dcc8379-4de3f-9586r-ab1e53ebw",
+      "code": "5e7b5034790f09a81e840b86",
+      "isActive": true,
+      "bookNumber": "A-6930",
+      "picture": "https://media-exp1.licdn.com/dms/image/C5603AQHxYEZ57YSa9Q/profile-displayphoto-shrink_200_200/0?e=1590624000&v=beta&t=-gO0DWkTc41Q_8N14CqGSHWoCuL16UXCZIBrsMesMUo",
+      "name": "Козачок Віктор Миколайович",
+      "specialty": "Інженерія програмного забезпечення",
+      "department": "Відділення програмування",
+      "degree": "Бакалавр",
+      "enrolledIn": "Зарахований(а) на 2 курс",
+      "enrolledOrder": "A-66",
+      "enrolledOrderDate": "21.08.2015",
+      "group": "6-ІПБ",
+      "trainingForm": "Денна",
+      "phone": "096-123-7959",
+      "registered": "06.09.2015"
+    },
+    {
         "guid": "41268b3d-6d69-4d14-9586-ab1e53eb1a9b",
         "code": "5e7b503378f47eea2a299c28",
         "isActive": false,
@@ -48662,24 +48680,6 @@
         "registered": "06.01.2020"
       },
       {
-        "guid": "3dcc8379-4de2-49ca-a5ec-ee53db2f5e78",
-        "code": "5e7b5034790f09a81e840b86",
-        "isActive": true,
-        "bookNumber": "A-6930",
-        "picture": "https://avatarfiles.alphacoders.com/228/thumb-228617.jpg",
-        "name": "Avila Chandra Sparks",
-        "specialty": "Підприємництво, торгівля та біржова діяльність",
-        "department": "Технічне відділення",
-        "degree": "Спеціаліст",
-        "enrolledIn": "Зарахований(а) на 2 курс",
-        "enrolledOrder": "A-66",
-        "enrolledOrderDate": "21.07.2016",
-        "group": "11-B",
-        "trainingForm": "Заочна",
-        "phone": "080-852-3286",
-        "registered": "06.01.2020"
-      },
-      {
         "guid": "2d17bd5c-7290-479f-bd45-466ad86cb31d",
         "code": "5e7b5034d7a7e21a4f0d5051",
         "isActive": true,
@@ -66555,8 +66555,8 @@
       }
     ],
     "examinations": [{
-        "code": "5e7b5034513491f124df76d5",
-        "semester": "6-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "1-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Janna qui sunt est",
@@ -66637,8 +66637,8 @@
         ]
       },
       {
-        "code": "5e7b59f674558f5aaccbc2a1",
-        "semester": "3-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "2-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Hicks occaecat duis nulla",
@@ -66752,8 +66752,8 @@
         ]
       },
       {
-        "code": "5e7b59f674558f5aaccbc2a1",
-        "semester": "10-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "3-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Bonita non ullamco ea",
@@ -66812,8 +66812,8 @@
         ]
       },
       {
-        "code": "5e7b59f674558f5aaccbc2a1",
-        "semester": "6-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "4-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Ferguson excepteur eiusmod irure",
@@ -66927,7 +66927,7 @@
         ]
       },
       {
-        "code": "5e7b59f674558f5aaccbc2a1",
+        "code": "5e7b5034790f09a81e840b86",
         "semester": "5-й семестр",
         "subjects": [{
             "number": 1,
@@ -66998,8 +66998,8 @@
         ]
       },
       {
-        "code": "5e7b59f6da1c09616aea57c2",
-        "semester": "2-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "6-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Queen nisi ex sint",
@@ -67080,8 +67080,8 @@
         ]
       },
       {
-        "code": "5e7b59f6507a50dfbc0e24d3",
-        "semester": "3-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "7-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Nelda mollit esse nulla",
@@ -67151,8 +67151,8 @@
         ]
       },
       {
-        "code": "5e7b59f6005acab386781779",
-        "semester": "9-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "8-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Myrtle exercitation exercitation consectetur",
@@ -67211,8 +67211,8 @@
         ]
       },
       {
-        "code": "5e7b59f61f075304a310eb34",
-        "semester": "3-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "9-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Clay commodo irure duis",
@@ -67293,8 +67293,8 @@
         ]
       },
       {
-        "code": "5e7b59f630a06c5f1d5dd677",
-        "semester": "8-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "10-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Saundra cupidatat velit proident",
@@ -67364,8 +67364,8 @@
         ]
       },
       {
-        "code": "5e7b59f67af814c904d771dd",
-        "semester": "6-й семестр",
+        "code": "5e7b5034790f09a81e840b86",
+        "semester": "11-й семестр",
         "subjects": [{
             "number": 1,
             "subject": "Chris minim consequat magna",
