@@ -71,8 +71,10 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-span v-if="$route.meta.showBack" @click="$router.go(-1)" replace title="Go back" class="mdi mdi-keyboard-return home-link"></v-span>
       <v-divider v-if="$route.meta.showBack" class="mx-4" inset vertical></v-divider>
       <v-spacer></v-spacer>
+      <v-divider class="mx-4" v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" inset vertical replace></v-divider>
+      <v-span v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" @click="$root.$refs.StudentsList.newExamination" class="mdi mdi-plus-box-outline home-link"></v-span>
       <v-divider v-if="$root.authenticated" class="mx-4" inset vertical replace></v-divider>
-      <router-link class="home-link" v-if="$root.authenticated" to="/login" v-on:click.native="$root.logout" replace><snap title="Logout" class="mdi mdi-exit-to-app"></snap></router-link>
+      <router-link class="home-link" v-if="$root.authenticated" to="/login" @click.native="$root.logout" replace><snap title="Logout" class="mdi mdi-exit-to-app"></snap></router-link>
       <v-divider class="mx-4" inset vertical></v-divider>
       <div id="full-toggle" title="Toggle fullscreen" class="home-link"><span class="mdi mdi-fullscreen"></span></div>
     </v-toolbar>
@@ -90,51 +92,85 @@ const Footer = Vue.component('footer-x', {
   `
 })
 
+// The Login Form
 const Login = {
   template: document.getElementById('grade-login'),
   data() {
     return {
-        password: "3dcc8379-4de3f-9586r-ab1e53ebw",
-        errorMessages: '',
-        show: false,
-        custom: true,
-        rules: [
-          value => !!value || 'Введіть ваш пароль',
-          value => (value && value.length >= 8) || 'Мінімальна довжина 8 символів',
+      password: "3dcc8379-4de3f-9586r-ab1e53ebw",
+      errorMessages: '',
+      show: false,
+      custom: true,
+      rules: [
+        value => !!value || 'Введіть ваш пароль',
+        value => (value && value.length >= 8) || 'Мінімальна довжина 8 символів',
       ],
     }
   },
   computed: {
-      progress () {
-        return Math.min(100, this.password.length * 3.5)
-      },
-      color () {
-        return ['error', 'warning', 'success'][Math.floor(this.progress / 35)]
-      },
+    progress() {
+      return Math.min(100, this.password.length * 3.5)
     },
+    color() {
+      return ['error', 'warning', 'success'][Math.floor(this.progress / 35)]
+    },
+  },
   methods: {
     login() {
       this.custom = false
-      setTimeout(() => {
-      if (this.password != "") {
-        if (this.password === this.$root.password) {
-          this.$root.authenticated = true
-          router.replace({
-            name: "home"
-          });
+        if (this.password != "") {
+        fetch('../data/base.json')
+          .then(stream => stream.json())
+          .then(data => {
+            const loaded = data.app
+            this.$root.admins = loaded.users
+            let users = loaded.users
+            let students = loaded.students
+            let teachers = loaded.teachers
+            users.forEach(user => {
+              if (user.guid === this.password) {
+                if(user.status === 'student') {
+                  students.forEach(student => {
+                    if(student.guid === this.password) {
+                      store.state.status = 'admin'
+                      store.state.student = student
+                      this.$root.authenticated = true
+                      router.replace({
+                        name: "home"
+                      });
+                    }
+                  })
+                } else if(user.status === 'teacher') {
+                  teachers.forEach(teacher => {
+                    if(teacher.guid === this.password) {
+                      store.state.status = 'teacher'
+                      store.state.teacher = teacher
+                      this.$root.authenticated = true
+                      router.replace({
+                        name: "home"
+                      });
+                    }
+                  })
+                }
+              } else {
+                this.custom = true
+                this.errorMessages = "Invalid password";
+              }
+            })
+          })
+          .catch(error => console.error(error))
+
+
         } else {
           this.custom = true
-          this.errorMessages = "The username and / or password is incorrect";
+          this.errorMessages = "A password must be present";
         }
-      } else {
-        this.custom = true
-        this.errorMessages = "A username and password must be present";
-      }
-    }, 1000)
     }
   }
 }
-// Home Page Vue
+// <!--- The Login Form
+
+// The Home Page
 const Home = {
   template: document.getElementById('grade-home'),
   mounted() {
@@ -145,8 +181,9 @@ const Home = {
     }
   }
 }
-// ---> Home Page Vue
-// Contact Page Vue
+// <!--- Home Page
+
+// The Contact Info Page
 const Contact = {
   template: document.getElementById('grade-contact'),
   mounted() {
@@ -167,8 +204,9 @@ const Contact = {
     }
   }
 }
-// ---> Contact Page Vue
-// Students Table Vue
+// <!--- The Contact Info Page
+
+// The List Of Students
 const StudentsList = {
   template: document.getElementById('grade-students'),
   data() {
@@ -233,6 +271,7 @@ const StudentsList = {
     }
   },
   created() {
+    this.$root.$refs.StudentsList = this
     this.getDataFromApi()
       .then(data => {
         this.students = data.sorted
@@ -257,9 +296,8 @@ const StudentsList = {
       router.replace({
         name: "login"
       });
-    }
-    if(this.$route.params.search != null)
-    {
+    } else {
+    if (this.$route.params.search != null) {
       this.search = this.$route.params.search
     } else {
       this.search = ''
@@ -269,6 +307,7 @@ const StudentsList = {
         this.students = data.sorted
         this.totalItems = " Загальна кількість студентів: " + data.total;
       })
+    }
   },
   computed: {
     icon() {
@@ -285,28 +324,36 @@ const StudentsList = {
         } = this.options
         let sorted = []
         fetch('../data/base.json')
-            .then(stream => stream.json())
-            .then(data => {
-              const loaded = data.app.students
-              loaded.forEach(item => {
-                if (item.isActive === studyStatus) {
-                  sorted.push(item);
-                }
-              })
-              let total = sorted.length
-              setTimeout(() => {
-                this.loading = false
-                resolve({
-                  sorted,
-                  total,
-                })
-              }, 1000)
+          .then(stream => stream.json())
+          .then(data => {
+            const loaded = data.app.students
+            loaded.forEach(item => {
+              if (item.isActive === studyStatus) {
+                sorted.push(item);
+              }
             })
-            .catch(error => console.error(error))
+            let total = sorted.length
+            setTimeout(() => {
+              this.loading = false
+              resolve({
+                sorted,
+                total,
+              })
+            }, 1000)
+          })
+          .catch(error => console.error(error))
       })
     },
-    scrollToTop() {
-      window.scrollTo(0, 0);
+    newExamination(){
+      console.log(this.selected)
+      if(this.selected.length > 0) {
+        router.push({
+          name: 'new-semester',
+          params: {
+            'students': this.selected
+          }
+        })
+      }
     },
     moreInfo(student) {
       router.push({
@@ -323,9 +370,10 @@ const StudentsList = {
         this.iconIndex++
     }
   }
-};
-// ---> Students Table Vue
-// More Student Detail Vue
+}
+// <!--- The List Of Students
+
+// The More Details About A Student
 const StudentsPerson = {
   template: document.getElementById('grade-students-person'),
   data() {
@@ -335,8 +383,7 @@ const StudentsPerson = {
       examinatins: [],
       gotData: true,
       subjects: [],
-      headers: [
-        {
+      headers: [{
           text: '№',
           align: 'center',
           width: '1%',
@@ -413,51 +460,53 @@ const StudentsPerson = {
       router.replace({
         name: "login"
       });
-    }
+    } else {
     this.person = store.state.student
     this.getDataFromApi()
       .then(data => {
         this.examinatins = data.mine
-        if(data.mine.length > 0){
+        if (data.mine.length > 0) {
           this.gotData = true
         } else {
           this.gotData = false
         }
       })
+    }
   },
   methods: {
-  getDataFromApi() {
-    return new Promise((resolve, reject) => {
-      fetch('../data/base.json')
-        .then(stream => stream.json())
-        .then(data => {
-          const loaded = data.app.examinations
-          let mine = []
-          loaded.forEach(item => {
-            if (item.code === store.state.student.code) {
-              mine.push(item);
-            }
+    getDataFromApi() {
+      return new Promise((resolve, reject) => {
+        fetch('../data/base.json')
+          .then(stream => stream.json())
+          .then(data => {
+            const loaded = data.app.examinations
+            let mine = []
+            loaded.forEach(item => {
+              if (item.code === store.state.student.code) {
+                mine.push(item);
+              }
+            })
+            resolve({
+              mine,
+            })
           })
-          resolve({
-            mine,
-          })
-        })
-        .catch(error => console.error(error))
-    })
-  },
-  teacherInfo(examination) {
-    console.log(store.state.teacherName)
-    router.push({
-      name: 'teachers',
-      params: {
-        'teacherName': examination.teacher,
-      }
-    });
-  },
+          .catch(error => console.error(error))
+      })
+    },
+    teacherInfo(examination) {
+      console.log(store.state.teacherName)
+      router.push({
+        name: 'teachers',
+        params: {
+          'teacherName': examination.teacher,
+        }
+      });
+    },
+  }
 }
-};
-// ---> More Student Detail Vue
-// Teachers Data Vue
+// <!--- The More Details About A Student
+
+// The List Of Teachers
 const TeachersList = {
   template: document.getElementById('grade-teachers'),
   data() {
@@ -512,9 +561,8 @@ const TeachersList = {
       router.replace({
         name: "login"
       });
-    }
-    if(this.$route.params.teacherName != null)
-    {
+    } else {
+    if (this.$route.params.teacherName != null) {
       this.search = this.$route.params.teacherName
     } else {
       this.search = ''
@@ -524,6 +572,7 @@ const TeachersList = {
         this.teachers = data.loaded
         this.totalItems = " Загальна кількість викладачів: " + data.total;
       })
+    }
   },
   created() {
     this.getDataFromApi()
@@ -555,23 +604,20 @@ const TeachersList = {
       this.loading = true
       return new Promise((resolve, reject) => {
         fetch('../data/base.json')
-            .then(stream => stream.json())
-            .then(data => {
-              const loaded = data.app.teachers
-              let total = loaded.length
-              setTimeout(() => {
-                this.loading = false
-                resolve({
-                  loaded,
-                  total,
-                })
-              }, 1000)
-            })
-            .catch(error => console.error(error))
+          .then(stream => stream.json())
+          .then(data => {
+            const loaded = data.app.teachers
+            let total = loaded.length
+            setTimeout(() => {
+              this.loading = false
+              resolve({
+                loaded,
+                total,
+              })
+            }, 1000)
+          })
+          .catch(error => console.error(error))
       })
-    },
-    scrollToTop() {
-      window.scrollTo(0, 0);
     },
     moreInfo(teacher) {
       router.push({
@@ -589,8 +635,9 @@ const TeachersList = {
     }
   }
 }
-// ---> Teachers Data Vue
-// More Teacher Detail Vue
+// <!--- The List Of Teachers
+
+// The More Details About A Teacher
 const TeachersPerson = {
   template: document.getElementById('grade-teachers-person'),
   data() {
@@ -599,13 +646,11 @@ const TeachersPerson = {
       itemKey: 'id',
       gotData: true,
       subjects: [],
-      headers: [
-        {
-          text: 'Навчальна дисципліна',
-          sortable: false,
-          value: 'name'
-        }
-      ]
+      headers: [{
+        text: 'Навчальні дисципліни:',
+        sortable: false,
+        value: 'name'
+      }]
     }
   },
   mounted() {
@@ -613,62 +658,81 @@ const TeachersPerson = {
       router.replace({
         name: "login"
       });
-    }
+    } else {
     this.person = store.state.teacher
     this.getDataFromApi()
       .then(data => {
         this.subjects = data.mine
-        if(data.mine.length > 0){
+        if (data.mine.length > 0) {
           this.gotData = true
         } else {
           this.gotData = false
         }
       })
+    }
   },
   methods: {
-  getDataFromApi() {
-    return new Promise((resolve, reject) => {
-      fetch('../data/base.json')
-        .then(stream => stream.json())
-        .then(data => {
-          const loaded = data.app.teachers
-          let mine = []
-          loaded.forEach(item => {
-            if (item.code === store.state.teacher.code) {
-              mine = item.subjects;
-            }
+    getDataFromApi() {
+      return new Promise((resolve, reject) => {
+        fetch('../data/base.json')
+          .then(stream => stream.json())
+          .then(data => {
+            const loaded = data.app.teachers
+            let mine = []
+            loaded.forEach(item => {
+              if (item.code === store.state.teacher.code) {
+                mine = item.subjects;
+              }
+            })
+            resolve({
+              mine,
+            })
           })
-          resolve({
-            mine,
-          })
-        })
-        .catch(error => console.error(error))
-    })
+          .catch(error => console.error(error))
+      })
+    }
   }
 }
-}
-// ---> More Teacher Detail Vue
+// <!--- The More Details About A Teacher
 
+// The Profile Of A User
 const Profile = {
-  template: '<p>Profile</p>',
   mounted() {
     if (!this.$root.authenticated) {
       router.replace({
         name: "login"
       });
+    } else {
+      if (store.state.status === 'admin') {
+        router.replace({
+          name: 'student',
+          params: {
+            'id': store.state.student.code
+          }
+        })
+      } else if (store.state.status === 'teacher') {
+        router.replace({
+          name: 'teacher',
+          params: {
+            'id': store.state.teacher.code
+          }
+        })
+      }
     }
   }
 }
+// <!--- The Profile Of A User
 
-
+const NewSemester = {
+  template: document.getElementById('grane-new-semester')
+}
 
 const NotFound = {
   template: '<p>Страница не найдена</p>'
 }
 
 const router = new VueRouter({
-  routes: [
-    {
+  routes: [{
       path: '/',
       redirect: {
         name: "login"
@@ -683,41 +747,66 @@ const router = new VueRouter({
       path: '/home',
       name: 'home',
       component: Home,
-      meta: { showBack: false }
+      meta: {
+        showNewExamination: false
+      }
     },
     {
       path: '/students',
       name: 'students',
       component: StudentsList,
-      meta: { showBack: true }
+      meta: {
+        showBack: true,
+        showNewExamination: true
+      }
     },
     {
       path: '/students/person/:id',
       name: 'student',
       component: StudentsPerson,
-      meta: { showBack: true }
+      meta: {
+        showBack: true
+      }
     },
     {
       path: '/teachers',
       name: 'teachers',
       component: TeachersList,
-      meta: { showBack: true }
+      meta: {
+        showBack: true
+      }
     },
     {
       path: '/teachers/person/:id',
       name: 'teacher',
       component: TeachersPerson,
-      meta: { showBack: true }
+      meta: {
+        showBack: true
+      }
+    },
+    {
+      name: 'new-semester',
+      path: '/new-semester',
+      component: NewSemester,
+      meta: {
+        showBack: true
+      }
     },
     {
       name: 'profile',
       path: '/profile',
-      component: Profile
-    },,
+      component: Profile,
+      meta: {
+        showBack: true
+      }
+    },
     {
       name: 'contact',
       path: '/contact',
-      component: Contact
+      component: Contact,
+      meta: {
+        showBack: true
+      }
     }
   ]
 })
@@ -727,7 +816,7 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     user: 'Viktor',
-    status: 'student',
+    status: 'admin',
     student: {},
     teacher: {},
     developer: 'Козачок Віктор',
@@ -741,9 +830,11 @@ const store = new Vuex.Store({
           'id': login
         }
       })
-  }
+    }
   }
 })
+
+router.replace({name: 'home'})
 
 const app = new Vue({
   router,
@@ -751,7 +842,8 @@ const app = new Vue({
   data() {
     return {
       authenticated: true,
-      password: "3dcc8379-4de3f-9586r-ab1e53ebw"
+      password: "3dcc8379-4de3f-9586r-ab1e53ebw",
+      admins: []
     }
   },
   mounted() {
@@ -762,6 +854,9 @@ const app = new Vue({
     }
   },
   methods: {
+    scrollToTop() {
+      window.scrollTo(0, 0);
+    },
     setAuthenticated(status) {
       this.authenticated = status;
     },

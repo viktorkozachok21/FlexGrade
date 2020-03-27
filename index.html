@@ -84,40 +84,36 @@
   </div>
 </template>
 
-<template id="grade-profile">
-  <div class="container text-center mb-5 align-center">
-    <h2 class="display-2 my-5 text-weight-bold text-uppercase">Flex Grade</h2>
-    <v-btn class="h1 mx-5 my-3 home-link" width="300" height="55">
-      <router-link to="/students" class="d-flex align-center">
-        <v-icon icon class="mr-3">mdi-account-multiple-outline</v-icon>
-        <span class="text--secondary">Students List</span>
-      </router-link>
-    </v-btn>
-    <v-btn class="h1 mx-5 my-3 home-link" width="300" height="55">
-      <router-link to="/teachers" class="d-flex align-center">
-        <v-icon class="mr-3">mdi-account-multiple-outline</v-icon>
-        <span class="text--secondary">Teachers List</span>
-      </router-link>
-    </v-btn>
-  </div>
+<template id="grade-new-semester">
+
 </template>
 
 <template id="grade-contact">
   <div class="container text-center mb-5 align-center">
     <h2 class="display-2 my-5 text-weight-bold text-uppercase">Flex Grade</h2>
-    <p class="text-justify contact-section">
+    <div class="text-justify contact-section">
       <span class="mdi mdi-earth"></span>
       <span class="text--secondary font-weight-black">Призначення:</span>
-      <span class="home-link px-1"> облік результатів здачі студентом залікової сесії.</span> <br>
+      <span> облік результатів здачі студентом залікової сесії.</span> <br>
       <span class="mdi mdi-account-outline"></span>
       <span class="text--secondary font-weight-black">Розробник:</span>
       <a class="home-link" @click="moreInfo"> Козачок Віктор</a> <br>
       <span class="mdi mdi-phone"></span>
       <span class="text--secondary font-weight-black">Телефон:</span>
-      <a href="tel:0961237959" class="home-link"> 096-123-7959</a> <br>
+      <span> 096-123-7959</span> <br>
       <span class="mdi mdi-gmail"></span>
       <span class="text--secondary font-weight-black">Email:</span>
-      <a href="mailto:viktorkozachok21@gmail.com" class="home-link"> viktorkozachok21@gmail.com</a>
+      <span> viktorkozachok21@gmail.com</span>
+    </div>
+    <h3>Адміністратори системи</h3>
+    <div class="text-justify contact-section" v-for="admin in this.$root.admins">
+      <span class="mdi mdi-account-outline"></span>
+      <span> {{ admin.name }}</span>
+      <span class="text--secondary font-weight-black ml-3">Телефон:</span>
+      <span> {{ admin.phone }}</span>
+      <span class="text--secondary font-weight-black ml-3">Email:</span>
+      <span> {{ admin.email }}</span> <br>
+    </div>
   </div>
 </template>
 
@@ -169,7 +165,7 @@
     v-model="options.page"
     :total-visible="7"
     :length="pageCount"
-    @click.native="scrollToTop"
+    @click.native="$root.scrollToTop"
     dark color="teal darken-4"
     ></v-pagination>
     <v-text-field
@@ -301,8 +297,6 @@
     </div>
     <span class="font-weight-bold">Email:</span> {{ person.email }}
     <span class="font-weight-bold ml-sm-5">Телефон:</span> {{ person.phone }}
-    <v-divider class="my-3"></v-divider>
-    <span class="font-weight-bold">Викладає навчальні дисципліни:</span>
     <v-divider class="my-3"></v-divider>
     <p v-if="!gotData">Не знайдено відповідних записів</p>
     <v-data-table
