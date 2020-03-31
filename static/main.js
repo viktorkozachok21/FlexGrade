@@ -683,6 +683,7 @@ const NotFound = {
 }
 
 const router = new VueRouter({
+  mode: 'history',
   routes: [{
       path: '/',
       redirect: {
