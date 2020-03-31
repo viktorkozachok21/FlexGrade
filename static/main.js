@@ -72,9 +72,9 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-divider v-if="$route.meta.showBack" class="mx-4" inset vertical></v-divider>
       <v-spacer></v-spacer>
       <v-divider class="mx-4" v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" inset vertical replace></v-divider>
-      <v-span v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" @click="$root.$refs.StudentsList.newExamination" class="mdi mdi-plus-box-outline home-link"></v-span>
+      <v-span v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" class="mdi mdi-plus-box-outline home-link"></v-span>
       <v-divider v-if="$root.authenticated" class="mx-4" inset vertical replace></v-divider>
-      <router-link class="home-link" v-if="$root.authenticated" to="/login" @click.native="$root.logout" replace><snap title="Logout" class="mdi mdi-exit-to-app"></snap></router-link>
+      <v-span class="home-link mdi mdi-exit-to-app" v-if="$root.authenticated" @click="$root.logout" title="Logout" replace></v-span>
       <v-divider class="mx-4" inset vertical></v-divider>
       <div id="full-toggle" title="Toggle fullscreen" class="home-link"><span class="mdi mdi-fullscreen"></span></div>
     </v-toolbar>
@@ -97,74 +97,54 @@ const Login = {
   template: document.getElementById('grade-login'),
   data() {
     return {
-      password: "3dcc8379-4de3f-9586r-ab1e53ebw",
-      errorMessages: '',
+      username: "Viktor",
+      password: "admin-access",
+      errorMessage: '',
       show: false,
-      custom: true,
-      rules: [
-        value => !!value || 'Введіть ваш пароль',
-        value => (value && value.length >= 8) || 'Мінімальна довжина 8 символів',
-      ],
+      loading: false
     }
   },
-  computed: {
-    progress() {
-      return Math.min(100, this.password.length * 3.5)
-    },
-    color() {
-      return ['error', 'warning', 'success'][Math.floor(this.progress / 35)]
-    },
+  mounted() {
+    if (this.$root.authenticated) {
+      router.replace({
+        name: "home"
+      });
+    }
   },
   methods: {
     login() {
-      this.custom = false
+      this.loading = true
+      if (this.username != "") {
         if (this.password != "") {
-        fetch('../data/base.json')
-          .then(stream => stream.json())
-          .then(data => {
-            const loaded = data.app
-            this.$root.admins = loaded.users
-            let users = loaded.users
-            let students = loaded.students
-            let teachers = loaded.teachers
-            users.forEach(user => {
-              if (user.guid === this.password) {
-                if(user.status === 'student') {
-                  students.forEach(student => {
-                    if(student.guid === this.password) {
-                      store.state.status = 'admin'
-                      store.state.student = student
-                      this.$root.authenticated = true
-                      router.replace({
-                        name: "home"
-                      });
-                    }
-                  })
-                } else if(user.status === 'teacher') {
-                  teachers.forEach(teacher => {
-                    if(teacher.guid === this.password) {
-                      store.state.status = 'teacher'
-                      store.state.teacher = teacher
-                      this.$root.authenticated = true
-                      router.replace({
-                        name: "home"
-                      });
-                    }
-                  })
-                }
-              } else {
-                this.custom = true
-                this.errorMessages = "Invalid password";
+          const data = {
+            username: this.username,
+            password: this.password
+          }
+          fetch('../api/auth/login/', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(response => {
+              this.loading = false
+              if (typeof response.key != 'undefined'){
+                sessionStorage.setItem("auth_token", response.key)
+                this.$router.push({name: "home"})
+              } else if (!response.key) {
+                this.errorMessage = 'Не вдається увійти за допомогою наданих облікових даних.'
               }
             })
-          })
-          .catch(error => console.error(error))
-
+            .catch(error => console.log(error))
 
         } else {
-          this.custom = true
-          this.errorMessages = "A password must be present";
+          this.loading = false
+          this.errorMessage = "Поле 'пароль' не може бути порожнім.";
         }
+      } else {
+        this.loading = false
+        this.errorMessage = "Введіть ім'я користувача.";
+      }
     }
   }
 }
@@ -241,31 +221,7 @@ const StudentsList = {
       headers: [{
           text: 'П.І.П.',
           align: 'left',
-          value: 'name',
-        },
-        {
-          text: 'Спеціальність',
-          align: 'left',
-          width: '45%',
-          value: 'specialty'
-        },
-        {
-          text: 'Група',
-          alidn: 'center',
-          width: '8%',
-          value: 'group'
-        },
-        {
-          text: 'Рівень',
-          align: 'center',
-          width: '8%',
-          value: 'degree'
-        },
-        {
-          text: 'Форма',
-          align: 'center',
-          width: '8%',
-          value: 'trainingForm'
+          value: 'fullname',
         }
       ],
     }
@@ -274,7 +230,7 @@ const StudentsList = {
     this.$root.$refs.StudentsList = this
     this.getDataFromApi()
       .then(data => {
-        this.students = data.sorted
+        this.students = data.data
         this.totalItems = " Загальна кількість студентів: " + data.total;
       })
   },
@@ -283,7 +239,7 @@ const StudentsList = {
       handler() {
         this.getDataFromApi()
           .then(data => {
-            this.students = data.sorted
+            this.students = data.data
             this.totalItems = " Загальна кількість студентів: " + data.total;
           })
       },
@@ -304,7 +260,7 @@ const StudentsList = {
     }
     this.getDataFromApi()
       .then(data => {
-        this.students = data.sorted
+        this.students = data.data
         this.totalItems = " Загальна кількість студентів: " + data.total;
       })
     }
@@ -322,21 +278,14 @@ const StudentsList = {
           studyStatus,
           page
         } = this.options
-        let sorted = []
-        fetch('../data/base.json')
+        fetch('../api/app/students/')
           .then(stream => stream.json())
           .then(data => {
-            const loaded = data.app.students
-            loaded.forEach(item => {
-              if (item.isActive === studyStatus) {
-                sorted.push(item);
-              }
-            })
-            let total = sorted.length
+            let total = data.length
             setTimeout(() => {
               this.loading = false
               resolve({
-                sorted,
+                data,
                 total,
               })
             }, 1000)
@@ -356,10 +305,12 @@ const StudentsList = {
       }
     },
     moreInfo(student) {
+      sessionStorage.removeItem("student")
+      sessionStorage.setItem("student", student.code)
       router.push({
         name: 'student',
         params: {
-          'id': student.code,
+          'code': student.code,
         }
       })
       store.state.student = student
@@ -461,29 +412,29 @@ const StudentsPerson = {
         name: "login"
       });
     } else {
-    this.person = store.state.student
     this.getDataFromApi()
       .then(data => {
-        this.examinatins = data.mine
-        if (data.mine.length > 0) {
-          this.gotData = true
-        } else {
-          this.gotData = false
-        }
+        this.person = data.mine
+        // this.examinatins = data.mine
+        // if (data.mine.length > 0) {
+        //   this.gotData = true
+        // } else {
+        //   this.gotData = false
+        // }
       })
     }
   },
   methods: {
     getDataFromApi() {
       return new Promise((resolve, reject) => {
-        fetch('../data/base.json')
+        const code = sessionStorage.getItem("student")
+        fetch('http://localhost:3000/api/app/students/')
           .then(stream => stream.json())
           .then(data => {
-            const loaded = data.app.examinations
-            let mine = []
-            loaded.forEach(item => {
-              if (item.code === store.state.student.code) {
-                mine.push(item);
+            let mine = {}
+            data.forEach(item => {
+              if (item.code === code) {
+                mine = item;
               }
             })
             resolve({
@@ -623,7 +574,7 @@ const TeachersList = {
       router.push({
         name: 'teacher',
         params: {
-          'id': teacher.code,
+          'code': teacher.code,
         }
       })
       store.state.teacher = teacher
@@ -732,7 +683,6 @@ const NotFound = {
 }
 
 const router = new VueRouter({
-  mode: 'history',
   routes: [{
       path: '/',
       redirect: {
@@ -745,7 +695,7 @@ const router = new VueRouter({
       component: Login
     },
     {
-      path: '/app',
+      path: '/home',
       name: 'home',
       component: Home,
       meta: {
@@ -762,7 +712,7 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/students/person/:id',
+      path: '/students/person/:code',
       name: 'student',
       component: StudentsPerson,
       meta: {
@@ -821,7 +771,7 @@ const store = new Vuex.Store({
     student: {},
     teacher: {},
     developer: 'Козачок Віктор',
-    login: '3dcc8379-4de3f-9586r-ab1e53ebw'
+    login: ''
   },
   mutations: {
     showProfile(login) {
@@ -835,34 +785,51 @@ const store = new Vuex.Store({
   }
 })
 
-router.replace({name: 'home'})
-
 const app = new Vue({
   router,
   vuetify: new Vuetify(),
   data() {
     return {
-      authenticated: true,
-      password: "3dcc8379-4de3f-9586r-ab1e53ebw",
+      authenticated: false,
+      user: {},
       admins: []
     }
   },
+  created() {
+    this.auth()
+  },
+  watch: {
+    options: {
+      handler() {
+        this.auth()
+      },
+      deep: true,
+    },
+    '$route': 'auth'
+  },
   mounted() {
-    if (!this.authenticated) {
-      router.replace({
-        name: "login"
-      });
-    }
+    this.auth()
   },
   methods: {
+    auth() {
+      if (sessionStorage.getItem("auth_token")) {
+        this.authenticated = true
+      } else {
+        this.authenticated = false
+      }
+    },
     scrollToTop() {
       window.scrollTo(0, 0);
     },
-    setAuthenticated(status) {
-      this.authenticated = status;
-    },
     logout() {
-      this.authenticated = false;
+      fetch('../api/auth/logout/')
+      .then(response => response.json())
+      .then(response => {
+        this.$router.push({name: "login"})
+        sessionStorage.removeItem("auth_token")
+        this.authenticated = false
+      })
+      .catch(error => console.error(error))
     }
   }
 }).$mount('#app')
