@@ -34,6 +34,13 @@ a {
   text-decoration: none;
 }
 
+.notification {
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+  z-index: 1000;
+}
+
 .home-link {
   font-weight: bold;
   font-size: 20px;

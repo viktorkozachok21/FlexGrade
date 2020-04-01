@@ -16,7 +16,7 @@ const Navbar = Vue.component('navbar-x', {
         </div>
       </li>
       <li class="nav-item-x">
-        <router-link to="/home" title="На головну" class="nav-link-x">
+        <router-link to="/new-semester" title="На головну" class="nav-link-x">
           <svg id="lnr-home" viewBox="0 0 1024 1024" class="lnr lnr-home">
             <g class="fa-group">
               <use xlink:href="#lnr-home"></use>
@@ -72,7 +72,7 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-divider v-if="$route.meta.showBack" class="mx-4" inset vertical></v-divider>
       <v-spacer></v-spacer>
       <v-divider class="mx-4" v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" inset vertical replace></v-divider>
-      <v-span v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" class="mdi mdi-plus-box-outline home-link"></v-span>
+      <v-span @click="$root.newUser" class="mdi mdi-plus-box-outline home-link"></v-span>
       <v-divider v-if="$root.authenticated" class="mx-4" inset vertical replace></v-divider>
       <v-span class="home-link mdi mdi-exit-to-app" v-if="$root.authenticated" @click="$root.logout" title="Logout" replace></v-span>
       <v-divider class="mx-4" inset vertical></v-divider>
@@ -97,8 +97,8 @@ const Login = {
   template: document.getElementById('grade-login'),
   data() {
     return {
-      username: "Viktor",
-      password: "admin-access",
+      username: "admin",
+      password: "admin",
       errorMessage: '',
       show: false,
       loading: false
@@ -675,7 +675,12 @@ const Profile = {
 // <!--- The Profile Of A User
 
 const NewSemester = {
-  template: document.getElementById('grane-new-semester')
+  template: document.getElementById('grade-add-newuser'),
+  data(){
+      return {
+        dialog: false,
+      }
+    },
 }
 
 const NotFound = {
@@ -683,7 +688,7 @@ const NotFound = {
 }
 
 const router = new VueRouter({
-  mode: 'history',
+  // mode: 'history',
   routes: [{
       path: '/',
       redirect: {
@@ -793,7 +798,21 @@ const app = new Vue({
     return {
       authenticated: false,
       user: {},
-      admins: []
+      admins: [],
+      username: '',
+      password: '',
+      showAlert: false,
+      alertType: 'success',
+      alertMessage: '',
+      rules: {
+      min(min, v) {
+        return (v || '').length >= min || `Value must be at least ${min}`;
+      },
+
+      max(max, v) {
+        return (v || '').length <= max || `Value may not be greater than ${max}.`;
+      }
+      }
     }
   },
   created() {
@@ -830,6 +849,47 @@ const app = new Vue({
         sessionStorage.removeItem("auth_token")
         this.authenticated = false
       })
+      .catch(error => console.error(error))
+    },
+    getPass(){
+      fetch('../api/app/registration/')
+      .then(response => response.json())
+      .then(response => {
+        this.password = response.password
+      })
+      .catch(error => console.error(error))
+    },
+    newUser() {
+      const data = {
+        username: this.username,
+        password: this.password,
+      }
+      let csrftoken = getCookie('csrftoken')
+      fetch('../api/app/registration/', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+          },
+          body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(response => {
+          this.showAlert = true
+          this.alertMessage = response.message
+          if (response.success === true) {
+            this.alertType = 'success'
+            setTimeout(()=>{
+              this.showAlert = false
+            }, 3000)
+          } else if (response.success === false) {
+            this.alertType = 'error'
+            setTimeout(()=>{
+              this.showAlert = false
+            }, 3000)
+          }
+        })
       .catch(error => console.error(error))
     }
   }

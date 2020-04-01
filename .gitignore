@@ -4,5 +4,6 @@
 __pycache__
 db.sqlite3
 media
-venv/
-flexgrade/settings.py
+source
+venv
+flexgrade/local_settings.py
