@@ -37,6 +37,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 ACCOUNT_LOGOUT_ON_GET = True
 
+AUTH_USER_MODEL = 'app.FlexUser'
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -107,10 +109,10 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Kiev'
 
-DATE_DB_FORMAT = ['%Y.%m.%d']
+DATE_DB_FORMAT = ['%Y-%m-%d']
 
 DATE_INPUT_FORMATS = [
-    '%Y.%m.%d'
+    '%Y-%m-%d'
 ]
 
 USE_I18N = True
