@@ -84,7 +84,7 @@ class ActiveUserView(APIView):
         """
         response = {}
         username = request.data.get('username')
-        active_user = get_object_or_404(FlexUser, username__iexact=username)
+        active_user = get_object_or_404(FlexUser, username=username)
         if active_user.status == 'Student':
             active = get_object_or_404(Student, user=active_user)
             response['code'] = active.code()
@@ -106,8 +106,26 @@ class ActiveUserView(APIView):
             return JsonResponse({"success":True, "profile":response}, status=200)
         elif active_user.status == 'Admin':
             return JsonResponse({"success":True, "status":'Admin'}, status=200)
-        # elif request.user.status == 'Teacher':
-        #     active_user = get_object_or_404(Teacher, user=request.user)
+        else:
+            return JsonResponse({"success":False, "message":'Під час обробки запиту виникла помилка, спробуйте пізніше.'}, status=400)
+
+
+class NewSubjectView(APIView):
+
+    def post(self, request):
+        """
+        Registration a new subject with given data
+        """
+        print('Into')
+        code = request.data.get('teacher')
+        subject = request.data.get('subject')
+        user = get_object_or_404(FlexUser, code=code)
+        teacher = get_object_or_404(Teacher, user=user)
+        if Subject.objects.filter(subject__iexact=subject).exists():
+            return JsonResponse({"success":False, "message":"Дисципліну з такою назвою вже зареєстровано!"}, status=200)
+        new_subject = Subject.objects.create(teacher=teacher, subject=subject)
+        new_subject.save()
+        return JsonResponse({"success":True, "message":'Нову навчальну дисципліну успішно донано.'}, status=200)
 
 
 # class UserListView(generics.ListAPIView):
@@ -122,10 +140,10 @@ class ActiveUserView(APIView):
 #     queryset = models.Department.objects.all()
 #     serializer_class = serializers.DepartmentSerializer
 #
-# class SpecialtyListView(generics.ListAPIView):
-#     queryset = models.Specialty.objects.all()
-#     serializer_class = serializers.SpecialtySerializer
-#
+class SubjectListView(generics.ListAPIView):
+    queryset = Subject.objects.all()
+    serializer_class = serializers.SubjectSerializer
+
 class GroupListView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = serializers.GroupSerializer

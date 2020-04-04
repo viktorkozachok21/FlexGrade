@@ -33,7 +33,7 @@ class School(models.Model):
 
 
     def __str__(self):
-        return str('%s' % (self.short_name))
+        return '(%s) %s' % (self.pk,self.short_name)
 
 
 class Department(models.Model):
@@ -47,7 +47,7 @@ class Department(models.Model):
 
 
     def __str__(self):
-        return str('%s (%s)' % (self.full_name,self.school.short_name))
+        return '%s (%s)' % (self.full_name,self.school.short_name)
 
     class Meta:
         ordering = ['full_name']
@@ -64,7 +64,7 @@ class Specialty(models.Model):
     degree = StatusField(choices_name='DEGREE')
 
     def __str__(self):
-        return str('%s (%s) (%s)' % (self.full_name,self.degree,self.department.school.short_name))
+        return '%s (%s) (%s)' % (self.full_name,self.degree,self.department.school.short_name)
 
     class Meta:
         ordering = ['full_name']
@@ -130,7 +130,7 @@ class Teacher(models.Model):
     App user (teacher of a school)
     """
     user = models.OneToOneField(FlexUser, on_delete=models.CASCADE)
-    school = models.ForeignKey(School, models.SET_NULL, blank=True, null=True)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.user.fullname()
@@ -149,3 +149,17 @@ class Teacher(models.Model):
 
     def registered(self):
         return self.user.date_joined.date()
+
+
+class Subject(models.Model):
+    """
+    Model of a subject taught by a teacher
+    """
+    subject = models.CharField(max_length=100)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return '%s (%s)' % (self.subject,self.teacher_name())
+
+    def teacher_name(self):
+        return self.teacher.fullname()

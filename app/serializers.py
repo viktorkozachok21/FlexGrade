@@ -7,22 +7,22 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
-class SchoolSerializer(serializers.ModelSerializer):
+# class SchoolSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.School
+#         fields = ('__all__')
+#
+#
+# class DepartmentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.Department
+#         fields = ('__all__')
+
+
+class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.School
-        fields = ('__all__')
-
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Department
-        fields = ('__all__')
-
-
-class SpecialtySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Specialty
-        fields = ('__all__')
+        model = models.Subject
+        fields = ('subject', 'teacher_name')
 
 
 class GroupSerializer(serializers.ModelSerializer):
