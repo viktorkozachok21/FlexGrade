@@ -34,3 +34,9 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Student
         fields = ('code','fullname','book_number','group_number','degree','is_active','registered', 'avatar')
+
+
+class TeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Teacher
+        fields = ('code','fullname','registered','email','avatar')

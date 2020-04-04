@@ -110,7 +110,7 @@ class Student(models.Model):
         return self.user.is_active
 
     def code(self):
-        return self.user.code
+        return '%s' % self.user.code
 
     def avatar(self):
         return '%s' % self.user.avatar
@@ -120,6 +120,32 @@ class Student(models.Model):
 
     def degree(self):
         return '%s' % self.group.specialty.degree
+
+    def registered(self):
+        return self.user.date_joined.date()
+
+
+class Teacher(models.Model):
+    """
+    App user (teacher of a school)
+    """
+    user = models.OneToOneField(FlexUser, on_delete=models.CASCADE)
+    school = models.ForeignKey(School, models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return self.user.fullname()
+
+    def fullname(self):
+        return self.__str__()
+
+    def code(self):
+        return '%s' % self.user.code
+
+    def email(self):
+        return '%s' % self.user.email
+
+    def avatar(self):
+        return '%s' % self.user.avatar
 
     def registered(self):
         return self.user.date_joined.date()
