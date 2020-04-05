@@ -7,16 +7,16 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
-# class SchoolSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.School
-#         fields = ('__all__')
-#
-#
-# class DepartmentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.Department
-#         fields = ('__all__')
+class SemesterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Semester
+        fields = ('__all__')
+
+
+class DisciplinesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Discipline
+        fields = ('__all__')
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -39,4 +39,4 @@ class StudentSerializer(serializers.ModelSerializer):
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Teacher
-        fields = ('code','fullname','registered','email','avatar')
+        fields = ('code','fullname','is_active','registered','email','avatar')

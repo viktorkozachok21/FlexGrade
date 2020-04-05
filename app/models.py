@@ -20,6 +20,14 @@ class FlexUser(AbstractUser):
     def fullname(self):
         return '%s %s %s' % (self.last_name,self.first_name,self.sur_name)
 
+    def change_active(self):
+        if self.is_active == True:
+            self.is_active = False
+        else:
+            self.is_active = True
+        self.save()
+
+
 class School(models.Model):
     """
     School (institution of education)
@@ -80,7 +88,7 @@ class Group(models.Model):
 
 
     def __str__(self):
-        return '%s-%s (%s)' % (self.number, self.specialty.short_name,self.department.school.short_name)
+        return '%s-%s [%s] (%s)' % (self.number,self.specialty.short_name,self.specialty.degree,self.department.full_name)
 
     def group(self):
         return '%s-%s' % (self.number, self.specialty.short_name)
@@ -93,7 +101,7 @@ class Student(models.Model):
     """
     App user (student of a group)
     """
-    user = models.OneToOneField(FlexUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(FlexUser, on_delete=models.CASCADE, primary_key=True)
     book_number = models.CharField(max_length=10)
     entry_order = models.CharField(max_length=100, blank=True, null=True)
     entry_order_date = models.DateField(blank=True, null=True)
@@ -129,7 +137,7 @@ class Teacher(models.Model):
     """
     App user (teacher of a school)
     """
-    user = models.OneToOneField(FlexUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(FlexUser, on_delete=models.CASCADE, primary_key=True)
     school = models.ForeignKey(School, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
@@ -150,6 +158,9 @@ class Teacher(models.Model):
     def registered(self):
         return self.user.date_joined.date()
 
+    def is_active(self):
+        return self.user.is_active
+
 
 class Subject(models.Model):
     """
@@ -163,3 +174,40 @@ class Subject(models.Model):
 
     def teacher_name(self):
         return self.teacher.fullname()
+
+
+class Semester(models.Model):
+    """
+    Education period for group
+    """
+    semester = models.CharField(max_length=100)
+    group = models.ManyToManyField(Group)
+
+    def __str__(self):
+        return '%s [%s]' % (self.semester,"], [".join([str(g) for g in self.group.all()]))
+
+    def group_name(self):
+        return self.group.group()
+
+    class Meta:
+        ordering = ['semester']
+
+
+class Discipline(models.Model):
+    """
+    Subject which included in semester
+    """
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, blank=True, null=True)
+    number = models.CharField(max_length=2)
+    subject = models.CharField(max_length=100)
+    form = models.CharField(max_length=50)
+    hours = models.CharField(max_length=3)
+    credits = models.CharField(max_length=10)
+    discipline_date = models.DateField(blank=True, null=True)
+    teacher = models.CharField(max_length=100)
+
+    def __str__(self):
+        return '%s (%s) [%s]' % (self.subject,self.teacher,self.semester.__str__())
+
+    class Meta:
+        ordering = ['semester', 'number']
