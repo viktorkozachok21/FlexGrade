@@ -19,6 +19,12 @@ class DisciplinesSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
+class GradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Grade
+        fields = ('__all__')
+
+
 class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Subject

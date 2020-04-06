@@ -6,6 +6,7 @@ from . import serializers
 
 import random
 import string
+from collections import OrderedDict
 from django.core import serializers as get_json
 
 from rest_framework.response import Response
@@ -70,8 +71,15 @@ class AddUserView(APIView):
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
-            student = Student.objects.create(user=user, group=group, book_number=book_number, entry_order=entry_order, entry_order_date=entry_order_date, entry_order_type=entry_order_type)
-            student.save()
+            new_student = Student.objects.create(user=user, group=group, book_number=book_number, entry_order=entry_order, entry_order_date=entry_order_date, entry_order_type=entry_order_type)
+            students = [student for student in Student.objects.filter(group=group)]
+            for student in students:
+                if Semester.objects.filter(students=student).exists():
+                    semesters = Semester.objects.filter(students=student, is_active=True)
+                    for semester in semesters:
+                        if new_student not in semester.students.all():
+                            semester.students.add(new_student)
+                            semester.save()
             return Response({"success":True, "message":"Нового користувача успішно зареєстровано!"}, status=200)
         else:
             return Response({"success":False, "message":"Під час реєстраціє виникла помилка, спробуйте пізніше!"}, status=200)
@@ -85,6 +93,8 @@ class AddUserView(APIView):
             for student in students_list:
                 user = get_object_or_404(FlexUser, code=student)
                 user.change_active()
+                student = get_object_or_404(Student, user__code=student)
+                student.end()
             if len(students_list) > 1:
                 return Response({"success":True, "message":"Студентів успішно відраховано."}, status=200)
             elif len(students_list) == 1:
@@ -154,18 +164,20 @@ class EditSubjectView(APIView):
 
 class EditSemesterView(APIView):
 
-    def get(self, request, group):
-        number, short_name = group.split('-')
-        specialty = get_object_or_404(Specialty, short_name=short_name)
-        group = get_object_or_404(Group, number=number, specialty=specialty)
-        if Semester.objects.filter(group=group).exists():
-            semesters = {}
-            for semester in Semester.objects.filter(group=group):
+    def get(self, request, code):
+        student = get_object_or_404(Student, user__code=code)
+        if Semester.objects.filter(students=student).exists():
+            semesters = []
+            for semester in Semester.objects.filter(students=student):
                 examinations = {}
                 examinations['semester'] = semester.semester
-                disciplines = [discipline for discipline in Discipline.objects.all().filter(semester=semester)]
+                disciplines = [discipline for discipline in Discipline.objects.filter(semester=semester)]
+                grades = []
+                for discipline in disciplines:
+                    grades.append(Grade.objects.filter(discipline=discipline, student=student).last())
+                examinations['grades'] = serializers.GradeSerializer(grades, many=True).data
                 examinations['disciplines'] = serializers.DisciplinesSerializer(disciplines, many=True).data
-                semesters[semester.pk] = examinations
+                semesters.append(examinations)
             return Response({"success":True, "semesters":semesters}, status=200)
         else:
             return Response({"success":False, "message":'Не знайдено відповідних записів.'}, status=200)
@@ -180,19 +192,49 @@ class EditSemesterView(APIView):
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
-            if Student.objects.filter(group=group).exists():
-                students.append(group.pk)
+            if Student.objects.filter(group=group, user__is_active=True).exists():
+                for student in Student.objects.all().filter(group=group, user__is_active=True):
+                    students.append(student)
             else:
-                return Response({"success":False, "message":'В групі ' + group_number + ' не зареєстровано студентів.'}, status=400)
+                return Response({"success":False, "message":'В групі ' + group_number + ' не зареєстровано студентів.'}, status=200)
         semester = request.data.get('semester')
         disciplines = request.data.get('disciplines')
         new_semester = Semester.objects.create(semester=semester)
-        for index in students:
-            new_semester.group.add(get_object_or_404(Group, pk=index))
-            new_semester.save()
+        for student in students:
+            new_semester.students.add(student)
+        new_semester.save()
         for index, discipline in enumerate(disciplines, start=1):
-            new_descipline = Discipline.objects.create(semester=new_semester,number=index,subject=discipline['discipline'],form=discipline['form'],hours=discipline['hours'],credits=discipline['credits'],discipline_date=discipline['date'],teacher=discipline['teacher'],)
+            new_descipline = Discipline.objects.create(semester=new_semester,number=index,subject=discipline['discipline'],form=discipline['form'],hours=discipline['hours'],credits=discipline['credits'],discipline_date=discipline['date'],teacher=discipline['teacher'])
         return Response({"success":True, "message":'Новий семестр успішно додано.'}, status=200)
+
+
+class EditGradeView(APIView):
+
+    def get(self, request, students):
+        group_semesters = []
+        student = get_object_or_404(Student, user__code=students)
+        if Semester.objects.filter(students=student).exists():
+            semesters = [semester for semester in Semester.objects.all().filter(students=student, is_active=True)]
+            for semester in semesters:
+                our_semester = {}
+                our_semester['semester'] = semester.semester
+                disciplines = [discipline for discipline in Discipline.objects.all().filter(semester=semester)]
+                our_semester['disciplines'] = serializers.DisciplinesSerializer(disciplines, many=True).data
+                group_semesters.append(our_semester)
+            return Response({"success":True, "semesters":group_semesters}, status=200)
+        else:
+            return Response({"success":False, "message":'Під час обробки запиту виникла помилка, спробуйте пізніше.'}, status=200)
+
+    def post(self, request):
+        students = request.data.get('students')
+        first_student = get_object_or_404(Student, user__code=students[0])
+        semester = get_object_or_404(Semester, semester=request.data.get('semester'), students=first_student)
+        discipline = get_object_or_404(Discipline, semester=semester, subject=request.data.get('discipline'))
+        for student, score, grade in zip(students, request.data.get('scores'), request.data.get('grades')):
+            new_student = get_object_or_404(Student, user__code=student)
+            new_grade = Grade.objects.create(discipline=discipline, student=new_student, score=score, grade=grade)
+        return Response({"success":True, "message":'Інформацію успішно збережено.'}, status=200)
+        # return Response({"success":False, "message":"Під час обробки запиту виникла помилка, спробуйте пізніше."}, status=200)
 
 # class UserListView(generics.ListAPIView):
 #     queryset = FlexUser.objects.all()

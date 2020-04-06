@@ -103,9 +103,6 @@ class Student(models.Model):
     """
     user = models.OneToOneField(FlexUser, on_delete=models.CASCADE, primary_key=True)
     book_number = models.CharField(max_length=10)
-    entry_order = models.CharField(max_length=100, blank=True, null=True)
-    entry_order_date = models.DateField(blank=True, null=True)
-    entry_order_type = models.CharField(max_length=100, blank=True, null=True)
     group = models.ForeignKey(Group, models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
@@ -120,14 +117,24 @@ class Student(models.Model):
     def code(self):
         return '%s' % self.user.code
 
+    def end(self):
+        self.group = None
+        self.save()
+
     def avatar(self):
         return '%s' % self.user.avatar
 
     def group_number(self):
-        return '%s-%s' % (self.group.number,self.group.specialty.short_name)
+        if self.group != None:
+            return '%s-%s' % (self.group.number,self.group.specialty.short_name)
+        else:
+            return "Відраховані"
 
     def degree(self):
-        return '%s' % self.group.specialty.degree
+        if self.group != None:
+            return '%s' % self.group.specialty.degree
+        else:
+            return "Відраховані"
 
     def registered(self):
         return self.user.date_joined.date()
@@ -181,10 +188,11 @@ class Semester(models.Model):
     Education period for group
     """
     semester = models.CharField(max_length=100)
-    group = models.ManyToManyField(Group)
+    students = models.ManyToManyField(Student)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return '%s [%s]' % (self.semester,"], [".join([str(g) for g in self.group.all()]))
+        return '%s [%s]' % (self.semester,"], [".join([str(g.group_number()) for g in self.students.all()]))
 
     def group_name(self):
         return self.group.group()
@@ -211,3 +219,16 @@ class Discipline(models.Model):
 
     class Meta:
         ordering = ['semester', 'number']
+
+
+class Grade(models.Model):
+    """
+    Grade (score)
+    """
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, blank=True, null=True)
+    discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE, blank=True, null=True)
+    grade = models.CharField(default="", max_length=10)
+    score = models.CharField(default="", max_length=3)
+
+    def __str__(self):
+        return '[%s] %s [%s-%s]' % (self.grade,self.student.__str__(),self.discipline.subject,self.discipline.teacher)

@@ -11,5 +11,7 @@ urlpatterns = [
     path('subjects/', SubjectListView.as_view()),
     path('edit_subject/', EditSubjectView.as_view()),
     path('edit_semester/', EditSemesterView.as_view()),
-    path('edit_semester/<group>', EditSemesterView.as_view()),
+    path('edit_semester/<code>', EditSemesterView.as_view()),
+    path('edit_grade/', EditGradeView.as_view()),
+    path('edit_grade/<students>', EditGradeView.as_view()),
 ]
