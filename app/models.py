@@ -1,15 +1,17 @@
 
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from model_utils.fields import StatusField
 from model_utils import Choices
 import uuid
 
-from django.contrib.auth.models import AbstractUser
-
 
 class FlexUser(AbstractUser):
+    """
+    Custom user model which base on django user with new fields
+    """
     code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    sur_name = models.CharField(max_length=100)
+    sur_name = models.CharField(max_length=100, blank=True, null=True)
     avatar = models.ImageField(default="img/default.webp", blank=True, upload_to="avatars")
     STATUS = Choices('Admin', 'Teacher','Student')
     status = StatusField(choices_name='STATUS')
@@ -39,7 +41,6 @@ class School(models.Model):
     head_assistant = models.CharField(max_length=100)
     head_assistant_short = models.CharField(max_length=50)
 
-
     def __str__(self):
         return '(%s) %s' % (self.pk,self.short_name)
 
@@ -52,7 +53,6 @@ class Department(models.Model):
     full_name = models.CharField(max_length=255)
     head_of_department = models.CharField(max_length=100)
     head_of_department_short = models.CharField(max_length=50)
-
 
     def __str__(self):
         return '%s (%s)' % (self.full_name,self.school.short_name)
@@ -85,7 +85,6 @@ class Group(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, blank=True, null=True)
     specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, blank=True, null=True)
     number = models.IntegerField()
-
 
     def __str__(self):
         return '%s-%s [%s] (%s)' % (self.number,self.specialty.short_name,self.specialty.degree,self.department.full_name)
@@ -192,7 +191,7 @@ class Semester(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return '%s [%s]' % (self.semester,"], [".join([str(g.group_number()) for g in self.students.all()]))
+        return '%s [%s]' % (self.semester,"], [".join([str(g.book_number) for g in self.students.all()]))
 
     def group_name(self):
         return self.group.group()

@@ -1,6 +1,6 @@
 const Navbar = Vue.component('navbar-x', {
   template: `
-  <nav class="navbar-x" v-if="$root.authenticated" replace>
+  <nav class="navbar-x" v-if="store.state.authenticated" replace>
     <ul class="navbar-nav-x">
       <li class="logo">
         <div title="Flex Grade" class="nav-link-x">
@@ -16,7 +16,7 @@ const Navbar = Vue.component('navbar-x', {
         </div>
       </li>
       <li class="nav-item-x">
-        <router-link to="/new-semester" title="На головну" class="nav-link-x">
+        <router-link to="/home" title="На головну" class="nav-link-x">
           <svg id="lnr-home" viewBox="0 0 1024 1024" class="lnr lnr-home">
             <g class="fa-group">
               <use xlink:href="#lnr-home"></use>
@@ -28,7 +28,7 @@ const Navbar = Vue.component('navbar-x', {
           <span class="link-text">Головна</span>
         </router-link>
       </li>
-      <li class="nav-item-x">
+      <li class="nav-item-x" v-if="store.state.status != 'Admin'">
         <router-link to="/profile" title="Ваш профіль" class="nav-link-x">
           <svg id="lnr-user" viewBox="0 0 1024 1024" class="lnr lnr-user">
             <g class="fa-group">
@@ -42,6 +42,21 @@ const Navbar = Vue.component('navbar-x', {
             </g>
           </svg>
           <span class="link-text">Профіль</span>
+        </router-link>
+      </li>
+      <li class="nav-item-x" v-if="store.state.status == 'Admin'">
+        <router-link to="/directory" title="Довідник" class="nav-link-x">
+          <svg id="lnr-book" viewBox="0 0 1024 1024" class="lnr lnr-book">
+            <g class="fa-group">
+              <use xlink:href="#lnr-book"></use>
+              <path fill="currentColor" class="fa-secondary-x" d="M742.4 921.6h-512c-14.138 0-25.6-11.461-25.6-25.6s11.462-25.6 25.6-25.6h512c14.139 0 25.6 11.461 25.6 25.6s-11.461 25.6-25.6 25.6z">
+              </path>
+              <path fill="currentColor" class="fa-secondary-x"
+                d="M844.8 153.6c-14.139 0-25.6 11.462-25.6 25.6v768c0 14.115-11.485 25.6-25.6 25.6h-563.2c-42.347 0-76.8-34.453-76.8-76.8s34.453-76.8 76.8-76.8h460.8c42.349 0 76.8-34.451 76.8-76.8v-614.4c0-42.347-34.451-76.8-76.8-76.8h-512c-42.347 0-76.8 34.453-76.8 76.8v768c0 70.579 57.421 128 128 128h563.2c42.349 0 76.8-34.451 76.8-76.8v-768c0-14.138-11.461-25.6-25.6-25.6zM179.2 102.4h512c14.115 0 25.6 11.485 25.6 25.6v614.4c0 14.115-11.485 25.6-25.6 25.6h-460.8c-28.794 0-55.392 9.563-76.8 25.67v-665.67c0-14.115 11.485-25.6 25.6-25.6z">
+              </path>
+            </g>
+          </svg>
+          <span class="link-text">Довідник</span>
         </router-link>
       </li>
       <li class="nav-item-x">
@@ -68,13 +83,95 @@ const Toolbar = Vue.component('toolbar-x', {
   template: `
   <v-card class="main mb-3" height="70px">
     <v-toolbar class="text-center pl-3" flat>
-      <v-span v-if="$route.meta.showBack" @click="$router.go(-1)" replace title="Go back" class="mdi mdi-keyboard-return home-link"></v-span>
+      <v-span v-if="$route.meta.showBack" @click="$router.go(-1)" replace title="Повернутися на крок назад" class="mdi mdi-keyboard-return home-link"></v-span>
       <v-divider v-if="$route.meta.showBack" class="mx-4" inset vertical></v-divider>
+
       <v-spacer></v-spacer>
-      <v-divider class="mx-4" v-if="$route.meta.showNewExamination && (store.state.status == 'teacher' || store.state.status == 'admin')" inset vertical replace></v-divider>
-      <v-span @click="$root.newUser" class="mdi mdi-plus-box-outline home-link"></v-span>
-      <v-divider v-if="$root.authenticated" class="mx-4" inset vertical replace></v-divider>
-      <v-span class="home-link mdi mdi-exit-to-app" v-if="$root.authenticated" @click="$root.logout" title="Logout" replace></v-span>
+
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+      <v-span
+      class="mdi mdi-plus-box-outline home-link"
+      @click="store.state.newStudent.dialog = true"
+      v-if="store.state.status == 'Admin' && $route.meta.showNewStudent && store.state.studyStatus == true"
+      title="Зареєструвати нового студента"
+      ></v-span>
+      <new-student-x ref="newStudentForm"></new-student-x>
+      <v-span
+      class="mdi mdi-plus-box-outline home-link"
+      @click="store.state.newTeacher.dialog = true"
+      v-if="store.state.status == 'Admin' && $route.meta.showNewTeacher"
+      title="Зареєструвати нового викладача"
+      ></v-span>
+      <new-teacher-x ref="newTeacherForm"></new-teacher-x>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-span
+      class="mdi mdi-account-minus home-link"
+      @click="store.dispatch('minusStudent')"
+      v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"
+      title="Виключити студента(ів) зі списку"
+      ></v-span>
+      <v-span
+      class="mdi mdi-account-minus home-link"
+      @click="store.dispatch('minusTeacher')"
+      v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"
+      title="Виключити викладача(ів) зі списку"
+      ></v-span>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
+
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-span
+      class="mdi mdi-account-edit home-link"
+      @click="store.getters.editStudent;store.state.editStudent.dialog = true"
+      v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"
+      title="Редагувати профіль"
+      ></v-span>
+      <edit-student-x ref="editStudentForm"></edit-student-x>
+      <v-span
+      class="mdi mdi-account-edit home-link"
+      @click="store.getters.editTeacher;store.state.editTeacher.dialog = true"
+      v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"
+      title="Редагувати профіль"
+      ></v-span>
+      <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
+
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-span
+      class="mdi mdi-database-plus home-link"
+      @click="store.dispatch('loadSemesters', store.state.selectedStudents)"
+      v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"
+      title="Внести оцінки"
+      ></v-span>
+      <new-grade-x ref="newGradeForm"></new-grade-x>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+      <v-span
+      class="mdi mdi-book-plus home-link"
+      @click="store.getters.getListOfSubjects;store.state.newSemester.dialog = true"
+      v-if="store.state.status == 'Admin' && $route.meta.showNewStudent && store.state.studyStatus == true"
+      title="Додати новий навчальний семестр"
+      ></v-span>
+      <new-semester-x ref="newSemesterForm"></new-semester-x>
+      <v-span
+      class="mdi mdi-note-plus-outline home-link"
+      @click="store.state.newSubject.dialog = true"
+      v-if="store.state.status == 'Admin' && $route.meta.showNewTeacher"
+      title="Додати нову навчальну дисципліну"
+      ></v-span>
+      <new-subject-x ref="newSubjectForm"></new-subject-x>
+      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+
+      <v-spacer></v-spacer>
+
+      <v-divider v-if="store.state.authenticated" class="mx-4" inset vertical replace></v-divider>
+      <v-span class="home-link mdi mdi-exit-to-app" v-if="store.state.authenticated" @click="store.dispatch('logoutUser')" title="Вийти" replace></v-span>
       <v-divider class="mx-4" inset vertical></v-divider>
       <div id="full-toggle" title="Toggle fullscreen" class="home-link"><span class="mdi mdi-fullscreen"></span></div>
     </v-toolbar>
@@ -91,70 +188,785 @@ const Footer = Vue.component('footer-x', {
   </v-footer>
   `
 })
-
+const AddStudentForm = Vue.component('new-student-x',{
+  template: `
+  <v-dialog v-model="store.state.newStudent.dialog" persistent max-width="700px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Реєстрація нового користувача (студент)</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-form
+            ref="form"
+            v-model="store.state.newStudent.valid"
+            :lazy-validation="store.state.newStudent.lazy"
+            class="my-0 py-0"
+            >
+          <v-row no-gutters>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Ім'я користувача*"
+              :rules="[store.state.rules.min(10, store.state.newStudent.username), store.state.rules.max(30, store.state.newStudent.username)]"
+              v-model="store.state.newStudent.username" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Пароль*"
+              :rules="[store.state.rules.min(10, store.state.newStudent.password), store.state.rules.max(20, store.state.newStudent.password)]"
+              v-model="store.state.newStudent.password" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-btn class="home-link my-3" @click="store.dispatch('getPassword', store.state.newStudent)">Згенерувати логін та пароль</v-btn>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Прізвище"
+              :rules="[store.state.rules.min(2, store.state.newStudent.lastName), store.state.rules.max(50, store.state.newStudent.lastName)]"
+              v-model="store.state.newStudent.lastName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Ім'я"
+              :rules="[store.state.rules.min(2, store.state.newStudent.firstName), store.state.rules.max(50, store.state.newStudent.firstName)]"
+              v-model="store.state.newStudent.firstName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="По батькові"
+              :rules="[store.state.rules.min(2, store.state.newStudent.surName), store.state.rules.max(50, store.state.newStudent.surName)]"
+              v-model="store.state.newStudent.surName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Номер залікової книжки"
+              :rules="[store.state.rules.min(2, store.state.newStudent.bookNumber), store.state.rules.max(15, store.state.newStudent.bookNumber)]"
+              v-model="store.state.newStudent.bookNumber"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col class="d-flex px-1" cols="6">
+             <v-select
+              :items="store.state.groups"
+              v-model="store.state.newStudent.group"
+              label="Група"
+              :rules="[store.state.rules.min(3, store.state.newStudent.group)]"
+              dense required
+             ></v-select>
+           </v-col>
+           <v-col class="d-flex px-1" cols="6">
+             <v-file-input
+              :rules="[store.state.rules.maxFile(store.state.newStudent.avatar)]"
+              accept="image/png, image/jpeg, image/bmp, image/jpg"
+              v-model="store.state.newStudent.avatar"
+              show-size
+              outlined dense
+              placeholder="Оберіть фото"
+              prepend-icon="mdi-camera"
+              label="Фото" required
+           ></v-file-input>
+          </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('addStudent', $root.$refs.toolbar.$refs.newStudentForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.newStudent.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const EditStudentForm = Vue.component('edit-student-x',{
+  template: `
+  <v-dialog v-model="store.state.editStudent.dialog" persistent max-width="700px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Редагувати профіль (студент)</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-form
+            ref="form"
+            v-model="store.state.editStudent.valid"
+            :lazy-validation="store.state.editStudent.lazy"
+            class="my-0 py-0"
+            >
+          <v-row no-gutters>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Прізвище"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editStudent.lastName), store.state.rules.max(50, store.state.editStudent.lastName)]"
+              v-model="store.state.editStudent.lastName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Ім'я"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editStudent.firstName), store.state.rules.max(50, store.state.editStudent.firstName)]"
+              v-model="store.state.editStudent.firstName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="По батькові"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editStudent.surName), store.state.rules.max(50, store.state.editStudent.surName)]"
+              v-model="store.state.editStudent.surName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Номер залікової книжки"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(15, store.state.editStudent.bookNumber)]"
+              v-model="store.state.editStudent.bookNumber"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+           <v-col class="d-flex px-1" cols="6">
+             <v-file-input
+              :rules="[store.state.rules.maxFile(store.state.editStudent.avatar)]"
+              accept="image/png, image/jpeg, image/bmp, image/jpg"
+              v-model="store.state.editStudent.avatar"
+              show-size
+              @change="store.state.editStudent.wasEdited = true"
+              outlined dense
+              placeholder="Оберіть фото"
+              prepend-icon="mdi-camera"
+              label="Фото"
+           ></v-file-input>
+          </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('editStudent', $root.$refs.toolbar.$refs.editStudentForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.editStudent.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const AddTeacherForm = Vue.component('new-teacher-x',{
+  template: `
+  <v-dialog v-model="store.state.newTeacher.dialog" persistent max-width="700px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Реєстрація нового користувача (викладач)</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-form
+            ref="form"
+            v-model="store.state.newTeacher.valid"
+            :lazy-validation="store.state.newTeacher.lazy"
+            class="my-0 py-0"
+            >
+          <v-row no-gutters>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Ім'я користувача*"
+              :rules="[store.state.rules.min(10, store.state.newTeacher.username), store.state.rules.max(30, store.state.newTeacher.username)]"
+              v-model="store.state.newTeacher.username" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Пароль*"
+              :rules="[store.state.rules.min(10, store.state.newTeacher.password), store.state.rules.max(20, store.state.newTeacher.password)]"
+              v-model="store.state.newTeacher.password" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-btn class="home-link my-3" @click="store.dispatch('getPassword', store.state.newTeacher)">Згенерувати логін та пароль</v-btn>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Прізвище"
+              :rules="[store.state.rules.min(2, store.state.newTeacher.lastName), store.state.rules.max(50, store.state.newTeacher.lastName)]"
+              v-model="store.state.newTeacher.lastName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Ім'я"
+              :rules="[store.state.rules.min(2, store.state.newTeacher.firstName), store.state.rules.max(50, store.state.newTeacher.firstName)]"
+              v-model="store.state.newTeacher.firstName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="По батькові"
+              :rules="[store.state.rules.min(2, store.state.newTeacher.surName), store.state.rules.max(50, store.state.newTeacher.surName)]"
+              v-model="store.state.newTeacher.surName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Email"
+              :rules="[store.state.rules.min(2, store.state.newTeacher.email), store.state.rules.emailRules(store.state.newTeacher.email)]"
+              v-model="store.state.newTeacher.email"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+           <v-col class="d-flex px-1" cols="6">
+             <v-file-input
+              :rules="[store.state.rules.maxFile(store.state.newTeacher.avatar)]"
+              accept="image/png, image/jpeg, image/bmp, image/jpg"
+              v-model="store.state.newTeacher.avatar"
+              show-size
+              outlined dense
+              placeholder="Оберіть фото"
+              prepend-icon="mdi-camera"
+              label="Фото" required
+           ></v-file-input>
+          </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('addTeacher', $root.$refs.toolbar.$refs.newTeacherForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.newTeacher.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const EditTeacherForm = Vue.component('edit-teacher-x',{
+  template: `
+  <v-dialog v-model="store.state.editTeacher.dialog" persistent max-width="700px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Редагувати профіль (студент)</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-form
+            ref="form"
+            v-model="store.state.editTeacher.valid"
+            :lazy-validation="store.state.editTeacher.lazy"
+            class="my-0 py-0"
+            >
+          <v-row no-gutters>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Прізвище"
+              @input="store.state.editTeacher.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editTeacher.lastName), store.state.rules.max(50, store.state.editTeacher.lastName)]"
+              v-model="store.state.editTeacher.lastName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Ім'я"
+              @input="store.state.editTeacher.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editTeacher.firstName), store.state.rules.max(50, store.state.editTeacher.firstName)]"
+              v-model="store.state.editTeacher.firstName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="По батькові"
+              @input="store.state.editTeacher.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editTeacher.surName), store.state.rules.max(50, store.state.editTeacher.surName)]"
+              v-model="store.state.editTeacher.surName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-1">
+              <v-text-field
+              label="Email"
+              @input="store.state.editTeacher.wasEdited = true"
+              :rules="[store.state.rules.min(2, store.state.editTeacher.email), store.state.rules.emailRules(store.state.editTeacher.email)]"
+              v-model="store.state.editTeacher.email"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+           <v-col class="d-flex px-1" cols="6">
+             <v-file-input
+              :rules="[store.state.rules.maxFile(store.state.editTeacher.avatar)]"
+              accept="image/png, image/jpeg, image/bmp, image/jpg"
+              v-model="store.state.editTeacher.avatar"
+              show-size
+              @change="store.state.editTeacher.wasEdited = true"
+              outlined dense
+              placeholder="Оберіть фото"
+              prepend-icon="mdi-camera"
+              label="Фото"
+           ></v-file-input>
+          </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('editTeacher', $root.$refs.toolbar.$refs.editTeacherForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.editTeacher.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const AddSubjectForm = Vue.component('new-subject-x',{
+  template: `
+  <v-dialog v-model="store.state.newSubject.dialog" persistent max-width="700px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Додати нову навчальну дисципліну</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-form
+            ref="form"
+            v-model="store.state.newSubject.valid"
+            :lazy-validation="store.state.newSubject.lazy"
+            class="my-0 py-0"
+            >
+          <v-row no-gutters>
+            <v-col cols="12" class="px-1">
+              <v-text-field
+              label="Назва дисципліни"
+              :rules="[store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
+              v-model="store.state.newSubject.subject"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-combobox
+                v-model="store.state.newSubject.teacher"
+                :items="store.getters.getListOfTeachers"
+                color="teal darken-4"
+                :rules="[store.state.rules.min(10, store.state.newSubject.teacher), store.state.rules.max(100, store.state.newSubject.teacher)]"
+                label="Викладач"
+              ></v-combobox>
+            </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('addSubject', $root.$refs.toolbar.$refs.newSubjectForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.newSubject.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const AddSemesterForm = Vue.component('new-semester-x',{
+  template: `
+  <v-dialog v-model="store.state.newSemester.dialog" persistent max-width="1200px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Додати новий навчальний семестр</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-form
+            ref="form"
+            v-model="store.state.newSemester.valid"
+            :lazy-validation="store.state.newSemester.lazy"
+            class="my-0 py-0"
+            >
+          <v-row no-gutters>
+            <v-col cols="12">
+              <v-combobox
+                v-model="store.state.newSemester.semester"
+                :items="['1-й семестр 20__/20__ навчального року','2-й семестр 20__/20__ навчального року','3-й семестр 20__/20__ навчального року','4-й семестр 20__/20__ навчального року','5-й семестр 20__/20__ навчального року','6-й семестр 20__/20__ навчального року','7-й семестр 20__/20__ навчального року','8-й семестр 20__/20__ навчального року','9-й семестр 20__/20__ навчального року','10-й семестр 20__/20__ навчального року','11-й семестр 20__/20__ навчального року']"
+                color="teal darken-4"
+                :rules="[store.state.rules.min(20, store.state.newSemester.semester), store.state.rules.max(50, store.state.newSemester.semester)]"
+                label="Семестр навчального року"
+              ></v-combobox>
+            </v-col>
+            <v-col cols="12" class="px-1">
+              <v-select
+                v-model="store.state.newSemester.groups"
+                :items="store.state.groups"
+                color="teal darken-4"
+                :rules="[store.state.rules.minGroup(1, store.state.newSemester.groups)]"
+                label="Групи"
+                multiple required
+              ></v-select>
+            </v-col>
+          </v-row>
+          <v-row no-gutters>
+            <v-col cols="3" class="px-1">
+              <v-combobox
+                v-model="store.state.newSemester.discipline"
+                @change="store.getters.getTeacherForSubject(store.state.newSemester.discipline)"
+                :items="store.state.newSemester.listOfSubjects"
+                color="teal darken-4"
+                :rules="[store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
+                label="Навчальна дисципліна"
+                required
+              ></v-combobox>
+            </v-col>
+            <v-col cols="2" class="px-1">
+              <v-select
+                v-model="store.state.newSemester.form"
+                :items="['Залік','Екзамен','Курсовий проект','Навчальна практика','Виробнича практика']"
+                color="teal darken-4"
+                :rules="[store.state.rules.minGroup(1, store.state.newSemester.form)]"
+                label="Форма"
+                required
+              ></v-select>
+            </v-col>
+            <v-col cols="1" class="px-1">
+              <v-text-field
+              label="Годин"
+              type="number"
+              min="1"
+              max="500"
+              :rules="[store.state.rules.min(1, store.state.newSemester.hours), store.state.rules.max(3, store.state.newSemester.hours)]"
+              v-model="store.state.newSemester.hours" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="1" class="px-1">
+              <v-text-field
+              label="Кредитів"
+              type="number"
+              min="1"
+              max="30"
+              :rules="[store.state.rules.min(1, store.state.newSemester.credits), store.state.rules.max(5, store.state.newSemester.credits)]"
+              v-model="store.state.newSemester.credits" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="2" class="px-1">
+              <v-menu
+                v-model="store.state.newSemester.menu"
+                :close-on-content-click="false"
+                :nudge-right="40"
+                transition="scale-transition"
+                offset-y
+                min-width="200px"
+              >
+                <template v-slot:activator="{ on }">
+                  <v-text-field
+                    v-model="store.state.newSemester.date"
+                    label="Дата складання"
+                    readonly
+                    color="teal darken-4"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker
+                color="teal darken-4"
+                v-model="store.state.newSemester.date"
+                locale="uk"
+                first-day-of-week="1"
+                @input="store.state.newSemester.menu = false"
+                ></v-date-picker>
+              </v-menu>
+            </v-col>
+            <v-col cols="3" class="px-1">
+              <v-text-field
+              label="Викладач"
+              :rules="[store.state.rules.min(5, store.state.newSemester.teacher), store.state.rules.max(50, store.state.newSemester.teacher)]"
+              v-model="store.state.newSemester.teacher" required
+              color="teal darken-4"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row no-gutters>
+            <v-col cols="12">
+              <v-spacer></v-spacer>
+              <v-btn class="home-link my-3" @click="store.dispatch('addSubjectToSemester', $root.$refs.toolbar.$refs.newSemesterForm.$refs.form)">Додати</v-btn>
+              <v-spacer></v-spacer>
+            </v-col>
+          </v-row>
+          <v-flex v-if="store.state.newSemester.subjects.length > 0">
+            <h2 class="text--secondary">Перелік навчальних дисциплін</h2>
+            <v-divider class="my-3"></v-divider>
+            <v-row no-gutters v-for="(item, index) in store.state.newSemester.subjects" :key="item.index">
+              <v-col cols="1">
+                <v-span
+                class="mdi mdi-12px mdi-close-outline home-link mr-3"
+                @click="store.dispatch('removeSubjectFromSemester', index )"
+                title="Вилучити дисципліну"
+                ></v-span>
+                  {{ index+1 }}
+              </v-col>
+              <v-col cols="3" class="text-left">
+                {{ item.discipline }}
+              </v-col>
+              <v-col cols="1">
+                {{ item.form }}
+              </v-col>
+              <v-col cols="1">
+                {{ item.hours }}
+              </v-col>
+              <v-col cols="1">
+                {{ item.credits }}
+              </v-col>
+              <v-col cols="2">
+                {{ item.date }}
+              </v-col>
+              <v-col cols="3" class="text-left">
+                {{ item.teacher }}
+              </v-col>
+            </v-row>
+            <v-divider class="my-3"></v-divider>
+          </v-flex>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('addSemester', $root.$refs.toolbar.$refs.newSemesterForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.newSemester.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const AddGradeForm = Vue.component('new-grade-x',{
+  template: `
+  <v-dialog v-model="store.state.newGrade.dialog" persistent max-width="1000px">
+    <v-card class="text-center py-0 my-0">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto">Внести оцінки</span>
+      </v-title>
+        <v-container class="my-0 py-0">
+          <v-row no-gutters>
+            <v-col cols="8" class="px-1">
+              <v-select
+                v-model="store.state.newGrade.semester"
+                @change="store.getters.getListOfDiscipline(store.state.newGrade.semester)"
+                :items="store.getters.getListOfSemesters"
+                color="teal darken-4"
+                label="Семестер"
+                required
+              ></v-select>
+            </v-col>
+            <v-col cols="4" class="px-1">
+              <v-select
+                v-if="store.state.newGrade.disciplines.length > 0"
+                v-model="store.state.newGrade.discipline"
+                :items="store.state.newGrade.disciplines"
+                color="teal darken-4"
+                label="Навчальна дисципліна"
+                required
+              ></v-select>
+            </v-col>
+          </v-row>
+          <v-row no-gutters>
+            <v-col cols="12">
+              <v-divider class="my-1"></v-divider>
+              <v-form
+                ref="form"
+                v-model="store.state.newGrade.valid"
+                :lazy-validation="store.state.newGrade.lazy"
+                class="my-0 py-0"
+                >
+              <v-simple-table>
+                <v-divider class="my-1"></v-divider>
+                <template v-slot:default>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Студент</th>
+                      <th></th>
+                      <th>Балів</th>
+                      <th></th>
+                      <th>Оцінка</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(student, index) in store.state.selectedStudents" :key="index">
+                      <td><v-divider vertical></v-divider></td>
+                      <td class="text-left">{{ student.fullname }}</td>
+                      <td class="text-center"><v-divider vertical></v-divider></td>
+                      <td class="text-center" width="100px">
+                          <v-text-field
+                            v-if="store.state.newGrade.discipline != ''"
+                            v-model="store.state.newGrade.scores[index]"
+                            single-line
+                            :rules="[store.state.rules.min(1, store.state.newGrade.scores[index]), store.state.rules.max(3, store.state.newGrade.scores[index])]"
+                            color="teal darken-4"
+                          ></v-text-field>
+                      </td>
+                      <td class="text-center"><v-divider vertical></v-divider></td>
+                      <td class="text-center" width="100px">
+                          <v-text-field
+                            v-if="store.state.newGrade.discipline != ''"
+                            v-model="store.state.newGrade.grades[index]"
+                            single-line
+                            :rules="[store.state.rules.min(1, store.state.newGrade.grades[index]), store.state.rules.max(5, store.state.newGrade.grades[index])]"
+                            color="teal darken-4"
+                          ></v-text-field>
+                      </td>
+                      <td><v-divider vertical></v-divider></td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+              </v-form>
+              <v-divider class="my-1"></v-divider>
+            </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.dispatch('addGrade', $root.$refs.toolbar.$refs.newGradeForm.$refs.form)">Зареєструвати</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="home-link my-3" @click="store.state.newGrade.dialog = false">Згорнути</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
 // The Login Form
 const Login = {
-  template: document.getElementById('grade-login'),
+  template: `
+  <div class="text-center mx-10">
+    <h3 class="text--secondary">Авторизація</h3>
+    <v-text-field
+    hide-details="auto"
+    color="teal darken-4"
+    maxlength="30"
+    hint="Ім'я користувача"
+    placeholder="Ім'я користувача"
+    single-line
+    prepend-inner-icon="mdi-lock-outline"
+    v-model="username"
+    @keypress.enter="userLogin"
+    class="my-5"
+    ></v-text-field>
+    <v-text-field
+    hide-details="auto"
+    :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+    :type="show ? 'text' : 'password'"
+    color="teal darken-4"
+    counter="30"
+    maxlength="30"
+    hint="Введіть ваш пароль"
+    placeholder="Введіть ваш пароль"
+    single-line
+    prepend-inner-icon="mdi-lock-outline"
+    v-model="password"
+    class="my-5"
+    @keypress.enter="userLogin"
+    @click:append="show = !show"
+    >
+    </v-text-field>
+    <v-progress-linear
+    :active="loading"
+    :indeterminate="loading"
+    color="teal darken-4"
+    height="3"
+    ></v-progress-linear>
+    <v-btn @click.native="userLogin" class="home-link my-5" width="150" height="55">
+      <v-icon icon title="Login" class="m-auto display-2">mdi-check</v-icon>
+    </v-btn>
+  </div>
+  `,
   data() {
     return {
-      username: "admin",
-      password: "admin",
-      errorMessage: '',
+      username: "",
+      password: "",
       show: false,
       loading: false
     }
   },
   mounted() {
-    if (this.$root.authenticated) {
+    store.dispatch('checkAuth')
+    if (store.state.authenticated) {
       router.replace({
         name: "home"
-      });
+      })
     }
   },
   methods: {
-    login() {
-      this.loading = true
+    userLogin() {
       if (this.username != "") {
         if (this.password != "") {
           const data = {
             username: this.username,
             password: this.password
           }
-          fetch('../api/auth/login/', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(response => {
-              this.loading = false
-              if (typeof response.key != 'undefined'){
-                sessionStorage.setItem("auth_token", response.key)
-                this.$router.push({name: "home"})
-              } else if (!response.key) {
-                this.errorMessage = 'Не вдається увійти за допомогою наданих облікових даних.'
-              }
-            })
-            .catch(error => console.log(error))
-
+          this.loading = true
+          sessionStorage.setItem('username', this.username)
+          store.dispatch('loginUser', data)
+          setTimeout(() => {
+            const result = JSON.parse(sessionStorage.getItem("response"))
+            if (!result.key) {
+              Notiflix.Notify.Failure('Не вдається увійти за допомогою наданих облікових даних.')
+            } else if (typeof result.key != 'undefined') {
+              sessionStorage.setItem("auth_token", result.key)
+              router.replace({
+                name: "home"
+              })
+              Notiflix.Notify.Success('Авторизація пройшла успішно.')
+            }
+            this.loading = false
+          }, 3000)
         } else {
           this.loading = false
-          this.errorMessage = "Поле 'пароль' не може бути порожнім.";
+          Notiflix.Notify.Warning('Поле "пароль" не може бути порожнім.')
         }
       } else {
         this.loading = false
-        this.errorMessage = "Введіть ім'я користувача.";
+        Notiflix.Notify.Warning('Введіть ім\'я користувача.')
       }
     }
   }
 }
 // <!--- The Login Form
-
 // The Home Page
 const Home = {
-  template: document.getElementById('grade-home'),
+  template: `
+  <div class="container text-center mb-5">
+    <h2 class="display-2 my-5 text-weight-bold text-uppercase">Flex Grade</h2>
+    <router-link to="/students" class="mx-5">
+      <v-btn class="home-link my-3" width="300" height="55">
+        <v-icon icon class="m-auto mr-3">mdi-account-multiple-outline</v-icon>
+        <span class="text--secondary m-auto">Студенти</span>
+      </v-btn>
+    </router-link>
+    <router-link to="/teachers" class="mx-5">
+      <v-btn class="home-link my-3" width="300" height="55">
+        <v-icon class="m-auto mr-3">mdi-account-multiple-outline</v-icon>
+        <span class="text--secondary m-auto">Викладачі</span>
+      </v-btn>
+    </router-link>
+  </div>
+  `,
   mounted() {
-    if (!this.$root.authenticated) {
+    if (!store.state.authenticated) {
       router.replace({
         name: "login"
       });
@@ -162,33 +974,115 @@ const Home = {
   }
 }
 // <!--- Home Page
-
 // The Contact Info Page
 const Contact = {
-  template: document.getElementById('grade-contact'),
+  template: `
+  <div class="container text-center mb-5 align-center">
+    <h2 class="display-2 my-5 text-weight-bold text-uppercase">Flex Grade</h2>
+    <div class="text-justify contact-section">
+      <span class="mdi mdi-earth"></span>
+      <span class="text--secondary font-weight-black">Призначення:</span>
+      <span> облік результатів здачі студентом залікової сесії.</span> <br>
+      <span class="mdi mdi-account-outline"></span>
+      <span class="text--secondary font-weight-black">Розробник:</span>
+      <a class="home-link" href="https://www.facebook.com/BeCeJIyH4iK" target="_blank"> Козачок Віктор</a> <br>
+      <span class="mdi mdi-phone"></span>
+      <span class="text--secondary font-weight-black">Телефон:</span>
+      <span> 096-123-7959</span> <br>
+      <span class="mdi mdi-gmail"></span>
+      <span class="text--secondary font-weight-black">Email:</span>
+      <span> viktorkozachok21@gmail.com</span>
+    </div>
+    <h3>Адміністратори системи</h3>
+    <div class="text-justify contact-section" v-for="admin in store.state.admins">
+      <span class="mdi mdi-account-outline"></span>
+      <span> {{ admin.fullname }}</span>
+      <span class="text--secondary font-weight-black ml-3">Email:</span>
+      <span> {{ admin.email }}</span> <br>
+    </div>
+  </div>
+  `,
   mounted() {
-    if (!this.$root.authenticated) {
+    if (!store.state.authenticated) {
       router.replace({
         name: "login"
       });
     }
-  },
-  methods: {
-    moreInfo() {
-      router.push({
-        name: 'students',
-        params: {
-          'search': store.state.developer
-        }
-      })
-    }
   }
 }
 // <!--- The Contact Info Page
-
 // The List Of Students
 const StudentsList = {
-  template: document.getElementById('grade-students'),
+  template: `
+  <div>
+    <v-row>
+      <v-text-field
+      class="col-xs-12 col-md-9 px-5"
+      v-model="search"
+      append-icon="mdi-magnify"
+      label="Пошук"
+      single-line
+      hide-details
+      ></v-text-field>
+      <v-layout class="col-xs-3 d-flex align-center justify-center">
+        <v-switch
+        id="switch"
+        v-model="options.studyStatus"
+        flat
+        dense
+        color="teal darken-4"
+        ></v-switch>
+        <v-label v-if="options.studyStatus">Чи навчаються: Так</v-label>
+        <v-label v-else>Чи навчаються: Ні</v-label>
+      </v-layout>
+    </v-row>
+    <v-data-table
+    :headers="headers"
+    :items="students"
+    :item-key="itemKey"
+    :sort-by="sortBy"
+    multi-sort
+    :search="search"
+    no-results-text="Не знайдено відповідних записів"
+    no-data-text="Не знайдено відповідних записів"
+    v-model="store.state.selectedStudents"
+    :single-select="singleSelect"
+    show-select
+    :options.sync="options"
+    :items-per-page="itemsPerPage"
+    @page-count="pageCount = $event"
+    @click:row="moreInfo"
+    color="teal darken-4"
+    class="elevation-1 people"
+    hide-default-footer
+    :loading="loading"
+    loading-text="Завантаження... Будь ласка, зачекайте"
+    ><v-progress-linear
+    v-show="loading"
+    slot="progress"
+    color="teal darken-4"
+    indeterminate
+    height="2"
+    ></v-progress-linear>
+    </v-data-table>
+    <v-pagination
+    class="font-weight-black"
+    v-if="pageCount > 0"
+    v-model="options.page"
+    :total-visible="7"
+    :length="pageCount"
+    @click.native="$root.scrollToTop"
+    dark color="teal darken-4"
+    ></v-pagination>
+    <v-text-field
+    v-model="totalItems"
+    v-if="totalItems"
+    prepend-inner-icon="mdi-emoticon"
+    solo
+    readonly
+    ></v-text-field>
+  </div>
+  `,
   data() {
     return {
       totalItems: '',
@@ -201,265 +1095,365 @@ const StudentsList = {
         page: 1,
         studyStatus: true,
       },
-      sortBy: 'name',
+      sortBy: 'fullname',
       itemsPerPage: 30,
       selected: [],
       singleSelect: false,
-      iconIndex: 4,
-      icons: [
-        'mdi-emoticon',
-        'mdi-emoticon-cool',
-        'mdi-emoticon-dead',
-        'mdi-emoticon-devil',
-        'mdi-emoticon-happy',
-        'mdi-emoticon-excited',
-        'mdi-emoticon-neutral',
-        'mdi-emoticon-sad',
-        'mdi-ninja',
-        'mdi-emoticon-tongue',
-      ],
       headers: [{
           text: 'П.І.П.',
           align: 'left',
           value: 'fullname',
+        },
+        {
+          text: 'Група',
+          align: 'center',
+          width: '11%',
+          value: 'group_number',
+        },
+        {
+          text: 'Залікова книжка №',
+          align: 'left',
+          width: '15%',
+          value: 'book_number',
+        },
+        {
+          text: 'Рівень освіти',
+          align: 'left',
+          width: '12%',
+          value: 'degree',
+        },
+        {
+          text: 'Зареєстровано',
+          align: 'right',
+          width: '15%',
+          value: 'registered',
         }
       ],
     }
   },
-  created() {
-    this.$root.$refs.StudentsList = this
-    this.getDataFromApi()
-      .then(data => {
-        this.students = data.data
-        this.totalItems = " Загальна кількість студентів: " + data.total;
-      })
-  },
   watch: {
     options: {
       handler() {
-        this.getDataFromApi()
+        this.getData()
           .then(data => {
-            this.students = data.data
+            this.students = data.result
             this.totalItems = " Загальна кількість студентів: " + data.total;
           })
       },
       deep: true,
     },
-    '$route': 'getDataFromApi'
   },
   mounted() {
-    if (!this.$root.authenticated) {
-      router.replace({
+    if (!store.state.authenticated) {
+      router.push({
         name: "login"
       });
     } else {
-    if (this.$route.params.search != null) {
-      this.search = this.$route.params.search
-    } else {
-      this.search = ''
-    }
-    this.getDataFromApi()
+    store.dispatch('loadStudents')
+    store.dispatch('loadGroups')
+    store.dispatch('loadSubjects')
+    this.getData()
       .then(data => {
-        this.students = data.data
+        this.students = data.result
         this.totalItems = " Загальна кількість студентів: " + data.total;
       })
     }
   },
-  computed: {
-    icon() {
-      return this.icons[this.iconIndex]
-    }
+  beforeRouteLeave (to, from, next) {
+    store.state.selectedStudents = []
+    next()
   },
   methods: {
-    getDataFromApi() {
+    getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
         let {
           studyStatus,
           page
-        } = this.options
-        fetch('../api/app/students/')
-          .then(stream => stream.json())
-          .then(data => {
-            let total = data.length
+          } = this.options
+          store.dispatch('checkStatus', studyStatus)
+          let result = []
+          let total = null
+          setTimeout(() => {
+            result = store.getters.getStudents(studyStatus)
+            total = result.length
+          }, 1000)
             setTimeout(() => {
               this.loading = false
               resolve({
-                data,
-                total,
+                result,
+                total
               })
-            }, 1000)
-          })
-          .catch(error => console.error(error))
+          }, 2000)
       })
-    },
-    newExamination(){
-      console.log(this.selected)
-      if(this.selected.length > 0) {
-        router.push({
-          name: 'new-semester',
-          params: {
-            'students': this.selected
-          }
-        })
-      }
     },
     moreInfo(student) {
       sessionStorage.removeItem("student")
-      sessionStorage.setItem("student", student.code)
+      sessionStorage.setItem("student", JSON.stringify(student))
       router.push({
         name: 'student',
         params: {
           'code': student.code,
+          'profile': student
         }
       })
-      store.state.student = student
-    },
-    changeIcon() {
-      this.iconIndex === this.icons.length - 1 ?
-        this.iconIndex = 0 :
-        this.iconIndex++
     }
   }
 }
 // <!--- The List Of Students
-
 // The More Details About A Student
 const StudentsPerson = {
-  template: document.getElementById('grade-students-person'),
+  template: `
+  <div class="mx-1 text-center">
+      <v-row>
+        <v-col cols="12">
+          <div class="text-center float-sm-left mr-sm-3 p-1">
+            <v-dialog v-model="dialog" persistent max-width="500px">
+              <v-card class="text-center py-0 my-0">
+                <v-title class="subtitle-2 text-center">
+                  <span class="headline mx-auto">Змінити фото</span>
+                </v-title>
+                  <v-container class="my-0 py-0">
+                    <v-row no-gutters>
+                      <v-col cols="12" class="px-1">
+                        <v-file-input
+                         :rules="[store.state.rules.maxFile(avatar)]"
+                         accept="image/png, image/jpeg, image/bmp, image/jpg"
+                         v-model="avatar"
+                         show-size
+                         @change="wasEdited = true"
+                         outlined dense
+                         placeholder="Оберіть фото"
+                         prepend-icon="mdi-camera"
+                         label="Фото"
+                      ></v-file-input>
+                      </v-col>
+                    </v-row>
+                    <v-card-actions class="my-0 py-0">
+                      <v-spacer></v-spacer>
+                      <v-btn class="home-link my-3" v-if="wasEdited == true" @click="changeAvatar">Зареєструвати</v-btn>
+                      <v-spacer></v-spacer>
+                      <v-btn class="home-link my-3" @click="dialog = false">Згорнути</v-btn>
+                      <v-spacer></v-spacer>
+                    </v-card-actions>
+                  </v-container>
+              </v-card>
+            </v-dialog>
+              <v-img
+              :src="person.avatar"
+              :aspect-ratio="3/4"
+              class="mx-auto mb-1 grey lighten-2 text-right pt-1"
+              width="250"
+              >
+              <v-span
+              class="mdi mdi-36px mdi-border-color home-link mr-1"
+              @click="dialog = true"
+              v-if="edit == true"
+              title="Змінити фото"
+              ></v-span>
+            </v-img>
+              <span class="font-weight-bold mb-1">Дата реєстрації:</span> {{ person.registered }}
+          </div>
+          <h1 class="text--secondary">Електронна залікова книжка №: {{ person.book_number }}</h1>
+          <h3 class="mb-1">{{ person.fullname }}</h3>
+          <v-divider class="my-3"></v-divider>
+          <div class="text-justify">
+            <span class="font-weight-bold ml-3">Група:</span> {{ person.group_number }}
+          </div>
+          <v-divider class="my-3"></v-divider>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-divider class="my-3"></v-divider>
+          <h2 class="text--secondary">
+            Заліки, екзамени, курсові роботи, практики
+          </h2>
+          <v-divider class="my-3"></v-divider>
+          <v-progress-linear
+          :active="loading"
+          :indeterminate="loading"
+          color="teal darken-4"
+          height="3"
+          ></v-progress-linear>
+          <p v-if="!gotData">Не знайдено відповідних записів</p>
+            <div v-if="gotData" v-for="(semester, index) in semesters" :key="index" class="mb-5">
+              <v-divider class="my-1"></v-divider>
+              <h4 class="title ml-5 my-3 text-left">{{ semester.semester }}</h4>
+              <v-divider class="my-1"></v-divider>
+              <v-simple-table>
+                <template v-slot:default>
+                  <thead>
+                    <tr>
+                      <th><v-divider vertical></v-divider></th>
+                      <th class="text-center">№</th>
+                      <th class="text-left">Навчальна дисципліна</th>
+                      <th class="text-center">Форма</th>
+                      <th class="text-center">Годин</th>
+                      <th class="text-center">Кредитів</th>
+                      <th class="text-center">Балів</th>
+                      <th class="text-center">Оцінка</th>
+                      <th class="text-center">Дата складання</th>
+                      <th class="text-left">Викладач</th>
+                      <th><v-divider vertical></v-divider></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(item, index) in semester.disciplines" :key="index">
+                      <td><v-divider vertical></v-divider></td>
+                      <td class="text-center">{{ item.number }}</td>
+                      <td class="text-left">{{ item.subject }}</td>
+                      <td class="text-center">{{ item.form }}</td>
+                      <td class="text-center">{{ item.hours }}</td>
+                      <td class="text-center">{{ item.credits }}</td>
+                      <td class="text-center" v-if="semester.grades[index]">{{ semester.grades[index].score }}</td>
+                      <td class="text-center" v-else></td>
+                      <td class="text-center" v-if="semester.grades[index]">{{ semester.grades[index].grade }}</td>
+                      <td class="text-center" v-else></td>
+                      <td class="text-center">{{ item.discipline_date }}</td>
+                      <td class="text-left">{{ item.teacher }}</td>
+                      <td><v-divider vertical></v-divider></td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+              <v-divider class="my-1"></v-divider>
+            </div>
+          <v-divider class="mt-3 mb-5"></v-divider>
+        </v-col>
+      </v-row>
+  </div>
+  `,
   data() {
     return {
-      person: {},
-      itemKey: 'number',
-      examinatins: [],
       gotData: true,
-      subjects: [],
-      headers: [{
-          text: '№',
-          align: 'center',
-          width: '1%',
-          divider: true,
-          sortable: false,
-          value: 'number'
-        },
-        {
-          text: 'Навчальна дисципліна',
-          align: 'left',
-          divider: true,
-          sortable: false,
-          value: 'subject'
-        },
-        {
-          text: 'Форма',
-          align: 'center',
-          divider: true,
-          sortable: false,
-          value: 'form'
-        },
-        {
-          text: 'Годин',
-          align: 'center',
-          width: '1%',
-          divider: true,
-          sortable: false,
-          value: 'hours'
-        },
-        {
-          text: 'Кредитів',
-          align: 'center',
-          width: '1%',
-          divider: true,
-          sortable: false,
-          value: 'credits'
-        },
-        {
-          text: 'Балів',
-          align: 'center',
-          width: '1%',
-          divider: true,
-          sortable: false,
-          value: 'score'
-        },
-        {
-          text: 'Оцінка',
-          align: 'center',
-          width: '1%',
-          divider: true,
-          sortable: false,
-          value: 'grade'
-        },
-        {
-          text: 'Дата',
-          align: 'center',
-          width: '1%',
-          divider: true,
-          sortable: false,
-          value: 'date'
-        },
-        {
-          text: 'Викладач',
-          align: 'left',
-          divider: true,
-          sortable: false,
-          value: 'teacher'
-        }
-      ],
+      person: {},
+      semesters: [],
+      loading: true,
+      edit: false,
+      dialog: false,
+      avatar: '',
+      wasEdited: false
     }
   },
   mounted() {
-    if (!this.$root.authenticated) {
+    if (!store.state.authenticated) {
       router.replace({
         name: "login"
       });
     } else {
-    this.getDataFromApi()
-      .then(data => {
-        this.person = data.mine
-        // this.examinatins = data.mine
-        // if (data.mine.length > 0) {
-        //   this.gotData = true
-        // } else {
-        //   this.gotData = false
-        // }
-      })
+    this.person = this.$route.params.profile
+    if (this.$route.params.edit) {
+      this.edit = true
+    } else {
+      this.edit = false
+    }
+    this.getData()
+    .then(data => {
+      this.semesters = data.semesters
+      this.loading = false
+      if (data.semesters) {
+        this.gotData = true
+      } else {
+        this.gotData = false
+      }
+    })
     }
   },
   methods: {
-    getDataFromApi() {
+    getData() {
+      this.loading = true
       return new Promise((resolve, reject) => {
-        const code = sessionStorage.getItem("student")
-        fetch('http://localhost:3000/api/app/students/')
-          .then(stream => stream.json())
-          .then(data => {
-            let mine = {}
-            data.forEach(item => {
-              if (item.code === code) {
-                mine = item;
-              }
-            })
-            resolve({
-              mine,
-            })
+        let semesters = []
+        store.dispatch('getSemesters', this.$route.params.profile.code)
+        setTimeout(function() {
+          semesters = store.state.semestersForStudent
+        }, 1000)
+        setTimeout(function() {
+          resolve({
+            semesters,
           })
-          .catch(error => console.error(error))
+        }, 2000)
       })
     },
-    teacherInfo(examination) {
-      console.log(store.state.teacherName)
-      router.push({
-        name: 'teachers',
-        params: {
-          'teacherName': examination.teacher,
+    changeAvatar() {
+      if (this.avatar && this.avatar != '') {
+        const params = {
+          person: this.person.code,
+          avatar: this.avatar
         }
-      });
-    },
+        store.dispatch('editPhoto', params)
+        this.person.avatar = this.avatar
+        this.dialog = false
+        setTimeout(function() {
+          store.dispatch('checkAuth')
+        }, 2000)
+      } else {
+        Notiflix.Notify.Info('Змін не виявлено.')
+      }
+    }
   }
 }
 // <!--- The More Details About A Student
-
 // The List Of Teachers
 const TeachersList = {
-  template: document.getElementById('grade-teachers'),
+  template: `
+  <div>
+    <v-row>
+      <v-text-field
+      class="col-xs-12 px-5"
+      v-model="search"
+      append-icon="mdi-magnify"
+      label="Пошук"
+      single-line
+      hide-details
+      ></v-text-field>
+    </v-row>
+    <v-data-table
+    :headers="headers"
+    :items="teachers"
+    :item-key="itemKey"
+    :sort-by="sortBy"
+    multi-sort
+    :search="search"
+    v-model="store.state.selectedTeachers"
+    :single-select="singleSelect"
+    show-select
+    no-results-text="Не знайдено відповідних записів"
+    no-data-text="Не знайдено відповідних записів"
+    :page="page"
+    :items-per-page="itemsPerPage"
+    @page-count="pageCount = $event"
+    @click:row="moreInfo"
+    class="elevation-1 people"
+    hide-default-footer
+    :loading="loading"
+    loading-text="Завантаження... Будь ласка, зачекайте"
+    ><v-progress-linear
+    v-show="loading"
+    slot="progress"
+    color="teal darken-4"
+    indeterminate
+    height="2"
+    ></v-progress-linear>
+    </v-data-table>
+    <v-pagination
+    class="font-weight-black"
+    v-model="page"
+    :total-visible="7"
+    v-if="pageCount > 0"
+    :length="pageCount"
+    @click.native="$root.scrollToTop"
+    dark color="teal darken-4"
+    ></v-pagination>
+    <v-text-field
+    v-model="totalItems"
+    v-if="totalItems"
+    prepend-inner-icon="mdi-emoticon"
+    solo readonly
+    ></v-text-field>
+  </div>
+  `,
   data() {
     return {
       totalItems: '',
@@ -469,73 +1463,28 @@ const TeachersList = {
       loading: false,
       pageCount: 0,
       page: 1,
-      sortBy: 'name',
+      sortBy: 'fullname',
       selected: [],
       singleSelect: false,
       itemsPerPage: 30,
-      iconIndex: 4,
-      icons: [
-        'mdi-emoticon',
-        'mdi-emoticon-cool',
-        'mdi-emoticon-dead',
-        'mdi-emoticon-devil',
-        'mdi-emoticon-happy',
-        'mdi-emoticon-excited',
-        'mdi-emoticon-neutral',
-        'mdi-emoticon-sad',
-        'mdi-ninja',
-        'mdi-emoticon-tongue',
-      ],
       headers: [{
           text: 'П.І.П.',
           align: 'left',
-          width: '40%',
-          value: 'name',
+          value: 'fullname',
         },
         {
           text: 'Email',
           align: 'left',
           sortable: false,
           value: 'email'
-        },
-        {
-          text: 'Телефон',
-          align: 'center',
-          sortable: false,
-          value: 'phone'
         }
       ],
     }
   },
-  mounted() {
-    if (!this.$root.authenticated) {
-      router.replace({
-        name: "login"
-      });
-    } else {
-    if (this.$route.params.teacherName != null) {
-      this.search = this.$route.params.teacherName
-    } else {
-      this.search = ''
-    }
-    this.getDataFromApi()
-      .then(data => {
-        this.teachers = data.loaded
-        this.totalItems = " Загальна кількість викладачів: " + data.total;
-      })
-    }
-  },
-  created() {
-    this.getDataFromApi()
-      .then(data => {
-        this.teachers = data.loaded
-        this.totalItems = " Загальна кількість викладачів: " + data.total;
-      })
-  },
   watch: {
     options: {
       handler() {
-        this.getDataFromApi()
+        this.getData()
           .then(data => {
             this.teachers = data.loaded
             this.totalItems = " Загальна кількість викладачів: " + data.total;
@@ -543,129 +1492,250 @@ const TeachersList = {
       },
       deep: true,
     },
-    '$route': 'getDataFromApi'
   },
-  computed: {
-    icon() {
-      return this.icons[this.iconIndex]
+  mounted() {
+    if (!store.state.authenticated) {
+      router.replace({
+        name: "login"
+      });
+    } else {
+    if (this.$route.params.teacherName != null) {
+        this.search = this.$route.params.teacherName
+    } else {
+        this.search = ''
+    }
+    store.dispatch('loadTeachers')
+    store.dispatch('loadSubjects')
+    this.getData()
+      .then(data => {
+        this.teachers = data.loaded
+        this.totalItems = " Загальна кількість викладачів: " + data.total;
+      })
     }
   },
+  beforeRouteLeave (to, from, next) {
+    store.state.selectedTeachers = []
+    next()
+  },
   methods: {
-    getDataFromApi() {
+    getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
-        fetch('../data/base.json')
-          .then(stream => stream.json())
-          .then(data => {
-            const loaded = data.app.teachers
-            let total = loaded.length
-            setTimeout(() => {
-              this.loading = false
-              resolve({
-                loaded,
-                total,
-              })
-            }, 1000)
+        let loaded = []
+        let total = null
+        setTimeout(() => {
+          loaded = store.state.teachers
+          total = loaded.length
+        }, 1000)
+        setTimeout(() => {
+          this.loading = false
+          resolve({
+            loaded,
+            total,
           })
-          .catch(error => console.error(error))
+        }, 2000)
       })
     },
     moreInfo(teacher) {
+      sessionStorage.removeItem("teacher")
+      sessionStorage.setItem("teacher", JSON.stringify(teacher))
       router.push({
         name: 'teacher',
         params: {
           'code': teacher.code,
+          'profile': teacher
         }
       })
-      store.state.teacher = teacher
-    },
-    changeIcon() {
-      this.iconIndex === this.icons.length - 1 ?
-        this.iconIndex = 0 :
-        this.iconIndex++
     }
   }
 }
 // <!--- The List Of Teachers
-
 // The More Details About A Teacher
 const TeachersPerson = {
-  template: document.getElementById('grade-teachers-person'),
+  template: `
+  <div class="mx-1 text-center">
+    <v-row>
+      <v-col cols="12">
+        <div class="text-center float-sm-left mr-sm-3 p-1">
+          <v-dialog v-model="dialog" persistent max-width="500px">
+            <v-card class="text-center py-0 my-0">
+              <v-title class="subtitle-2 text-center">
+                <span class="headline mx-auto">Змінити фото</span>
+              </v-title>
+                <v-container class="my-0 py-0">
+                  <v-row no-gutters>
+                    <v-col cols="12" class="px-1">
+                      <v-file-input
+                       :rules="[store.state.rules.maxFile(avatar)]"
+                       accept="image/png, image/jpeg, image/bmp, image/jpg"
+                       v-model="avatar"
+                       show-size
+                       @change="wasEdited = true"
+                       outlined dense
+                       placeholder="Оберіть фото"
+                       prepend-icon="mdi-camera"
+                       label="Фото"
+                    ></v-file-input>
+                    </v-col>
+                  </v-row>
+                  <v-card-actions class="my-0 py-0">
+                    <v-spacer></v-spacer>
+                    <v-btn class="home-link my-3" v-if="wasEdited == true" @click="changeAvatar">Зареєструвати</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn class="home-link my-3" @click="dialog = false">Згорнути</v-btn>
+                    <v-spacer></v-spacer>
+                  </v-card-actions>
+                </v-container>
+            </v-card>
+          </v-dialog>
+          <v-img
+           :src="person.avatar"
+           :aspect-ratio="3/4"
+           class="mx-auto mb-1 grey lighten-2 text-right pt-1"
+           width="250"
+           >
+           <v-span
+           class="mdi mdi-36px mdi-border-color home-link mr-1"
+           @click="dialog = true"
+           v-if="edit == true"
+           title="Змінити фото"
+           ></v-span>
+           </v-img>
+          <span class="font-weight-bold mb-1">Дата реєстрації:</span> {{ person.registered }}
+        </div>
+        <h3 class="mb-1 text-center">{{ person.fullname }}</h3>
+        <v-divider class="my-3"></v-divider>
+        <div class="text-justify">
+          <span class="font-weight-bold">Email:</span> {{ person.email }}
+        </div>
+        <v-divider class="my-3"></v-divider>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-divider class="my-3"></v-divider>
+        <h2 class="text--secondary">Викладає навчальні дисципліни:</h2>
+        <v-divider class="my-3"></v-divider>
+        <v-progress-linear
+        :active="loading"
+        :indeterminate="loading"
+        color="teal darken-4"
+        height="3"
+        ></v-progress-linear>
+        <p v-if="!gotData">Не знайдено відповідних записів</p>
+        <v-simple-table v-if="gotData">
+          <template v-slot:default>
+            <tbody>
+              <tr v-for="(item, index) in subjects" :key="index">
+                <td><v-divider vertical></v-divider></td>
+                <td class="text-left">{{ item.subject }}</td>
+                <td><v-divider vertical></v-divider></td>
+              </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+        <v-divider class="mt-3 mb-5"></v-divider>
+      </v-col>
+    </v-row>
+  </div>
+  `,
   data() {
     return {
       person: {},
-      itemKey: 'id',
       gotData: true,
       subjects: [],
-      headers: [{
-        text: 'Навчальні дисципліни:',
-        sortable: false,
-        value: 'name'
-      }]
+      loading: true,
+      edit: false,
+      dialog: false,
+      avatar: '',
+      wasEdited: false
     }
   },
   mounted() {
-    if (!this.$root.authenticated) {
+    if (!store.state.authenticated) {
       router.replace({
         name: "login"
       });
     } else {
-    this.person = store.state.teacher
-    this.getDataFromApi()
-      .then(data => {
-        this.subjects = data.mine
-        if (data.mine.length > 0) {
-          this.gotData = true
-        } else {
-          this.gotData = false
-        }
-      })
+    this.person = this.$route.params.profile
+    if (this.$route.params.edit) {
+      this.edit = true
+    } else {
+      this.edit = false
+    }
+    this.getData()
+    .then(data => {
+      this.subjects = data.loaded
+      this.loading = false
+      if (data.loaded.length > 0) {
+        this.gotData = true
+      } else {
+        this.gotData = false
+      }
+    })
     }
   },
   methods: {
-    getDataFromApi() {
+    getData() {
+      this.loading = true
       return new Promise((resolve, reject) => {
-        fetch('../data/base.json')
-          .then(stream => stream.json())
-          .then(data => {
-            const loaded = data.app.teachers
-            let mine = []
-            loaded.forEach(item => {
-              if (item.code === store.state.teacher.code) {
-                mine = item.subjects;
-              }
-            })
-            resolve({
-              mine,
-            })
+        let loaded = store.getters.getSubjectsForTeacher(this.person.fullname)
+        setTimeout(function() {
+          resolve({
+            loaded,
           })
-          .catch(error => console.error(error))
+        }, 2000)
       })
+    },
+    changeAvatar() {
+      if (this.avatar && this.avatar != '') {
+        const params = {
+          person: this.person.code,
+          avatar: this.avatar
+        }
+        store.dispatch('editPhoto', params)
+        this.person.avatar = this.avatar
+        this.dialog = false
+        setTimeout(function() {
+          store.dispatch('checkAuth')
+        }, 2000)
+      } else {
+        Notiflix.Notify.Info('Змін не виявлено.')
+      }
     }
   }
 }
 // <!--- The More Details About A Teacher
-
 // The Profile Of A User
 const Profile = {
   mounted() {
-    if (!this.$root.authenticated) {
+    if (!store.state.authenticated) {
       router.replace({
         name: "login"
       });
     } else {
-      if (store.state.status === 'admin') {
+      if (store.state.status == 'Admin') {
         router.replace({
+          name: 'home'
+        })
+      } else if (store.state.status == 'Student') {
+        student = JSON.parse(sessionStorage.getItem('profile'))
+        router.push({
           name: 'student',
           params: {
-            'id': store.state.student.code
+            'id': student.code,
+            'profile': student,
+            'edit': student.code
           }
         })
-      } else if (store.state.status === 'teacher') {
-        router.replace({
+      } else if (store.state.status == 'Teacher') {
+        teacher = JSON.parse(sessionStorage.getItem('profile'))
+        router.push({
           name: 'teacher',
           params: {
-            'id': store.state.teacher.code
+            'id': teacher.code,
+            'profile': teacher,
+            'edit': teacher.code
           }
         })
       }
@@ -673,22 +1743,27 @@ const Profile = {
   }
 }
 // <!--- The Profile Of A User
-
-const NewSemester = {
-  template: document.getElementById('grade-add-newuser'),
-  data(){
-      return {
-        dialog: false,
-      }
-    },
+const Reload = {
+  template: `
+  <v-container class="d-flex align-center justify-center">
+    <v-progress-circular
+      size="350"
+      width="7"
+      color="teal darken-4"
+      indeterminate
+      class="mt-10 pt-10"
+    ></v-progress-circular>
+  </v-container>
+  `,
+  mounted() {
+    setTimeout(function() {
+      router.replace({ path: '/'})
+    }, 1300)
+  }
 }
-
-const NotFound = {
-  template: '<p>Страница не найдена</p>'
-}
-
+// The router
 const router = new VueRouter({
-  // mode: 'history',
+  mode: 'history',
   routes: [{
       path: '/',
       redirect: {
@@ -703,10 +1778,7 @@ const router = new VueRouter({
     {
       path: '/home',
       name: 'home',
-      component: Home,
-      meta: {
-        showNewExamination: false
-      }
+      component: Home
     },
     {
       path: '/students',
@@ -714,7 +1786,7 @@ const router = new VueRouter({
       component: StudentsList,
       meta: {
         showBack: true,
-        showNewExamination: true
+        showNewStudent: true
       }
     },
     {
@@ -730,21 +1802,14 @@ const router = new VueRouter({
       name: 'teachers',
       component: TeachersList,
       meta: {
-        showBack: true
+        showBack: true,
+        showNewTeacher: true
       }
     },
     {
       path: '/teachers/person/:id',
       name: 'teacher',
       component: TeachersPerson,
-      meta: {
-        showBack: true
-      }
-    },
-    {
-      name: 'new-semester',
-      path: '/new-semester',
-      component: NewSemester,
       meta: {
         showBack: true
       }
@@ -757,6 +1822,14 @@ const router = new VueRouter({
         showBack: true
       }
     },
+    // {
+    //   name: 'directory',
+    //   path: '/directory',
+    //   component: Directory,
+    //   meta: {
+    //     showBack: true
+    //   }
+    // },
     {
       name: 'contact',
       path: '/contact',
@@ -764,133 +1837,831 @@ const router = new VueRouter({
       meta: {
         showBack: true
       }
+    },
+    {
+      name: 'reload',
+      path: '/loading',
+      component: Reload
     }
   ]
 })
 
+// Vuex store to keep the data in use
 Vue.use(Vuex)
-
-const store = new Vuex.Store({
+let store = new Vuex.Store({
   state: {
-    user: 'Viktor',
-    status: 'admin',
-    student: {},
-    teacher: {},
-    developer: 'Козачок Віктор',
-    login: ''
-  },
-  mutations: {
-    showProfile(login) {
-      router.push({
-        name: 'student',
-        params: {
-          'id': login
-        }
-      })
-    }
-  }
-})
-
-const app = new Vue({
-  router,
-  vuetify: new Vuetify(),
-  data() {
-    return {
-      authenticated: false,
-      user: {},
-      admins: [],
+    showNotification: false,
+    notificationType: 'success',
+    notificationMessage: 'test',
+    authenticated: false,
+    rules: {
+      maxFile(v) {
+        return v => !v || v.size < 1000000 || 'Розмір фото не повинен перевищувати 1 MB!';
+      },
+      min(min, v) {
+        return (v || '').length >= min || `Значення повинно бути не менше ${min} символ(ів).`;
+      },
+      max(max, v) {
+        return (v || '').length <= max || `Значення не повинно перевищувати ${max} символ(ів).`;
+      },
+      emailRules(v) {
+        return v => /.+@.+\..+/.test(v) || 'E-mail введено некоректно.';
+      },
+      minGroup(min, v) {
+        return (v || '').length >= min || `Потрібно обрати щонайменше ${min} значення.`;
+      }
+    },
+    students: [],
+    groups: [],
+    teachers: [],
+    subjects: [],
+    admins: [],
+    semestersForStudent: [],
+    status: '',
+    selectedStudents: [],
+    studyStatus: true,
+    selectedTeachers: [],
+    newStudent: {
+      valid: true,
+      lazy: true,
+      dialog: false,
       username: '',
       password: '',
-      showAlert: false,
-      alertType: 'success',
-      alertMessage: '',
-      rules: {
-      min(min, v) {
-        return (v || '').length >= min || `Value must be at least ${min}`;
-      },
-
-      max(max, v) {
-        return (v || '').length <= max || `Value may not be greater than ${max}.`;
-      }
-      }
+      lastName: '',
+      firstName: '',
+      surName: '',
+      bookNumber: '',
+      group: '',
+      avatar: ''
+    },
+    editStudent: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      wasEdited: false,
+      code: '',
+      lastName: '',
+      firstName: '',
+      surName: '',
+      bookNumber: '',
+      avatar: ''
+    },
+    newTeacher: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      username: '',
+      password: '',
+      lastName: '',
+      firstName: '',
+      surName: '',
+      email: '',
+      avatar: ''
+    },
+    editTeacher: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      wasEdited: false,
+      lastName: '',
+      firstName: '',
+      surName: '',
+      email: '',
+      avatar: ''
+    },
+    newSubject: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      subject: '',
+      teacher: '',
+      code: ''
+    },
+    newSemester: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      semester: '1-й семестр 20__/20__ навчального року',
+      groups: [],
+      listOfSubjects: '',
+      discipline: '',
+      form: '',
+      hours: '',
+      credits: '',
+      date: new Date().toISOString().substr(0, 10),
+      menu: false,
+      teacher: '',
+      subjects: [],
+      isFinished: false
+    },
+    newGrade: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      semesters: [],
+      semester: '',
+      disciplines: [],
+      discipline: '',
+      scores: [],
+      grades: []
     }
   },
-  created() {
-    this.auth()
-  },
-  watch: {
-    options: {
-      handler() {
-        this.auth()
-      },
-      deep: true,
+  actions: {
+    checkAuth: ({ commit }) => {
+      commit('CHECK_AUTH')
     },
-    '$route': 'auth'
-  },
-  mounted() {
-    this.auth()
-  },
-  methods: {
-    auth() {
-      if (sessionStorage.getItem("auth_token")) {
-        this.authenticated = true
+    loginUser: ({ commit }, data) => {
+      commit('LOGIN', data)
+    },
+    logoutUser: ({ commit }) => {
+      commit('LOGOUT')
+    },
+    getPassword: ({ commit }, person) => {
+      commit('GET_PASSWORD', person)
+    },
+    getAdmins: ({ commit }) => {
+      commit('GET_ADMINS')
+    },
+    addStudent: ({ commit }, form) => {
+      if (form.validate()) {
+      commit('ADD_STUDENT', form)
       } else {
-        this.authenticated = false
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
       }
     },
-    scrollToTop() {
-      window.scrollTo(0, 0);
+    editStudent: ({ commit, state }, form) => {
+      if (state.editStudent.wasEdited) {
+        if (form.validate()) {
+        commit('EDIT_STUDENT', form)
+        } else {
+          Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+        }
+      }
+      else {
+        Notiflix.Notify.Info('Змін не виявлено.')
+      }
     },
-    logout() {
+    minusStudent: ({ commit }) => {
+      commit('MINUS_STUDENT')
+    },
+    checkStatus: ({ state }, status) => {
+      state.studyStatus = status
+    },
+    addTeacher: ({ commit }, form) => {
+      if (form.validate()) {
+        commit('ADD_TEACHER', form)
+      } else {
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+      }
+    },
+    editTeacher: ({ commit, state }, form) => {
+      if (state.editTeacher.wasEdited) {
+        if (form.validate()) {
+        commit('EDIT_TEACHER', form)
+        } else {
+          Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+        }
+      }
+      else {
+        Notiflix.Notify.Info('Змін не виявлено.')
+      }
+    },
+    minusTeacher: ({ commit }) => {
+      commit('MINUS_TEACHER')
+    },
+    addSubject: ({ commit, state, getters }, form) => {
+      if (form.validate()) {
+        state.newSubject.code = getters.getTeacherCode(state.newSubject.teacher)
+        commit('ADD_SUBJECT', form)
+      } else {
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+      }
+    },
+    addSemester: ({ commit}, form) => {
+      commit('ADD_SEMESTER', form)
+    },
+    addSubjectToSemester: ({ commit }, form) => {
+      if (form.validate()) {
+        if (store.getters.checkDiscipline.length > 0) {
+          Notiflix.Notify.Warning('Обрана дисципліна вже додана.')
+        } else {
+          commit('ADD_SUBJECT_TO_SEMESTER', form)
+        }
+      } else {
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+      }
+    },
+    removeSubjectFromSemester: ({ commit }, index) => {
+      commit('REMOVE_SUBJECT_FROM_SEMESTER', index)
+    },
+    loadStudents: ({ commit }) => {
+      commit('LOAD_STUDENTS')
+    },
+    loadTeachers: ({ commit }) => {
+      commit('LOAD_TEACHERS')
+    },
+    loadGroups: ({ commit }) => {
+      commit('LOAD_GROUPS')
+    },
+    loadSubjects: ({ commit }) => {
+      commit('LOAD_SUBJECTS')
+    },
+    getSemesters: ({ commit }, code) => {
+      commit('GET_SEMESTERS', code)
+    },
+    loadSemesters: ({ commit, getters }, students) => {
+      if (getters.filterGroup.length > 0) {
+        Notiflix.Notify.Warning('Оцінки можна вносити лише для однієї групи.')
+      } else {
+        commit('LOAD_SEMESTERS', students)
+      }
+    },
+    addGrade: ({ commit, state }, form) => {
+      if (state.newGrade.discipline != '' && form.validate()) {
+        commit('ADD_GRADE', form)
+      } else {
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+      }
+    },
+    editPhoto: ({ commit }, params) => {
+      console.log(params.avatar)
+      commit('EDIT_PHOTO', params)
+    }
+  },
+  mutations: {
+    CHECK_AUTH: (state) => {
+      if (sessionStorage.getItem('auth_token')) {
+        state.authenticated = true
+        let username = sessionStorage.getItem('username')
+        fetch(`../api/app/active_user/${username}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }
+        })
+          .then(r => r.json())
+          .then(response => {
+            if (response.profile) {
+              sessionStorage.removeItem("profile")
+              sessionStorage.setItem("profile", JSON.stringify(response.profile))
+              state.status = response.profile.status
+            } else if (response.status) {
+              state.status = response.status
+            } else {
+              Notiflix.Notify.Failure(response.message)
+            }
+          })
+      } else {
+        state.authenticated = false
+      }
+    },
+    LOGIN: (state, data) => {
+      fetch('../api/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(response => {
+          sessionStorage.setItem("response", JSON.stringify(response))
+        })
+    },
+    LOGOUT: (state) => {
       fetch('../api/auth/logout/')
-      .then(response => response.json())
-      .then(response => {
-        this.$router.push({name: "login"})
-        sessionStorage.removeItem("auth_token")
-        this.authenticated = false
+        .then(r => {
+          sessionStorage.removeItem("auth_token")
+          sessionStorage.removeItem("username")
+          state.authenticated = false
+          router.push({name: "login"})
+          sessionStorage.removeItem("response")
+          sessionStorage.removeItem("profile")
       })
-      .catch(error => console.error(error))
     },
-    getPass(){
+    GET_PASSWORD: (state, person) => {
       fetch('../api/app/registration/')
-      .then(response => response.json())
-      .then(response => {
-        this.password = response.password
+      .then(r => r.json())
+      .then(result => {
+        person.username = result.username
+        person.password = result.password
       })
-      .catch(error => console.error(error))
     },
-    newUser() {
+    GET_ADMINS: (state) => {
+      fetch('../api/app/admins/')
+      .then(r => r.json())
+      .then(response => {
+        state.admins = response
+      })
+    },
+    ADD_STUDENT: (state, form) => {
+          let data = new FormData()
+          data.append('username', state.newStudent.username)
+          data.append('password', state.newStudent.password)
+          data.append('first_name', state.newStudent.firstName)
+          data.append('last_name', state.newStudent.lastName)
+          data.append('sur_name', state.newStudent.surName)
+          data.append('book_number', state.newStudent.bookNumber)
+          data.append('group_number', state.newStudent.group)
+          if (state.newStudent.avatar != '') {
+            data.append('avatar', state.newStudent.avatar)
+          }
+          let csrftoken = getCookie('csrftoken')
+          fetch('../api/app/registration/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              if (response.success) {
+                store.dispatch('loadStudents')
+                router.replace({name:'reload'})
+                setTimeout(function() {
+                  router.replace({name:'students'})
+                }, 1500)
+                state.newStudent.username = ''
+                state.newStudent.password = ''
+                state.newStudent.firstName = ''
+                state.newStudent.lastName = ''
+                state.newStudent.surName = ''
+                state.newStudent.bookNumber = ''
+                state.newStudent.avatar = ''
+                form.resetValidation()
+                Notiflix.Notify.Success(response.message)
+              } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+              }
+            })
+    },
+    EDIT_STUDENT: (state, form) => {
+          let data = new FormData()
+          data.append('code', state.editStudent.code)
+          data.append('first_name', state.editStudent.firstName)
+          data.append('last_name', state.editStudent.lastName)
+          data.append('sur_name', state.editStudent.surName)
+          data.append('book_number', state.editStudent.bookNumber)
+          if (state.editStudent.avatar && state.editStudent.avatar != '') {
+            data.append('avatar', state.editStudent.avatar)
+          }
+          let csrftoken = getCookie('csrftoken')
+          fetch('../api/app/edit_profile/', {
+              method: 'PUT',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              if (response.success) {
+                store.dispatch('loadStudents')
+                router.replace({name:'reload'})
+                setTimeout(function() {
+                  router.replace({name:'students'})
+                }, 1500)
+                state.editStudent.firstName = ''
+                state.editStudent.lastName = ''
+                state.editStudent.surName = ''
+                state.editStudent.bookNumber = ''
+                state.editStudent.avatar = ''
+                form.resetValidation()
+                state.editStudent.dialog = false
+                state.selectedStudents = []
+                Notiflix.Notify.Success(response.message)
+              } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+              }
+            })
+    },
+    MINUS_STUDENT: (state) => {
+      Notiflix.Confirm.Show(
+        'Підтвердіть дію','Виключити студента(ів) зі списку?','Так','Ні',
+      function() {
+        let students = []
+        state.selectedStudents.forEach(item => {
+          students.push(item.code)
+        })
+        const data = {
+          'students': students
+        }
+        fetch(`../api/app/registration/`, {
+          method: 'PUT',
+          headers: {
+            'Content-type': 'application/json; charset=UTF-8'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(response => {
+          if (response.success) {
+            router.replace({name:'reload'})
+            setTimeout(function() {
+              router.replace({name:'students'})
+            }, 1500)
+            state.selectedStudents = []
+            Notiflix.Notify.Success(response.message)
+          } else if (!response.success) {
+              Notiflix.Notify.Failure(response.message)
+          }
+        })
+      },
+      function() {});
+    },
+    ADD_TEACHER: (state, form) => {
+          let data = new FormData()
+          data.append('username', state.newTeacher.username)
+          data.append('password', state.newTeacher.password)
+          data.append('first_name', state.newTeacher.firstName)
+          data.append('last_name', state.newTeacher.lastName)
+          data.append('sur_name', state.newTeacher.surName)
+          data.append('email', state.newTeacher.email)
+          if (state.newTeacher.avatar != '') {
+            data.append('avatar', state.newTeacher.avatar)
+          }
+          let csrftoken = getCookie('csrftoken')
+          fetch('../api/app/registration/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              if (response.success) {
+                store.dispatch('loadTeachers')
+                router.replace({name:'reload'})
+                setTimeout(function() {
+                  router.replace({name:'teachers'})
+                }, 1500)
+                state.newTeacher.username = ''
+                state.newTeacher.password = ''
+                state.newTeacher.firstName = ''
+                state.newTeacher.lastName = ''
+                state.newTeacher.surName = ''
+                state.newTeacher.email = ''
+                state.newTeacher.avatar = ''
+                form.resetValidation()
+                Notiflix.Notify.Success(response.message)
+              } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+              }
+            })
+    },
+    EDIT_TEACHER: (state, form) => {
+          let data = new FormData()
+          data.append('code', state.editTeacher.code)
+          data.append('first_name', state.editTeacher.firstName)
+          data.append('last_name', state.editTeacher.lastName)
+          data.append('sur_name', state.editTeacher.surName)
+          data.append('email', state.editTeacher.email)
+          if (state.editTeacher.avatar && state.editTeacher.avatar != '') {
+            data.append('avatar', state.editTeacher.avatar)
+          }
+          let csrftoken = getCookie('csrftoken')
+          fetch('../api/app/edit_profile/', {
+              method: 'PUT',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              if (response.success) {
+                store.dispatch('loadTeachers')
+                router.replace({name:'reload'})
+                setTimeout(function() {
+                  router.replace({name:'teachers'})
+                }, 1500)
+                state.editTeacher.firstName = ''
+                state.editTeacher.lastName = ''
+                state.editTeacher.surName = ''
+                state.editTeacher.email = ''
+                state.editTeacher.avatar = ''
+                form.resetValidation()
+                state.editTeacher.dialog = false
+                state.selectedStudents = []
+                Notiflix.Notify.Success(response.message)
+              } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+              }
+            })
+    },
+    MINUS_TEACHER: (state) => {
+      Notiflix.Confirm.Show(
+        'Підтвердіть дію','Виключити викладача(ів) зі списку?','Так','Ні',
+      function() {
+        let teachers = []
+        state.selectedTeachers.forEach(item => {
+          teachers.push(item.code)
+        })
+        const data = {
+          'teachers': teachers
+        }
+        fetch(`../api/app/registration/`, {
+          method: 'PUT',
+          headers: {
+            'Content-type': 'application/json; charset=UTF-8'
+          },
+          body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(response => {
+          if (response.success) {
+            router.replace({name:'reload'})
+            setTimeout(function() {
+              router.replace({name:'teachers'})
+            }, 1500)
+            state.selectedTeachers = []
+            Notiflix.Notify.Success(response.message)
+          } else if (!response.success) {
+              Notiflix.Notify.Failure(response.message)
+          }
+        })
+      },
+      function() {});
+    },
+    ADD_SUBJECT: (state, form) => {
+          let data = new FormData()
+          data.append('subject', state.newSubject.subject)
+          data.append('teacher', state.newSubject.code)
+          let csrftoken = getCookie('csrftoken')
+          fetch('../api/app/edit_subject/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              if (response.success) {
+                Notiflix.Notify.Success(response.message)
+                store.dispatch('loadSubjects')
+                state.newSubject.subject = ''
+                state.newSubject.teacher = ''
+                form.resetValidation()
+              } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+              }
+            })
+    },
+    ADD_SEMESTER: (state, form) => {
+      if (state.newSemester.semester != '') {
+        if (state.newSemester.groups.length > 0) {
+          if (state.newSemester.subjects.length > 0) {
+          const data = {
+            'semester': state.newSemester.semester,
+            'groups': state.newSemester.groups,
+            'disciplines': state.newSemester.subjects
+          }
+          let csrftoken = getCookie('csrftoken')
+          fetch('../api/app/edit_semester/', {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+              },
+              body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(response => {
+              if (response.success) {
+                router.replace({name:'reload'})
+                setTimeout(function() {
+                  router.replace({name:'students'})
+                }, 1500)
+                state.newSemester.form = ''
+                state.newSemester.groups = []
+                state.newSemester.subjects = []
+                form.resetValidation()
+                Notiflix.Notify.Success(response.message)
+              } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+              }
+            })
+          } else {
+            this.loading = false
+            Notiflix.Notify.Warning('Додайте щонайменше одну навчальну дисципліну.')
+          }
+        } else {
+          this.loading = false
+          Notiflix.Notify.Warning('Оберіть щонайменше одну групу.')
+        }
+      } else {
+        this.loading = false
+        Notiflix.Notify.Warning('Оберіть номер(назву) семестру.')
+      }
+    },
+    ADD_SUBJECT_TO_SEMESTER: (state, form) => {
+        let newDiscipline = {
+          'discipline': state.newSemester.discipline,
+          'form': state.newSemester.form,
+          'hours': state.newSemester.hours,
+          'credits': state.newSemester.credits,
+          'date': state.newSemester.date,
+          'teacher': state.newSemester.teacher
+        }
+        state.newSemester.subjects.push(newDiscipline)
+        state.newSemester.discipline = ''
+        state.newSemester.hours = ''
+        state.newSemester.credits = ''
+        state.newSemester.teacher = ''
+        form.resetValidation()
+    },
+    REMOVE_SUBJECT_FROM_SEMESTER: (state, index) => {
+      state.newSemester.subjects.splice(index, 1)
+    },
+    LOAD_STUDENTS: (state) => {
+      fetch('../api/app/students/')
+        .then(r => r.json())
+        .then(data => {
+          state.students = data
+        })
+    },
+    LOAD_TEACHERS: (state) => {
+      fetch('../api/app/teachers/')
+        .then(r => r.json())
+        .then(data => {
+          state.teachers = data
+        })
+    },
+    LOAD_GROUPS: (state) => {
+      fetch('../api/app/groups/')
+        .then(r => r.json())
+        .then(data => {
+          data.forEach(item => {
+            state.groups.push(item.group)
+          });
+        })
+    },
+    LOAD_SUBJECTS: (state) => {
+      fetch('../api/app/subjects/')
+        .then(r => r.json())
+        .then(data => {
+          state.subjects = data
+        })
+    },
+    GET_SEMESTERS: (state, code) => {
+      fetch(`../api/app/edit_semester/${code}`)
+        .then(r => r.json())
+        .then(response => {
+            state.semestersForStudent = response.semesters
+        })
+    },
+    LOAD_SEMESTERS: (state, students) => {
+      fetch(`../api/app/edit_grade/${students[0].code}`)
+        .then(r => r.json())
+        .then(response => {
+          state.newGrade.semesters = []
+          state.newGrade.semesters = response.semesters
+          state.newGrade.disciplines = []
+          state.newGrade.semester = ''
+          state.newGrade.discipline = ''
+          state.newGrade.dialog = true
+        })
+    },
+    ADD_GRADE: (state, form) => {
+      let semester =  state.newGrade.semesters.filter(semester => semester.semester === state.newGrade.semester)
+      let discipline =  state.newGrade.disciplines.filter(discipline => discipline === state.newGrade.discipline)
+      let students = []
+      state.selectedStudents.forEach(student => {
+        students.push(student.code)
+      })
       const data = {
-        username: this.username,
-        password: this.password,
+        'semester': semester[0].semester,
+        'discipline': discipline[0],
+        'students': students,
+        'scores': state.newGrade.scores,
+        'grades': state.newGrade.grades,
       }
       let csrftoken = getCookie('csrftoken')
-      fetch('../api/app/registration/', {
+      fetch('../api/app/edit_grade/', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken,
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(response => {
-          this.showAlert = true
-          this.alertMessage = response.message
-          if (response.success === true) {
-            this.alertType = 'success'
-            setTimeout(()=>{
-              this.showAlert = false
-            }, 3000)
-          } else if (response.success === false) {
-            this.alertType = 'error'
-            setTimeout(()=>{
-              this.showAlert = false
-            }, 3000)
-          }
+          state.newGrade.scores = []
+          state.newGrade.grades = []
+          Notiflix.Notify.Success(response.message)
+          form.resetValidation()
         })
-      .catch(error => console.error(error))
+    },
+    EDIT_PHOTO: (state, params) => {
+      let data = new FormData()
+      data.append('person', params.person)
+      data.append('avatar', params.avatar)
+      let csrftoken = getCookie('csrftoken')
+      fetch('../api/app/active_user/', {
+          method: 'PUT',
+          headers: {
+            'X-CSRFToken': csrftoken,
+          },
+          body: data
+        })
+        .then(r => r.json())
+        .then(response => {
+          console.log(response)
+        })
+    }
+  },
+  getters: {
+    getStudents: (state) => (studyStatus) => {
+      return state.students.filter(student => student.is_active === studyStatus)
+    },
+    editStudent: (state) => {
+      let fullname = state.selectedStudents[0].fullname.split(' ')
+      state.editStudent.code = state.selectedStudents[0].code
+      state.editStudent.lastName = fullname[0]
+      state.editStudent.firstName = fullname[1]
+      state.editStudent.surName = fullname[2]
+      state.editStudent.bookNumber = state.selectedStudents[0].book_number
+    },
+    getGroup: (state) => {
+      return state.newStudent.group = state.groups[0]
+    },
+    getListOfTeachers: (state) => {
+      let teachers = []
+      state.teachers.forEach(teacher => {
+        teachers.push(teacher.fullname)
+      })
+      return teachers
+    },
+    getTeacherCode: (state) => (fullname) => {
+      let code = state.teachers.filter(teacher => teacher.fullname === fullname)
+      return code[0].code
+    },
+    editTeacher: (state) => {
+      let fullname = state.selectedTeachers[0].fullname.split(' ')
+      state.editTeacher.code = state.selectedTeachers[0].code
+      state.editTeacher.lastName = fullname[0]
+      state.editTeacher.firstName = fullname[1]
+      state.editTeacher.surName = fullname[2]
+      state.editTeacher.email = state.selectedTeachers[0].email
+    },
+    getListOfSubjects: (state) => {
+      let list = []
+      state.subjects.forEach(item => {
+        list.push(item.subject)
+      })
+      state.newSemester.listOfSubjects = list
+    },
+    getTeacherForSubject: (state) => (chosen) => {
+      let teacher = state.subjects.filter(subject => subject.subject === chosen)
+      if (teacher != '') {
+        state.newSemester.teacher = teacher[0].teacher_name
+      }
+    },
+    getSubjectsForTeacher: (state) => (fullname) => {
+      return state.subjects.filter(subject => subject.teacher_name === fullname)
+    },
+    checkDiscipline: (state) => {
+      return state.newSemester.subjects.filter(subject => subject.discipline === state.newSemester.discipline)
+    },
+    filterGroup: (state) => {
+      const group = state.selectedStudents[0].group_number
+      return state.selectedStudents.filter(student => student.group_number != group)
+    },
+    getListOfSemesters: (state) => {
+      let list = []
+      state.newGrade.semesters.forEach(item => {
+        list.push(item.semester)
+      })
+      return list
+    },
+    getListOfDiscipline: (state) => (find) => {
+      const semesters =  state.newGrade.semesters.filter(semester => semester.semester === find)
+      state.newGrade.disciplines = []
+      semesters[0].disciplines.forEach(semester => {
+        state.newGrade.disciplines.push(semester.subject)
+      })
+    }
+  }
+})
+// Main app initialization
+const app = new Vue({
+  router,
+  vuetify: new Vuetify(),
+  mounted() {
+    store.dispatch('checkAuth')
+    store.dispatch('getAdmins')
+  },
+  methods: {
+    scrollToTop() {
+      window.scrollTo(0, 0);
     }
   }
 }).$mount('#app')
