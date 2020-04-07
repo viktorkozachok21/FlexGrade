@@ -28,7 +28,7 @@ const Navbar = Vue.component('navbar-x', {
           <span class="link-text">Головна</span>
         </router-link>
       </li>
-      <li class="nav-item-x" v-if="store.state.status != 'Admin'">
+      <li class="nav-item-x" v-if="store.state.status === 'Teacher' || store.state.status === 'Student'">
         <router-link to="/profile" title="Ваш профіль" class="nav-link-x">
           <svg id="lnr-user" viewBox="0 0 1024 1024" class="lnr lnr-user">
             <g class="fa-group">
@@ -44,7 +44,7 @@ const Navbar = Vue.component('navbar-x', {
           <span class="link-text">Профіль</span>
         </router-link>
       </li>
-      <li class="nav-item-x" v-if="store.state.status == 'Admin'">
+      <li class="nav-item-x" v-else-if="store.state.status === 'Admin'">
         <router-link to="/directory" title="Довідник" class="nav-link-x">
           <svg id="lnr-book" viewBox="0 0 1024 1024" class="lnr lnr-book">
             <g class="fa-group">
@@ -206,16 +206,18 @@ const AddStudentForm = Vue.component('new-student-x',{
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Ім'я користувача*"
-              :rules="[store.state.rules.min(10, store.state.newStudent.username), store.state.rules.max(30, store.state.newStudent.username)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.username),store.state.rules.min(10, store.state.newStudent.username), store.state.rules.max(30, store.state.newStudent.username)]"
               v-model="store.state.newStudent.username" required
+              @keydown.native.space.prevent
               color="teal darken-4"
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Пароль*"
-              :rules="[store.state.rules.min(10, store.state.newStudent.password), store.state.rules.max(20, store.state.newStudent.password)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.password),store.state.rules.min(10, store.state.newStudent.password), store.state.rules.max(20, store.state.newStudent.password)]"
               v-model="store.state.newStudent.password" required
+              @keydown.native.space.prevent
               color="teal darken-4"
               ></v-text-field>
             </v-col>
@@ -225,32 +227,36 @@ const AddStudentForm = Vue.component('new-student-x',{
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Прізвище"
-              :rules="[store.state.rules.min(2, store.state.newStudent.lastName), store.state.rules.max(50, store.state.newStudent.lastName)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.lastName),store.state.rules.min(2, store.state.newStudent.lastName), store.state.rules.max(50, store.state.newStudent.lastName)]"
               v-model="store.state.newStudent.lastName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Ім'я"
-              :rules="[store.state.rules.min(2, store.state.newStudent.firstName), store.state.rules.max(50, store.state.newStudent.firstName)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.firstName),store.state.rules.min(2, store.state.newStudent.firstName), store.state.rules.max(50, store.state.newStudent.firstName)]"
               v-model="store.state.newStudent.firstName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="По батькові"
-              :rules="[store.state.rules.min(2, store.state.newStudent.surName), store.state.rules.max(50, store.state.newStudent.surName)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.surName),store.state.rules.min(2, store.state.newStudent.surName), store.state.rules.max(50, store.state.newStudent.surName)]"
               v-model="store.state.newStudent.surName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Номер залікової книжки"
-              :rules="[store.state.rules.min(2, store.state.newStudent.bookNumber), store.state.rules.max(15, store.state.newStudent.bookNumber)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.bookNumber),store.state.rules.min(2, store.state.newStudent.bookNumber), store.state.rules.max(15, store.state.newStudent.bookNumber)]"
               v-model="store.state.newStudent.bookNumber"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -308,8 +314,9 @@ const EditStudentForm = Vue.component('edit-student-x',{
               <v-text-field
               label="Прізвище"
               @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editStudent.lastName), store.state.rules.max(50, store.state.editStudent.lastName)]"
+              :rules="[store.state.rules.spaces(store.state.editStudent.lastName),store.state.rules.min(2, store.state.editStudent.lastName), store.state.rules.max(50, store.state.editStudent.lastName)]"
               v-model="store.state.editStudent.lastName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -317,8 +324,9 @@ const EditStudentForm = Vue.component('edit-student-x',{
               <v-text-field
               label="Ім'я"
               @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editStudent.firstName), store.state.rules.max(50, store.state.editStudent.firstName)]"
+              :rules="[store.state.rules.spaces(store.state.editStudent.firstName),store.state.rules.min(2, store.state.editStudent.firstName), store.state.rules.max(50, store.state.editStudent.firstName)]"
               v-model="store.state.editStudent.firstName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -326,8 +334,9 @@ const EditStudentForm = Vue.component('edit-student-x',{
               <v-text-field
               label="По батькові"
               @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editStudent.surName), store.state.rules.max(50, store.state.editStudent.surName)]"
+              :rules="[store.state.rules.spaces(store.state.editStudent.surName),store.state.rules.min(2, store.state.editStudent.surName), store.state.rules.max(50, store.state.editStudent.surName)]"
               v-model="store.state.editStudent.surName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -335,8 +344,9 @@ const EditStudentForm = Vue.component('edit-student-x',{
               <v-text-field
               label="Номер залікової книжки"
               @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(15, store.state.editStudent.bookNumber)]"
+              :rules="[store.state.rules.spaces(store.state.editStudent.bookNumber),store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(15, store.state.editStudent.bookNumber)]"
               v-model="store.state.editStudent.bookNumber"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -385,16 +395,18 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Ім'я користувача*"
-              :rules="[store.state.rules.min(10, store.state.newTeacher.username), store.state.rules.max(30, store.state.newTeacher.username)]"
+              :rules="[store.state.rules.spaces(store.state.newTeacher.username),store.state.rules.min(10, store.state.newTeacher.username), store.state.rules.max(30, store.state.newTeacher.username)]"
               v-model="store.state.newTeacher.username" required
+              @keydown.native.space.prevent
               color="teal darken-4"
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Пароль*"
-              :rules="[store.state.rules.min(10, store.state.newTeacher.password), store.state.rules.max(20, store.state.newTeacher.password)]"
+              :rules="[store.state.rules.spaces(store.state.newTeacher.password),store.state.rules.min(10, store.state.newTeacher.password), store.state.rules.max(20, store.state.newTeacher.password)]"
               v-model="store.state.newTeacher.password" required
+              @keydown.native.space.prevent
               color="teal darken-4"
               ></v-text-field>
             </v-col>
@@ -404,32 +416,36 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Прізвище"
-              :rules="[store.state.rules.min(2, store.state.newTeacher.lastName), store.state.rules.max(50, store.state.newTeacher.lastName)]"
+              :rules="[store.state.rules.spaces(store.state.newTeacher.lastName),store.state.rules.min(2, store.state.newTeacher.lastName), store.state.rules.max(50, store.state.newTeacher.lastName)]"
               v-model="store.state.newTeacher.lastName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Ім'я"
-              :rules="[store.state.rules.min(2, store.state.newTeacher.firstName), store.state.rules.max(50, store.state.newTeacher.firstName)]"
+              :rules="[store.state.rules.spaces(store.state.newTeacher.firstName),store.state.rules.min(2, store.state.newTeacher.firstName), store.state.rules.max(50, store.state.newTeacher.firstName)]"
               v-model="store.state.newTeacher.firstName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="По батькові"
-              :rules="[store.state.rules.min(2, store.state.newTeacher.surName), store.state.rules.max(50, store.state.newTeacher.surName)]"
+              :rules="[store.state.rules.spaces(store.state.newTeacher.surName),store.state.rules.min(2, store.state.newTeacher.surName), store.state.rules.max(50, store.state.newTeacher.surName)]"
               v-model="store.state.newTeacher.surName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
             <v-col cols="6" class="px-1">
               <v-text-field
               label="Email"
-              :rules="[store.state.rules.min(2, store.state.newTeacher.email), store.state.rules.emailRules(store.state.newTeacher.email)]"
+              :rules="[store.state.rules.spaces(store.state.newTeacher.email),store.state.rules.min(2, store.state.newTeacher.email), store.state.rules.emailRules(store.state.newTeacher.email)]"
               v-model="store.state.newTeacher.email"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -478,8 +494,9 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               <v-text-field
               label="Прізвище"
               @input="store.state.editTeacher.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editTeacher.lastName), store.state.rules.max(50, store.state.editTeacher.lastName)]"
+              :rules="[store.state.rules.spaces(store.state.editTeacher.lastName),store.state.rules.min(2, store.state.editTeacher.lastName), store.state.rules.max(50, store.state.editTeacher.lastName)]"
               v-model="store.state.editTeacher.lastName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -487,8 +504,9 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               <v-text-field
               label="Ім'я"
               @input="store.state.editTeacher.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editTeacher.firstName), store.state.rules.max(50, store.state.editTeacher.firstName)]"
+              :rules="[store.state.rules.spaces(store.state.editTeacher.firstName),store.state.rules.min(2, store.state.editTeacher.firstName), store.state.rules.max(50, store.state.editTeacher.firstName)]"
               v-model="store.state.editTeacher.firstName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -496,8 +514,9 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               <v-text-field
               label="По батькові"
               @input="store.state.editTeacher.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editTeacher.surName), store.state.rules.max(50, store.state.editTeacher.surName)]"
+              :rules="[store.state.rules.spaces(store.state.editTeacher.surName),store.state.rules.min(2, store.state.editTeacher.surName), store.state.rules.max(50, store.state.editTeacher.surName)]"
               v-model="store.state.editTeacher.surName"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -505,8 +524,9 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               <v-text-field
               label="Email"
               @input="store.state.editTeacher.wasEdited = true"
-              :rules="[store.state.rules.min(2, store.state.editTeacher.email), store.state.rules.emailRules(store.state.editTeacher.email)]"
+              :rules="[store.state.rules.spaces(store.state.editTeacher.email),store.state.rules.min(2, store.state.editTeacher.email), store.state.rules.emailRules(store.state.editTeacher.email)]"
               v-model="store.state.editTeacher.email"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -555,8 +575,9 @@ const AddSubjectForm = Vue.component('new-subject-x',{
             <v-col cols="12" class="px-1">
               <v-text-field
               label="Назва дисципліни"
-              :rules="[store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
+              :rules="[store.state.rules.spaces(store.state.newSubject.subject),store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
               v-model="store.state.newSubject.subject"
+              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -565,7 +586,8 @@ const AddSubjectForm = Vue.component('new-subject-x',{
                 v-model="store.state.newSubject.teacher"
                 :items="store.getters.getListOfTeachers"
                 color="teal darken-4"
-                :rules="[store.state.rules.min(10, store.state.newSubject.teacher), store.state.rules.max(100, store.state.newSubject.teacher)]"
+                @keydown.native.space.prevent
+                :rules="[store.state.rules.spaces(store.state.newSubject.teacher),store.state.rules.min(10, store.state.newSubject.teacher), store.state.rules.max(100, store.state.newSubject.teacher)]"
                 label="Викладач"
               ></v-combobox>
             </v-col>
@@ -584,6 +606,25 @@ const AddSubjectForm = Vue.component('new-subject-x',{
   `
 })
 const AddSemesterForm = Vue.component('new-semester-x',{
+  data () {
+    return {
+      items: []
+    }
+  },
+  mounted () {
+    const currentYear = new Date()
+    let { firstYear, lastYear } = 0
+    if (currentYear.getMonth() < 8) {
+      firstYear = currentYear.getFullYear()-1
+      lastYear = currentYear.getFullYear()
+    } else {
+      firstYear = currentYear.getFullYear()
+      lastYear = currentYear.getFullYear()+1
+    }
+    for (let i = 1; i < 12; i++) {
+      this.items.push(`${i}-й семестр ${firstYear}/${lastYear} навчального року`)
+    }
+  },
   template: `
   <v-dialog v-model="store.state.newSemester.dialog" persistent max-width="1200px">
     <v-card class="text-center py-0 my-0">
@@ -599,17 +640,18 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             >
           <v-row no-gutters>
             <v-col cols="12">
-              <v-combobox
+              <v-select
                 v-model="store.state.newSemester.semester"
-                :items="['1-й семестр 20__/20__ навчального року','2-й семестр 20__/20__ навчального року','3-й семестр 20__/20__ навчального року','4-й семестр 20__/20__ навчального року','5-й семестр 20__/20__ навчального року','6-й семестр 20__/20__ навчального року','7-й семестр 20__/20__ навчального року','8-й семестр 20__/20__ навчального року','9-й семестр 20__/20__ навчального року','10-й семестр 20__/20__ навчального року','11-й семестр 20__/20__ навчального року']"
+                :items="items"
                 color="teal darken-4"
-                :rules="[store.state.rules.min(20, store.state.newSemester.semester), store.state.rules.max(50, store.state.newSemester.semester)]"
+                :rules="[store.state.rules.minGroup(1, store.state.newSemester.semester)]"
                 label="Семестр навчального року"
-              ></v-combobox>
+              ></v-select>
             </v-col>
             <v-col cols="12" class="px-1">
               <v-select
                 v-model="store.state.newSemester.groups"
+                @keydown.native.space.prevent
                 :items="store.state.groups"
                 color="teal darken-4"
                 :rules="[store.state.rules.minGroup(1, store.state.newSemester.groups)]"
@@ -624,8 +666,9 @@ const AddSemesterForm = Vue.component('new-semester-x',{
                 v-model="store.state.newSemester.discipline"
                 @change="store.getters.getTeacherForSubject(store.state.newSemester.discipline)"
                 :items="store.state.newSemester.listOfSubjects"
+                @keydown.native.space.prevent
                 color="teal darken-4"
-                :rules="[store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
+                :rules="[store.state.rules.spaces(store.state.newSemester.discipline),store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
                 label="Навчальна дисципліна"
                 required
               ></v-combobox>
@@ -643,10 +686,11 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             <v-col cols="1" class="px-1">
               <v-text-field
               label="Годин"
+              @keydown.native.space.prevent
               type="number"
               min="1"
               max="500"
-              :rules="[store.state.rules.min(1, store.state.newSemester.hours), store.state.rules.max(3, store.state.newSemester.hours)]"
+              :rules="[store.state.rules.spaces(store.state.newSemester.hours),store.state.rules.min(1, store.state.newSemester.hours), store.state.rules.max(3, store.state.newSemester.hours)]"
               v-model="store.state.newSemester.hours" required
               color="teal darken-4"
               ></v-text-field>
@@ -655,9 +699,10 @@ const AddSemesterForm = Vue.component('new-semester-x',{
               <v-text-field
               label="Кредитів"
               type="number"
+              @keydown.native.space.prevent
               min="1"
               max="30"
-              :rules="[store.state.rules.min(1, store.state.newSemester.credits), store.state.rules.max(5, store.state.newSemester.credits)]"
+              :rules="[store.state.rules.spaces(store.state.newSemester.credits),store.state.rules.min(1, store.state.newSemester.credits), store.state.rules.max(5, store.state.newSemester.credits)]"
               v-model="store.state.newSemester.credits" required
               color="teal darken-4"
               ></v-text-field>
@@ -692,8 +737,8 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             <v-col cols="3" class="px-1">
               <v-text-field
               label="Викладач"
-              :rules="[store.state.rules.min(5, store.state.newSemester.teacher), store.state.rules.max(50, store.state.newSemester.teacher)]"
               v-model="store.state.newSemester.teacher" required
+              readonly
               color="teal darken-4"
               ></v-text-field>
             </v-col>
@@ -811,20 +856,22 @@ const AddGradeForm = Vue.component('new-grade-x',{
                       <td class="text-center"><v-divider vertical></v-divider></td>
                       <td class="text-center" width="100px">
                           <v-text-field
+                            @keydown.native.space.prevent
                             v-if="store.state.newGrade.discipline != ''"
                             v-model="store.state.newGrade.scores[index]"
                             single-line
-                            :rules="[store.state.rules.min(1, store.state.newGrade.scores[index]), store.state.rules.max(3, store.state.newGrade.scores[index])]"
+                            :rules="[store.state.rules.spaces(store.state.newGrade.scores[index]),store.state.rules.min(1, store.state.newGrade.scores[index]), store.state.rules.max(3, store.state.newGrade.scores[index])]"
                             color="teal darken-4"
                           ></v-text-field>
                       </td>
                       <td class="text-center"><v-divider vertical></v-divider></td>
                       <td class="text-center" width="100px">
                           <v-text-field
+                            @keydown.native.space.prevent
                             v-if="store.state.newGrade.discipline != ''"
                             v-model="store.state.newGrade.grades[index]"
                             single-line
-                            :rules="[store.state.rules.min(1, store.state.newGrade.grades[index]), store.state.rules.max(5, store.state.newGrade.grades[index])]"
+                            :rules="[store.state.rules.spaces(store.state.newGrade.grades[index]),store.state.rules.min(1, store.state.newGrade.grades[index]), store.state.rules.max(5, store.state.newGrade.grades[index])]"
                             color="teal darken-4"
                           ></v-text-field>
                       </td>
@@ -861,6 +908,8 @@ const Login = {
     hint="Ім'я користувача"
     placeholder="Ім'я користувача"
     single-line
+    :rules="[store.state.rules.spaces(username)]"
+    @keydown.native.space.prevent
     prepend-inner-icon="mdi-lock-outline"
     v-model="username"
     @keypress.enter="userLogin"
@@ -875,6 +924,8 @@ const Login = {
     maxlength="30"
     hint="Введіть ваш пароль"
     placeholder="Введіть ваш пароль"
+    :rules="[store.state.rules.spaces(password)]"
+    @keydown.native.space.prevent
     single-line
     prepend-inner-icon="mdi-lock-outline"
     v-model="password"
@@ -908,6 +959,10 @@ const Login = {
         router.replace({
           name: "home"
         })
+        store.dispatch('loadStudents')
+        store.dispatch('loadTeachers')
+        store.dispatch('loadGroups')
+        store.dispatch('loadSubjects')
     }
   },
   methods: {
@@ -931,6 +986,10 @@ const Login = {
                 name: "home"
               })
               Notiflix.Notify.Success('Авторизація пройшла успішно.')
+              store.dispatch('loadStudents')
+              store.dispatch('loadTeachers')
+              store.dispatch('loadGroups')
+              store.dispatch('loadSubjects')
             }
             this.loading = false
           }, 3000)
@@ -1020,7 +1079,8 @@ const StudentsList = {
       class="col-xs-12 col-md-9 px-5"
       v-model="search"
       append-icon="mdi-magnify"
-      label="Пошук"
+      label="Пошук..."
+      @keydown.native.space.prevent
       single-line
       hide-details
       ></v-text-field>
@@ -1169,18 +1229,14 @@ const StudentsList = {
           page
           } = this.options
           store.dispatch('checkStatus', studyStatus)
-          let result = []
-          let total = null
+          let result = store.getters.getStudents(studyStatus)
           setTimeout(() => {
-            result = store.getters.getStudents(studyStatus)
-            total = result.length
-          }, 1000)
-            setTimeout(() => {
-              this.loading = false
-              resolve({
-                result,
-                total
-              })
+            let total = result.length
+            this.loading = false
+            resolve({
+              result,
+              total
+            })
           }, 2000)
       })
     },
@@ -1339,38 +1395,37 @@ const StudentsPerson = {
         name: "login"
       });
     } else {
+      if (this.$route.params.edit) {
+        this.edit = true
+      } else {
+        this.edit = false
+      }
     this.person = this.$route.params.profile
-    if (this.$route.params.edit) {
-      this.edit = true
-    } else {
-      this.edit = false
-    }
     this.getData()
     .then(data => {
       this.semesters = data.semesters
-      console.log(data.semesters)
       this.loading = false
-      if (data.semesters) {
+      if (data.semesters.length > 0) {
         this.gotData = true
       } else {
         this.gotData = false
       }
     })
+
     }
   },
   methods: {
     getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
+        store.dispatch('getSemesters', this.person.code)
         let semesters = []
-        store.dispatch('getSemesters', this.$route.params.profile.code)
         setTimeout(function() {
           semesters = store.state.semestersForStudent
-          console.log(semesters);
-        }, 1000)
+        }, 1000);
         setTimeout(function() {
           resolve({
-            semesters,
+            semesters
           })
         }, 2000)
       })
@@ -1403,7 +1458,8 @@ const TeachersList = {
       class="col-xs-12 px-5"
       v-model="search"
       append-icon="mdi-magnify"
-      label="Пошук"
+      label="Пошук..."
+      @keydown.native.space.prevent
       single-line
       hide-details
       ></v-text-field>
@@ -1676,15 +1732,12 @@ const TeachersPerson = {
     getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
-        let loaded = []
-        setTimeout(function() {
-          loaded = store.getters.getSubjectsForTeacher(this.person.fullname)
-        }, 1000);
+        let loaded = store.getters.getSubjectsForTeacher(this.person.fullname)
         setTimeout(function() {
           resolve({
             loaded,
           })
-        }, 2000)
+        }, 1000)
       })
     },
     changeAvatar() {
@@ -1832,6 +1885,15 @@ let store = new Vuex.Store({
     notificationMessage: 'test',
     authenticated: false,
     rules: {
+      spaces(v) {
+        if (v) {
+          if (v.trim()) {
+            return true
+          }
+        } else {
+         return 'Поле не може бути порожнім.'
+       }
+      },
       maxFile(v) {
         return v => !v || v.size < 1000000 || 'Розмір фото не повинен перевищувати 1 MB!';
       },
@@ -1854,7 +1916,7 @@ let store = new Vuex.Store({
     subjects: [],
     admins: [],
     semestersForStudent: [],
-    status: '',
+    status: null,
     selectedStudents: [],
     studyStatus: true,
     selectedTeachers: [],
@@ -1918,7 +1980,7 @@ let store = new Vuex.Store({
       valid: true,
       lazy: true,
       dialog: false,
-      semester: '1-й семестр 20__/20__ навчального року',
+      semester: '',
       groups: [],
       listOfSubjects: '',
       discipline: '',
@@ -2070,7 +2132,7 @@ let store = new Vuex.Store({
       if (sessionStorage.getItem('auth_token')) {
         state.authenticated = true
         let username = sessionStorage.getItem('username')
-        fetch(`../api/app/active_user/${username}`, {
+        fetch(`/api/app/active_user/${username}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -2095,7 +2157,7 @@ let store = new Vuex.Store({
     },
     LOGIN: (state, data) => {
       let csrftoken = getCookie('csrftoken')
-      fetch('../api/auth/login/', {
+      fetch('/api/auth/login/', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
@@ -2110,7 +2172,7 @@ let store = new Vuex.Store({
         })
     },
     LOGOUT: (state) => {
-      fetch('../api/auth/logout/')
+      fetch('/api/auth/logout/')
         .then(r => {
           sessionStorage.removeItem("auth_token")
           sessionStorage.removeItem("username")
@@ -2121,7 +2183,7 @@ let store = new Vuex.Store({
       })
     },
     GET_PASSWORD: (state, person) => {
-      fetch('../api/app/registration/')
+      fetch('/api/app/registration/')
       .then(r => r.json())
       .then(result => {
         person.username = result.username
@@ -2129,7 +2191,7 @@ let store = new Vuex.Store({
       })
     },
     GET_ADMINS: (state) => {
-      fetch('../api/app/admins/')
+      fetch('/api/app/admins/')
       .then(r => r.json())
       .then(response => {
         state.admins = response
@@ -2148,7 +2210,7 @@ let store = new Vuex.Store({
             data.append('avatar', state.newStudent.avatar)
           }
           let csrftoken = getCookie('csrftoken')
-          fetch('../api/app/registration/', {
+          fetch('/api/app/registration/', {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2184,7 +2246,7 @@ let store = new Vuex.Store({
             data.append('avatar', state.editStudent.avatar)
           }
           let csrftoken = getCookie('csrftoken')
-          fetch('../api/app/edit_profile/', {
+          fetch('/api/app/edit_profile/', {
               method: 'PUT',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2220,7 +2282,7 @@ let store = new Vuex.Store({
         const data = {
           'students': students
         }
-        fetch(`../api/app/registration/`, {
+        fetch(`/api/app/registration/`, {
           method: 'PUT',
           headers: {
             'Content-type': 'application/json; charset=UTF-8'
@@ -2252,7 +2314,7 @@ let store = new Vuex.Store({
             data.append('avatar', state.newTeacher.avatar)
           }
           let csrftoken = getCookie('csrftoken')
-          fetch('../api/app/registration/', {
+          fetch('/api/app/registration/', {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2288,7 +2350,7 @@ let store = new Vuex.Store({
             data.append('avatar', state.editTeacher.avatar)
           }
           let csrftoken = getCookie('csrftoken')
-          fetch('../api/app/edit_profile/', {
+          fetch('/api/app/edit_profile/', {
               method: 'PUT',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2324,7 +2386,7 @@ let store = new Vuex.Store({
         const data = {
           'teachers': teachers
         }
-        fetch(`../api/app/registration/`, {
+        fetch(`/api/app/registration/`, {
           method: 'PUT',
           headers: {
             'Content-type': 'application/json; charset=UTF-8'
@@ -2349,7 +2411,7 @@ let store = new Vuex.Store({
           data.append('subject', state.newSubject.subject)
           data.append('teacher', state.newSubject.code)
           let csrftoken = getCookie('csrftoken')
-          fetch('../api/app/edit_subject/', {
+          fetch('/api/app/edit_subject/', {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2379,7 +2441,7 @@ let store = new Vuex.Store({
             'disciplines': state.newSemester.subjects
           }
           let csrftoken = getCookie('csrftoken')
-          fetch('../api/app/edit_semester/', {
+          fetch('/api/app/edit_semester/', {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
@@ -2433,21 +2495,21 @@ let store = new Vuex.Store({
       state.newSemester.subjects.splice(index, 1)
     },
     LOAD_STUDENTS: (state) => {
-      fetch('../api/app/students/')
+      fetch('/api/app/students/')
         .then(r => r.json())
         .then(data => {
           state.students = data
         })
     },
     LOAD_TEACHERS: (state) => {
-      fetch('../api/app/teachers/')
+      fetch('/api/app/teachers/')
         .then(r => r.json())
         .then(data => {
           state.teachers = data
         })
     },
     LOAD_GROUPS: (state) => {
-      fetch('../api/app/groups/')
+      fetch('/api/app/groups/')
         .then(r => r.json())
         .then(data => {
           data.forEach(item => {
@@ -2456,21 +2518,21 @@ let store = new Vuex.Store({
         })
     },
     LOAD_SUBJECTS: (state) => {
-      fetch('../api/app/subjects/')
+      fetch('/api/app/subjects/')
         .then(r => r.json())
         .then(data => {
           state.subjects = data
         })
     },
     GET_SEMESTERS: (state, code) => {
-      fetch(`../api/app/edit_semester/${code}`)
+      fetch(`/api/app/edit_semester/${code}`)
         .then(r => r.json())
         .then(response => {
             state.semestersForStudent = response.semesters
         })
     },
     LOAD_SEMESTERS: (state, students) => {
-      fetch(`../api/app/edit_grade/${students[0].code}`)
+      fetch(`/api/app/edit_grade/${students[0].code}`)
         .then(r => r.json())
         .then(response => {
           state.newGrade.semesters = []
@@ -2496,7 +2558,7 @@ let store = new Vuex.Store({
         'grades': state.newGrade.grades,
       }
       let csrftoken = getCookie('csrftoken')
-      fetch('../api/app/edit_grade/', {
+      fetch('/api/app/edit_grade/', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
@@ -2518,7 +2580,7 @@ let store = new Vuex.Store({
       data.append('person', params.person)
       data.append('avatar', params.avatar)
       let csrftoken = getCookie('csrftoken')
-      fetch('../api/app/active_user/', {
+      fetch('/api/app/active_user/', {
           method: 'PUT',
           headers: {
             'X-CSRFToken': csrftoken,
