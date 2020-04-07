@@ -39,11 +39,11 @@ class AddUserView(APIView):
         """
         # if email in request then register a teacher
         if 'email' in request.data:
-            username = request.data.get('username')
-            first_name = request.data.get('first_name')
-            last_name = request.data.get('last_name')
-            sur_name = request.data.get('sur_name')
-            email = request.data.get('email')
+            username = request.data.get('username').strip()
+            first_name = request.data.get('first_name').strip()
+            last_name = request.data.get('last_name').strip()
+            sur_name = request.data.get('sur_name').strip()
+            email = request.data.get('email').strip()
             if FlexUser.objects.filter(username__iexact=username).exists():
                 return Response({"success":False, "message":"Надане ім'я користувача вже використовується."}, status=200)
             user = FlexUser.objects.create(username=username, email=email, first_name=first_name, last_name=last_name, sur_name=sur_name, status='Teacher')
@@ -57,11 +57,11 @@ class AddUserView(APIView):
             return Response({"success":True, "message":"Нового користувача успішно зареєстровано."}, status=200)
         # if book_number in request then register a student
         elif 'book_number' in request.data:
-            username = request.data.get('username')
-            first_name = request.data.get('first_name')
-            last_name = request.data.get('last_name')
-            sur_name = request.data.get('sur_name')
-            book_number = request.data.get('book_number')
+            username = request.data.get('username').strip()
+            first_name = request.data.get('first_name').strip()
+            last_name = request.data.get('last_name').strip()
+            sur_name = request.data.get('sur_name').strip()
+            book_number = request.data.get('book_number').strip()
             if FlexUser.objects.filter(username__iexact=username).exists():
                 return Response({"success":False, "message":"Надане ім'я користувача вже використовується."}, status=200)
             elif Student.objects.filter(book_number__iexact=book_number, user__is_active=True).exists():
@@ -71,7 +71,7 @@ class AddUserView(APIView):
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
             user.save()
-            group_number = request.data.get('group_number')
+            group_number = request.data.get('group_number').strip()
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
@@ -126,23 +126,22 @@ class EditUserView(APIView):
         """
         if 'email' in request.data:
             user = get_object_or_404(FlexUser, code=request.data.get('code'))
-            user.first_name = request.data.get('first_name')
-            user.last_name = request.data.get('last_name')
-            user.sur_name = request.data.get('sur_name')
-            user.email = request.data.get('email')
+            user.first_name = request.data.get('first_name').strip()
+            user.last_name = request.data.get('last_name').strip()
+            user.sur_name = request.data.get('sur_name').strip()
+            user.email = request.data.get('email').strip()
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
             user.save()
             return Response({"success":True, "message":"Інформацію успішно змінено."}, status=200)
         elif 'book_number' in request.data:
-            code = request.data.get('code')
-            book_number = request.data.get('book_number')
-            user = get_object_or_404(FlexUser, code=code)
+            book_number = request.data.get('book_number').strip()
+            user = get_object_or_404(FlexUser, code=request.data.get('code'))
             if Student.objects.filter(book_number__iexact=book_number, user__is_active=True).exclude(user=user).exists():
                 return Response({"success":False, "message":"Користувач з таким номером залікової книжки вже зареєстрований."}, status=200)
-            user.first_name = request.data.get('first_name')
-            user.last_name = request.data.get('last_name')
-            user.sur_name = request.data.get('sur_name')
+            user.first_name = request.data.get('first_name').strip()
+            user.last_name = request.data.get('last_name').strip()
+            user.sur_name = request.data.get('sur_name').strip()
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
             user.save()

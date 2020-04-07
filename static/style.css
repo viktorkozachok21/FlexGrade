@@ -218,6 +218,7 @@ footer {
   bottom: 0;
 }
 
+
 @media only screen and (max-width: 600px) {
   .navbar-x, .line {
     bottom: 0;
@@ -260,9 +261,17 @@ footer {
   .home-link:hover {
     transform: scale(1)!important;
   }
+
+  .v-toolbar {
+    padding-left: 0 !important;
+  }
 }
 
 @media only screen and (min-width: 600px) {
+  .v-toolbar {
+    padding-left: .1rem !important;
+  }
+
   .v-footer {
     padding-left: 5.5rem;
   }

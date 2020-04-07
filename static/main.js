@@ -82,13 +82,13 @@ const Navbar = Vue.component('navbar-x', {
 const Toolbar = Vue.component('toolbar-x', {
   template: `
   <v-card class="main mb-3" height="70px">
-    <v-toolbar class="text-center pl-3" flat>
+    <v-toolbar class="text-center" flat>
       <v-span v-if="$route.meta.showBack" @click="$router.go(-1)" replace title="Повернутися на крок назад" class="mdi mdi-keyboard-return home-link"></v-span>
-      <v-divider v-if="$route.meta.showBack" class="mx-4" inset vertical></v-divider>
+      <v-divider v-if="$route.meta.showBack" class="mx-2" inset vertical></v-divider>
 
       <v-spacer></v-spacer>
 
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-plus-box-outline home-link"
       @click="store.state.newStudent.dialog = true"
@@ -103,10 +103,10 @@ const Toolbar = Vue.component('toolbar-x', {
       title="Зареєструвати нового викладача"
       ></v-span>
       <new-teacher-x ref="newTeacherForm"></new-teacher-x>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
 
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-account-minus home-link"
       @click="store.dispatch('minusStudent')"
@@ -119,11 +119,11 @@ const Toolbar = Vue.component('toolbar-x', {
       v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"
       title="Виключити викладача(ів) зі списку"
       ></v-span>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
 
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editStudent;store.state.editStudent.dialog = true"
@@ -138,10 +138,10 @@ const Toolbar = Vue.component('toolbar-x', {
       title="Редагувати профіль"
       ></v-span>
       <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
 
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-database-plus home-link"
       @click="store.dispatch('loadSemesters', store.state.selectedStudents)"
@@ -149,9 +149,9 @@ const Toolbar = Vue.component('toolbar-x', {
       title="Внести оцінки"
       ></v-span>
       <new-grade-x ref="newGradeForm"></new-grade-x>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
 
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-book-plus home-link"
       @click="store.getters.getListOfSubjects;store.state.newSemester.dialog = true"
@@ -166,13 +166,13 @@ const Toolbar = Vue.component('toolbar-x', {
       title="Додати нову навчальну дисципліну"
       ></v-span>
       <new-subject-x ref="newSubjectForm"></new-subject-x>
-      <v-divider class="mx-4" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
 
       <v-spacer></v-spacer>
 
-      <v-divider v-if="store.state.authenticated" class="mx-4" inset vertical replace></v-divider>
+      <v-divider v-if="store.state.authenticated" class="mx-2" inset vertical replace></v-divider>
       <v-span class="home-link mdi mdi-exit-to-app" v-if="store.state.authenticated" @click="store.dispatch('logoutUser')" title="Вийти" replace></v-span>
-      <v-divider class="mx-4" inset vertical></v-divider>
+      <v-divider class="mx-2" inset vertical></v-divider>
       <div id="full-toggle" title="Toggle fullscreen" class="home-link"><span class="mdi mdi-fullscreen"></span></div>
     </v-toolbar>
   </v-card>
@@ -633,7 +633,7 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             <v-col cols="2" class="px-1">
               <v-select
                 v-model="store.state.newSemester.form"
-                :items="['Залік','Екзамен','Курсовий проект','Навчальна практика','Виробнича практика']"
+                :items="['Залік','Екзамен','Курсовий проект','Навчальна практика','Виробнича практика','Переддипломна практика']"
                 color="teal darken-4"
                 :rules="[store.state.rules.minGroup(1, store.state.newSemester.form)]"
                 label="Форма"
@@ -905,9 +905,17 @@ const Login = {
   mounted() {
     store.dispatch('checkAuth')
     if (store.state.authenticated) {
-      router.replace({
-        name: "home"
-      })
+        router.replace({
+          name: "home"
+        })
+        if (store.state.students.length === 0) {
+          Notiflix.Loading.Circle('Завантаження бази даних...')
+          store.dispatch('loadStudents')
+          store.dispatch('loadTeachers')
+          store.dispatch('loadGroups')
+          store.dispatch('loadSubjects')
+          Notiflix.Notify.Info('Рекомендується не перезавантажувати додаток.')
+        }
     }
   },
   methods: {
@@ -931,6 +939,11 @@ const Login = {
                 name: "home"
               })
               Notiflix.Notify.Success('Авторизація пройшла успішно.')
+              Notiflix.Loading.Circle('Завантаження бази даних...')
+              store.dispatch('loadStudents')
+              store.dispatch('loadTeachers')
+              store.dispatch('loadGroups')
+              store.dispatch('loadSubjects')
             }
             this.loading = false
           }, 3000)
@@ -951,13 +964,13 @@ const Home = {
   template: `
   <div class="container text-center mb-5">
     <h2 class="display-2 my-5 text-weight-bold text-uppercase">Flex Grade</h2>
-    <router-link to="/students" class="mx-5">
+    <router-link to="/students" class="mx-1">
       <v-btn class="home-link my-3" width="300" height="55">
         <v-icon icon class="m-auto mr-3">mdi-account-multiple-outline</v-icon>
         <span class="text--secondary m-auto">Студенти</span>
       </v-btn>
     </router-link>
-    <router-link to="/teachers" class="mx-5">
+    <router-link to="/teachers" class="mx-1">
       <v-btn class="home-link my-3" width="300" height="55">
         <v-icon class="m-auto mr-3">mdi-account-multiple-outline</v-icon>
         <span class="text--secondary m-auto">Викладачі</span>
@@ -1149,9 +1162,6 @@ const StudentsList = {
         name: "login"
       });
     } else {
-    store.dispatch('loadStudents')
-    store.dispatch('loadGroups')
-    store.dispatch('loadSubjects')
     this.getData()
       .then(data => {
         this.students = data.result
@@ -1240,7 +1250,7 @@ const StudentsPerson = {
               </v-card>
             </v-dialog>
               <v-img
-              :src="person.avatar"
+              :src="'/media/' + person.avatar"
               :aspect-ratio="3/4"
               class="mx-auto mb-1 grey lighten-2 text-right pt-1"
               width="250"
@@ -1351,6 +1361,7 @@ const StudentsPerson = {
     this.getData()
     .then(data => {
       this.semesters = data.semesters
+      console.log(data.semesters)
       this.loading = false
       if (data.semesters) {
         this.gotData = true
@@ -1368,6 +1379,7 @@ const StudentsPerson = {
         store.dispatch('getSemesters', this.$route.params.profile.code)
         setTimeout(function() {
           semesters = store.state.semestersForStudent
+          console.log(semesters);
         }, 1000)
         setTimeout(function() {
           resolve({
@@ -1504,8 +1516,6 @@ const TeachersList = {
     } else {
         this.search = ''
     }
-    store.dispatch('loadTeachers')
-    store.dispatch('loadSubjects')
     this.getData()
       .then(data => {
         this.teachers = data.loaded
@@ -1589,7 +1599,7 @@ const TeachersPerson = {
             </v-card>
           </v-dialog>
           <v-img
-           :src="person.avatar"
+           :src="'/media/' + person.avatar"
            :aspect-ratio="3/4"
            class="mx-auto mb-1 grey lighten-2 text-right pt-1"
            width="250"
@@ -1679,7 +1689,10 @@ const TeachersPerson = {
     getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
-        let loaded = store.getters.getSubjectsForTeacher(this.person.fullname)
+        let loaded = []
+        setTimeout(function() {
+          loaded = store.getters.getSubjectsForTeacher(this.person.fullname)
+        }, 1000);
         setTimeout(function() {
           resolve({
             loaded,
@@ -1743,24 +1756,6 @@ const Profile = {
   }
 }
 // <!--- The Profile Of A User
-const Reload = {
-  template: `
-  <v-container class="d-flex align-center justify-center">
-    <v-progress-circular
-      size="350"
-      width="7"
-      color="teal darken-4"
-      indeterminate
-      class="mt-10 pt-10"
-    ></v-progress-circular>
-  </v-container>
-  `,
-  mounted() {
-    setTimeout(function() {
-      router.replace({ path: '/'})
-    }, 1300)
-  }
-}
 // The router
 const router = new VueRouter({
   mode: 'history',
@@ -1837,11 +1832,6 @@ const router = new VueRouter({
       meta: {
         showBack: true
       }
-    },
-    {
-      name: 'reload',
-      path: '/loading',
-      component: Reload
     }
   ]
 })
@@ -2117,11 +2107,13 @@ let store = new Vuex.Store({
       }
     },
     LOGIN: (state, data) => {
+      let csrftoken = getCookie('csrftoken')
       fetch('../api/auth/login/', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
           },
           body: JSON.stringify(data)
         })
@@ -2136,7 +2128,7 @@ let store = new Vuex.Store({
           sessionStorage.removeItem("auth_token")
           sessionStorage.removeItem("username")
           state.authenticated = false
-          router.push({name: "login"})
+          router.replace({name: "login"})
           sessionStorage.removeItem("response")
           sessionStorage.removeItem("profile")
       })
@@ -2180,10 +2172,6 @@ let store = new Vuex.Store({
             .then(response => {
               if (response.success) {
                 store.dispatch('loadStudents')
-                router.replace({name:'reload'})
-                setTimeout(function() {
-                  router.replace({name:'students'})
-                }, 1500)
                 state.newStudent.username = ''
                 state.newStudent.password = ''
                 state.newStudent.firstName = ''
@@ -2220,10 +2208,6 @@ let store = new Vuex.Store({
             .then(response => {
               if (response.success) {
                 store.dispatch('loadStudents')
-                router.replace({name:'reload'})
-                setTimeout(function() {
-                  router.replace({name:'students'})
-                }, 1500)
                 state.editStudent.firstName = ''
                 state.editStudent.lastName = ''
                 state.editStudent.surName = ''
@@ -2259,10 +2243,7 @@ let store = new Vuex.Store({
         .then(r => r.json())
         .then(response => {
           if (response.success) {
-            router.replace({name:'reload'})
-            setTimeout(function() {
-              router.replace({name:'students'})
-            }, 1500)
+            store.dispatch('loadStudents')
             state.selectedStudents = []
             Notiflix.Notify.Success(response.message)
           } else if (!response.success) {
@@ -2295,10 +2276,6 @@ let store = new Vuex.Store({
             .then(response => {
               if (response.success) {
                 store.dispatch('loadTeachers')
-                router.replace({name:'reload'})
-                setTimeout(function() {
-                  router.replace({name:'teachers'})
-                }, 1500)
                 state.newTeacher.username = ''
                 state.newTeacher.password = ''
                 state.newTeacher.firstName = ''
@@ -2335,10 +2312,6 @@ let store = new Vuex.Store({
             .then(response => {
               if (response.success) {
                 store.dispatch('loadTeachers')
-                router.replace({name:'reload'})
-                setTimeout(function() {
-                  router.replace({name:'teachers'})
-                }, 1500)
                 state.editTeacher.firstName = ''
                 state.editTeacher.lastName = ''
                 state.editTeacher.surName = ''
@@ -2374,10 +2347,7 @@ let store = new Vuex.Store({
         .then(r => r.json())
         .then(response => {
           if (response.success) {
-            router.replace({name:'reload'})
-            setTimeout(function() {
-              router.replace({name:'teachers'})
-            }, 1500)
+            store.dispatch('loadTeachers')
             state.selectedTeachers = []
             Notiflix.Notify.Success(response.message)
           } else if (!response.success) {
@@ -2434,10 +2404,6 @@ let store = new Vuex.Store({
             .then(r => r.json())
             .then(response => {
               if (response.success) {
-                router.replace({name:'reload'})
-                setTimeout(function() {
-                  router.replace({name:'students'})
-                }, 1500)
                 state.newSemester.form = ''
                 state.newSemester.groups = []
                 state.newSemester.subjects = []
@@ -2484,6 +2450,7 @@ let store = new Vuex.Store({
         .then(r => r.json())
         .then(data => {
           state.students = data
+          Notiflix.Loading.Remove()
         })
     },
     LOAD_TEACHERS: (state) => {
@@ -2571,10 +2538,6 @@ let store = new Vuex.Store({
             'X-CSRFToken': csrftoken,
           },
           body: data
-        })
-        .then(r => r.json())
-        .then(response => {
-          console.log(response)
         })
     }
   },

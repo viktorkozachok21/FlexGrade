@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from app.views import app, home
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('flexgrade/root/admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('', app),
 ]

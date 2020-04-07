@@ -12,7 +12,7 @@ class FlexUser(AbstractUser):
     """
     code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sur_name = models.CharField(max_length=100, blank=True, null=True)
-    avatar = models.ImageField(default="img/default.webp", blank=True, upload_to="avatars")
+    avatar = models.ImageField(default="avatars/default.webp", blank=True, upload_to="avatars")
     STATUS = Choices('Admin', 'Teacher','Student')
     status = StatusField(choices_name='STATUS')
 
@@ -180,6 +180,9 @@ class Subject(models.Model):
 
     def teacher_name(self):
         return self.teacher.fullname()
+
+    class Meta:
+        ordering = ['subject']
 
 
 class Semester(models.Model):
