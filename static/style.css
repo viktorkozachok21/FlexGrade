@@ -262,14 +262,14 @@ footer {
     transform: scale(1)!important;
   }
 
-  .v-toolbar {
+  header {
     padding-left: 0 !important;
   }
 }
 
 @media only screen and (min-width: 600px) {
-  .v-toolbar {
-    padding-left: .1rem !important;
+  header {
+    padding-left: 2.5rem !important;
   }
 
   .v-footer {

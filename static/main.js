@@ -1165,7 +1165,7 @@ const Login = {
           store.dispatch('loginUser', data)
             .then(result => {
               if (!result.key) {
-                Notiflix.Notify.Failure('Не вдається увійти за допомогою наданих облікових даних.')
+                Notiflix.Notify.Failure('Не вдається авторизуватися за допомогою наданих облікових даних.')
               } else if (typeof result.key != 'undefined') {
                 sessionStorage.setItem("auth_token", result.key)
                 router.replace({
@@ -1181,7 +1181,7 @@ const Login = {
         }
       } else {
         this.loading = false
-        Notiflix.Notify.Warning('Введіть ім\'я користувача.')
+        Notiflix.Notify.Warning('Введіть ім\'я користувача та пароль.')
       }
     }
   }
@@ -2107,8 +2107,8 @@ let store = new Vuex.Store({
     admins: [],
     semestersForStudent: [],
     status: null,
-    selectedStudents: [],
     studyStatus: true,
+    selectedStudents: [],
     selectedTeachers: [],
     newStudent: {
       valid: true,

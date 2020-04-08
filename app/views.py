@@ -65,7 +65,7 @@ class AddUserView(APIView):
             if FlexUser.objects.filter(username__iexact=username).exists():
                 return Response({"success":False, "message":"Надане ім'я користувача вже використовується."}, status=200)
             elif Student.objects.filter(book_number__iexact=book_number, user__is_active=True).exists():
-                return Response({"success":False, "message":"Користувач з таким номером залікової книжки вже зареєстрований."}, status=200)
+                return Response({"success":False, "message":"Студент з наданим номером залікової книжки вже зареєстрований."}, status=200)
             user = FlexUser.objects.create(username=username, first_name=first_name, last_name=last_name, sur_name=sur_name, status='Student')
             user.set_password(str(request.data.get('password')))
             if 'avatar' in request.FILES:
@@ -86,7 +86,7 @@ class AddUserView(APIView):
                             semester.save()
             return Response({"success":True, "message":"Нового користувача успішно зареєстровано."}, status=200)
         else:
-            return Response({"success":False, "message":"Під час реєстраціє виникла помилка, спробуйте пізніше."}, status=200)
+            return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
 
     def put(self, request):
         """
@@ -100,18 +100,18 @@ class AddUserView(APIView):
                 student = get_object_or_404(Student, user__code=student)
                 student.end()
             if len(students_list) > 1:
-                return Response({"success":True, "message":"Студентів успішно відраховано."}, status=200)
+                return Response({"success":True, "message":"Студентів успішно виключено зі списку активних."}, status=200)
             elif len(students_list) == 1:
-                return Response({"success":True, "message":"Студента успішно відраховано."}, status=200)
+                return Response({"success":True, "message":"Студента успішно виключено зі списку активних."}, status=200)
         if 'teachers' in request.data:
             teachers_list = request.data.get('teachers')
             for teacher in teachers_list:
                 user = get_object_or_404(FlexUser, code=teacher)
                 user.change_active()
             if len(teachers_list) > 1:
-                return Response({"success":True, "message":"Викладачів успішно відраховано."}, status=200)
+                return Response({"success":True, "message":"Викладачів успішно виключено зі списку активних."}, status=200)
             elif len(teachers_list) == 1:
-                return Response({"success":True, "message":"Викладача успішно відраховано."}, status=200)
+                return Response({"success":True, "message":"Викладача успішно виключено зі списку активних."}, status=200)
         else:
             return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
 
@@ -138,7 +138,7 @@ class EditUserView(APIView):
             book_number = request.data.get('book_number').strip()
             user = get_object_or_404(FlexUser, code=request.data.get('code'))
             if Student.objects.filter(book_number__iexact=book_number, user__is_active=True).exclude(user=user).exists():
-                return Response({"success":False, "message":"Користувач з таким номером залікової книжки вже зареєстрований."}, status=200)
+                return Response({"success":False, "message":"Студент з наданим номером залікової книжки вже зареєстрований."}, status=200)
             user.first_name = request.data.get('first_name').strip()
             user.last_name = request.data.get('last_name').strip()
             user.sur_name = request.data.get('sur_name').strip()
@@ -151,7 +151,7 @@ class EditUserView(APIView):
             student.save()
             return Response({"success":True, "message":"Інформацію успішно змінено."}, status=200)
         else:
-            return Response({"success":False, "message":"Під час реєстраціє виникла помилка, спробуйте пізніше."}, status=200)
+            return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
 
 
 class ActiveUserView(APIView):
@@ -186,7 +186,7 @@ class ActiveUserView(APIView):
         elif active_user.status == 'Admin':
             return Response({"success":True, "status":'Admin'}, status=200)
         else:
-            return Response({"success":False, "message":'Під час обробки запиту виникла помилка, спробуйте пізніше.'}, status=200)
+            return Response({"success":False, "message":'Під час виконання операції виникла помилка, спробуйте пізніше.'}, status=200)
 
     def put(self, request):
         """
@@ -214,10 +214,10 @@ class EditSubjectView(APIView):
         user = get_object_or_404(FlexUser, code=code)
         teacher = get_object_or_404(Teacher, user=user)
         if Subject.objects.filter(subject__iexact=subject, teacher=teacher).exists():
-            return Response({"success":False, "message":"Дисципліну з такою назвою для обраного викладача вже зареєстровано!"}, status=200)
+            return Response({"success":False, "message":"Навчальну дисципліну з наданою назвою для обраного викладача вже зареєстровано!"}, status=200)
         new_subject = Subject.objects.create(teacher=teacher, subject=subject)
         new_subject.save()
-        return Response({"success":True, "message":'Нову навчальну дисципліну успішно донано.'}, status=200)
+        return Response({"success":True, "message":'Навчальну дисципліну успішно додано.'}, status=200)
 
 
 class EditSemesterView(APIView):
@@ -271,7 +271,7 @@ class EditSemesterView(APIView):
         new_semester.save()
         for index, discipline in enumerate(disciplines, start=1):
             new_descipline = Discipline.objects.create(semester=new_semester,number=index,subject=discipline['discipline'],form=discipline['form'],hours=discipline['hours'],credits=discipline['credits'],discipline_date=discipline['date'],teacher=discipline['teacher'])
-        return Response({"success":True, "message":'Новий семестр успішно додано.'}, status=200)
+        return Response({"success":True, "message":'Семестр успішно додано.'}, status=200)
 
 
 class EditGradeView(APIView):
@@ -294,7 +294,7 @@ class EditGradeView(APIView):
                 group_semesters.append(our_semester)
             return Response({"success":True, "semesters":group_semesters}, status=200)
         else:
-            return Response({"success":False, "message":'Під час обробки запиту виникла помилка, спробуйте пізніше.'}, status=200)
+            return Response({"success":False, "message":'Під час виконання операції виникла помилка, спробуйте пізніше.'}, status=200)
 
     def post(self, request):
         """
