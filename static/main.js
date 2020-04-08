@@ -280,6 +280,7 @@ const AddStudentForm = Vue.component('new-student-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Прізвище*"
               :rules="[store.state.rules.spaces(store.state.newStudent.lastName),store.state.rules.min(2, store.state.newStudent.lastName), store.state.rules.max(50, store.state.newStudent.lastName)]"
               v-model="store.state.newStudent.lastName"
@@ -289,6 +290,7 @@ const AddStudentForm = Vue.component('new-student-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Ім'я*"
               :rules="[store.state.rules.spaces(store.state.newStudent.firstName),store.state.rules.min(2, store.state.newStudent.firstName), store.state.rules.max(50, store.state.newStudent.firstName)]"
               v-model="store.state.newStudent.firstName"
@@ -298,6 +300,7 @@ const AddStudentForm = Vue.component('new-student-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="По батькові*"
               :rules="[store.state.rules.spaces(store.state.newStudent.surName),store.state.rules.min(2, store.state.newStudent.surName), store.state.rules.max(50, store.state.newStudent.surName)]"
               v-model="store.state.newStudent.surName"
@@ -308,7 +311,7 @@ const AddStudentForm = Vue.component('new-student-x',{
             <v-col cols="6" class="px-2 py-2">
               <v-text-field
               label="Номер залікової книжки*"
-              :rules="[store.state.rules.spaces(store.state.newStudent.bookNumber),store.state.rules.min(2, store.state.newStudent.bookNumber), store.state.rules.max(15, store.state.newStudent.bookNumber)]"
+              :rules="[store.state.rules.spaces(store.state.newStudent.bookNumber),store.state.rules.min(2, store.state.newStudent.bookNumber), store.state.rules.max(5, store.state.newStudent.bookNumber)]"
               v-model="store.state.newStudent.bookNumber"
               @keydown.native.space.prevent
               color="teal darken-4" required
@@ -322,7 +325,7 @@ const AddStudentForm = Vue.component('new-student-x',{
               item-color="teal darken-4"
               color="teal darken-4"
               no-data-text="Не знайдено відповідних записів"
-              :rules="[store.state.rules.min(3, store.state.newStudent.group)]"
+              :rules="[store.state.rules.minGroup(1, store.state.newStudent.group)]"
               dense required
              ></v-select>
            </v-col>
@@ -404,6 +407,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Прізвище*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.lastName),store.state.rules.min(2, store.state.newTeacher.lastName), store.state.rules.max(50, store.state.newTeacher.lastName)]"
               v-model="store.state.newTeacher.lastName"
@@ -413,6 +417,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Ім'я*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.firstName),store.state.rules.min(2, store.state.newTeacher.firstName), store.state.rules.max(50, store.state.newTeacher.firstName)]"
               v-model="store.state.newTeacher.firstName"
@@ -422,6 +427,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="По батькові*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.surName),store.state.rules.min(2, store.state.newTeacher.surName), store.state.rules.max(50, store.state.newTeacher.surName)]"
               v-model="store.state.newTeacher.surName"
@@ -496,6 +502,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
               label="Прізвище"
+              @keypress.native="$root.validateKey($event)"
               @input="store.state.editStudent.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editStudent.lastName),store.state.rules.min(2, store.state.editStudent.lastName), store.state.rules.max(50, store.state.editStudent.lastName)]"
               v-model="store.state.editStudent.lastName"
@@ -505,6 +512,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Ім'я"
               @input="store.state.editStudent.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editStudent.firstName),store.state.rules.min(2, store.state.editStudent.firstName), store.state.rules.max(50, store.state.editStudent.firstName)]"
@@ -515,6 +523,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="По батькові"
               @input="store.state.editStudent.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editStudent.surName),store.state.rules.min(2, store.state.editStudent.surName), store.state.rules.max(50, store.state.editStudent.surName)]"
@@ -527,7 +536,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
               <v-text-field
               label="Номер залікової книжки"
               @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.spaces(store.state.editStudent.bookNumber),store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(15, store.state.editStudent.bookNumber)]"
+              :rules="[store.state.rules.spaces(store.state.editStudent.bookNumber),store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(5, store.state.editStudent.bookNumber)]"
               v-model="store.state.editStudent.bookNumber"
               @keydown.native.space.prevent
               color="teal darken-4" required
@@ -591,6 +600,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
           <v-row no-gutters>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Прізвище"
               @input="store.state.editTeacher.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editTeacher.lastName),store.state.rules.min(2, store.state.editTeacher.lastName), store.state.rules.max(50, store.state.editTeacher.lastName)]"
@@ -601,6 +611,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Ім'я"
               @input="store.state.editTeacher.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editTeacher.firstName),store.state.rules.min(2, store.state.editTeacher.firstName), store.state.rules.max(50, store.state.editTeacher.firstName)]"
@@ -611,6 +622,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
             </v-col>
             <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="По батькові"
               @input="store.state.editTeacher.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editTeacher.surName),store.state.rules.min(2, store.state.editTeacher.surName), store.state.rules.max(50, store.state.editTeacher.surName)]"
@@ -706,6 +718,7 @@ const AddSubjectForm = Vue.component('new-subject-x',{
           <v-row no-gutters>
             <v-col cols="12" class="px-2 py-2">
               <v-text-field
+              @keypress.native="$root.validateKey($event)"
               label="Назва дисципліни"
               :rules="[store.state.rules.spaces(store.state.newSubject.subject),store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
               v-model="store.state.newSubject.subject"
@@ -714,16 +727,16 @@ const AddSubjectForm = Vue.component('new-subject-x',{
               ></v-text-field>
             </v-col>
             <v-col cols="12" class="px-2 py-2">
-              <v-combobox
+              <v-select
                 v-model="store.state.newSubject.teacher"
                 :items="teachers"
                 item-color="teal darken-4"
                 no-data-text="Не знайдено відповідних записів"
                 color="teal darken-4"
+                :rules="[store.state.rules.minGroup(1, store.state.newSubject.teacher)]"
                 @keydown.native.space.prevent
-                :rules="[store.state.rules.spaces(store.state.newSubject.teacher),store.state.rules.min(10, store.state.newSubject.teacher), store.state.rules.max(100, store.state.newSubject.teacher)]"
                 label="Викладач"
-              ></v-combobox>
+              ></v-select>
             </v-col>
           </v-row>
           <v-card-actions class="my-0 py-0">
@@ -765,6 +778,7 @@ const AddSemesterForm = Vue.component('new-semester-x',{
       handler() {
         if (typeof this.$root.$refs.toolbar.$refs.newSemesterForm.$refs.form != 'undefined') {
           store.state.newSemester.semester = ''
+          store.state.newSemester.groups = []
           this.$root.$refs.toolbar.$refs.newSemesterForm.$refs.form.resetValidation()
         }
       }
@@ -831,6 +845,7 @@ const AddSemesterForm = Vue.component('new-semester-x',{
                 @keydown.native.space.prevent
                 color="teal darken-4"
                 item-color="teal darken-4"
+                @keypress.native="$root.validateKey($event)"
                 no-data-text="Не знайдено відповідних записів"
                 :rules="[store.state.rules.spaces(store.state.newSemester.discipline),store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
                 label="Навчальна дисципліна"
@@ -915,7 +930,7 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             </v-col>
           </v-row>
           <v-flex v-if="store.state.newSemester.subjects.length > 0">
-            <h5 class="font-weight-bold teal--text text--darken-4">Перелік навчальних дисциплін</h5>
+            <h3 class="font-weight-bold text--secondary">Перелік навчальних дисциплін</h3>
             <v-divider class="my-3"></v-divider>
             <v-row no-gutters v-for="(item, index) in store.state.newSemester.subjects" :key="item.index">
               <v-col cols="1">
@@ -972,6 +987,8 @@ const AddGradeForm = Vue.component('new-grade-x',{
     showDialog: {
       handler() {
         if (typeof this.$root.$refs.toolbar.$refs.newGradeForm.$refs.form != 'undefined') {
+          store.state.newGrade.scores = []
+          store.state.newGrade.grades = []
           this.$root.$refs.toolbar.$refs.newGradeForm.$refs.form.resetValidation()
         }
       }
@@ -990,6 +1007,7 @@ const AddGradeForm = Vue.component('new-grade-x',{
                 v-model="store.state.newGrade.semester"
                 @change="store.getters.getListOfDiscipline(store.state.newGrade.semester)"
                 :items="store.getters.getListOfSemesters"
+                :rules="[store.state.rules.minGroup(1, store.state.newGrade.semester)]"
                 color="teal darken-4"
                 item-color="teal darken-4"
                 no-data-text="Не знайдено відповідних записів"
@@ -1003,6 +1021,7 @@ const AddGradeForm = Vue.component('new-grade-x',{
                 v-model="store.state.newGrade.discipline"
                 no-data-text="Не знайдено відповідних записів"
                 :items="store.state.newGrade.disciplines"
+                :rules="[store.state.rules.minGroup(1, store.state.newGrade.discipline)]"
                 color="teal darken-4"
                 item-color="teal darken-4"
                 label="Навчальна дисципліна"
@@ -1043,20 +1062,20 @@ const AddGradeForm = Vue.component('new-grade-x',{
                             v-if="store.state.newGrade.discipline != ''"
                             v-model="store.state.newGrade.scores[index]"
                             single-line
-                            :rules="[store.state.rules.spaces(store.state.newGrade.scores[index]),store.state.rules.min(1, store.state.newGrade.scores[index]), store.state.rules.max(3, store.state.newGrade.scores[index])]"
+                            :rules="[store.state.rules.spaces(store.state.newGrade.scores[index]),store.state.rules.min(1, store.state.newGrade.scores[index]), store.state.rules.max(2, store.state.newGrade.scores[index])]"
                             color="teal darken-4"
                           ></v-text-field>
                       </td>
                       <td class="text-center"><v-divider vertical></v-divider></td>
                       <td class="text-center" width="100px">
-                          <v-text-field
-                            @keydown.native.space.prevent
-                            v-if="store.state.newGrade.discipline != ''"
-                            v-model="store.state.newGrade.grades[index]"
-                            single-line
-                            :rules="[store.state.rules.spaces(store.state.newGrade.grades[index]),store.state.rules.min(1, store.state.newGrade.grades[index]), store.state.rules.max(5, store.state.newGrade.grades[index])]"
-                            color="teal darken-4"
-                          ></v-text-field>
+                        <v-select
+                          v-if="store.state.newGrade.discipline != ''"
+                          v-model="store.state.newGrade.grades[index]"
+                          :items="['5','4','3','2','1','зарах']"
+                          :rules="[store.state.rules.minGroup(1, store.state.newGrade.grades[index])]"
+                          color="teal darken-4"
+                          item-color="teal darken-4"
+                        ></v-select>
                       </td>
                       <td><v-divider vertical></v-divider></td>
                     </tr>
@@ -2087,23 +2106,23 @@ let store = new Vuex.Store({
             return true
           }
         } else {
-         return 'Поле не може бути порожнім.'
+         return 'Порожнє поле'
        }
       },
       maxFile(v) {
-        return v => !v || v.size < 1000000 || 'Розмір фото не повинен перевищувати 1 MB!';
+        return v => !v || v.size < 1000000 || 'Максимальний розмір 1 MB';
       },
       min(min, v) {
-        return (v || '').length >= min || `Значення повинно бути не менше ${min} символ(ів).`;
+        return (v || '').length >= min || `Мінімальне значення ${min}`;
       },
       max(max, v) {
-        return (v || '').length <= max || `Значення не повинно перевищувати ${max} символ(ів).`;
+        return (v || '').length <= max || `Максимальне значення ${max}`;
       },
       emailRules(v) {
-        return v => /.+@.+\..+/.test(v) || 'E-mail введено некоректно.';
+        return v => /.+@.+\..+/.test(v) || 'Email введено некоректно';
       },
       minGroup(min, v) {
-        return (v || '').length >= min || `Потрібно обрати щонайменше ${min} значення.`;
+        return (v || '').length >= min || `Оберіть ${min} значення`;
       }
     },
     students: [],
@@ -2966,6 +2985,13 @@ const app = new Vue({
   methods: {
     scrollToTop() {
       window.scrollTo(0, 0);
+    },
+    validateKey(event) {
+        let charCode = (event.which) ? event.which : event.keyCode
+        if ((charCode > 32 && charCode < 123) && charCode != 45) {
+          event.preventDefault()
+        }
+        return true
     }
   }
 }).$mount('#app')
