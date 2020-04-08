@@ -17,7 +17,7 @@ class FlexUser(AbstractUser):
     status = StatusField(choices_name='STATUS')
 
     def __str__(self):
-        return '%s' % self.username
+        return '%s (%s)' % (self.username,self.fullname())
 
     def fullname(self):
         return '%s %s %s' % (self.last_name,self.first_name,self.sur_name)

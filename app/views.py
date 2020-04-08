@@ -194,10 +194,11 @@ class ActiveUserView(APIView):
         """
         user = get_object_or_404(FlexUser, code=request.data.get('person'))
         if 'avatar' in request.FILES:
-            print('in')
             user.avatar = request.FILES['avatar']
             user.save()
-        return Response({"success":True, "message":'Інформацію успішно змінено.'}, status=200)
+        user_avatar = UserSerializer(user).data
+        avatar = str(user_avatar['avatar'][7:])
+        return Response({"success":True, "message":'Інформацію успішно змінено.', 'avatar':avatar}, status=200)
 
 
 class EditSubjectView(APIView):
@@ -230,7 +231,7 @@ class EditSemesterView(APIView):
         student = get_object_or_404(Student, user__code=code)
         if Semester.objects.filter(students=student).exists():
             semesters = []
-            for semester in Semester.objects.filter(students=student):
+            for semester in Semester.objects.filter(students=student).order_by('pk'):
                 examinations = {}
                 examinations['semester'] = semester.semester
                 disciplines = [discipline for discipline in Discipline.objects.filter(semester=semester)]
@@ -255,7 +256,7 @@ class EditSemesterView(APIView):
             specialty = get_object_or_404(Specialty, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
             if Student.objects.filter(group=group, user__is_active=True).exists():
-                for student in Student.objects.all().filter(group=group, user__is_active=True):
+                for student in Student.objects.filter(group=group, user__is_active=True):
                     students.append(student)
             else:
                 return Response({"success":False, "message":'В групі ' + group_number + ' не зареєстровано студентів.'}, status=200)
@@ -284,11 +285,11 @@ class EditGradeView(APIView):
         group_semesters = []
         student = get_object_or_404(Student, user__code=students)
         if Semester.objects.filter(students=student).exists():
-            semesters = [semester for semester in Semester.objects.all().filter(students=student, is_active=True)]
+            semesters = [semester for semester in Semester.objects.filter(students=student, is_active=True).order_by('pk')]
             for semester in semesters:
                 our_semester = {}
                 our_semester['semester'] = semester.semester
-                disciplines = [discipline for discipline in Discipline.objects.all().filter(semester=semester)]
+                disciplines = [discipline for discipline in Discipline.objects.filter(semester=semester)]
                 our_semester['disciplines'] = DisciplinesSerializer(disciplines, many=True).data
                 group_semesters.append(our_semester)
             return Response({"success":True, "semesters":group_semesters}, status=200)
@@ -324,7 +325,7 @@ class EditGradeView(APIView):
 #     serializer_class = serializers.DepartmentSerializer
 
 class AdminListView(generics.ListAPIView):
-    queryset = FlexUser.objects.all().filter(status='Admin')
+    queryset = FlexUser.objects.filter(status='Admin')
     serializer_class = UserSerializer
 
 
@@ -332,7 +333,7 @@ class SubjectListView(generics.ListAPIView):
     """
     Subject view serializer to get the list of exists subjects
     """
-    queryset = Subject.objects.all().order_by('subject')
+    queryset = Subject.objects.filter(teacher__user__is_active=True).order_by('subject')
     serializer_class = SubjectSerializer
 
 
@@ -356,5 +357,5 @@ class TeacherListView(generics.ListAPIView):
     """
     Teacher view serializer to get the list of exists teachers
     """
-    queryset = Teacher.objects.all().filter(user__is_active=True).order_by('user__last_name')
+    queryset = Teacher.objects.filter(user__is_active=True).order_by('user__last_name')
     serializer_class = TeacherSerializer

@@ -62,9 +62,9 @@ table {
   box-sizing: border-box;
 }
 
-tr:hover {
-  padding: 3px;
-  box-shadow: 0 0 10px 0 rgba(0,0,0,0.5);
+.people tr:hover {
+  padding: 1px;
+  box-shadow: 0 0 5px 0 rgba(12, 57, 34, 0.5);
 }
 
 .v-simple-checkbox:hover {

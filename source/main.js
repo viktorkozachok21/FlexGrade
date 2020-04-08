@@ -1,3 +1,20 @@
+Notiflix.Confirm.Init({
+  backOverlayColor: 'rgba(24, 24, 28, 0.8)',
+  titleColor: '#1a745c',
+  titleFontSize: '20px',
+  messageFontSize: '20px',
+  okButtonColor: '#23232e',
+  okButtonBackground: '#6ec775',
+  cancelButtonColor: '#23232e',
+  cancelButtonBackground: '#cbe9c9',
+  buttonsFontSize: '20px'
+})
+Notiflix.Block.Init({
+  backgroundColor: 'rgba(24, 24, 28, 0.8)',
+  svgColor: '#92a7a1',
+  messageColor: '#92a7a1',
+  messageFontSize: '20px'
+});
 const Navbar = Vue.component('navbar-x', {
   template: `
   <nav class="navbar-x" v-if="store.state.authenticated" replace>
@@ -81,9 +98,8 @@ const Navbar = Vue.component('navbar-x', {
 })
 const Toolbar = Vue.component('toolbar-x', {
   template: `
-  <v-card class="main mb-3" height="70px">
-    <v-toolbar class="text-center" flat>
-      <v-span v-if="$route.meta.showBack" @click="$router.go(-1)" replace title="Повернутися на крок назад" class="mdi mdi-keyboard-return home-link"></v-span>
+    <v-toolbar class="text-center grey lighten-5" height="50px" flat>
+      <v-span v-if="$route.meta.showBack" @click="$router.go(-1)" replace title="Натисніть, щоб повернутися назад" class="mdi mdi-keyboard-return home-link"></v-span>
       <v-divider v-if="$route.meta.showBack" class="mx-2" inset vertical></v-divider>
 
       <v-spacer></v-spacer>
@@ -93,14 +109,14 @@ const Toolbar = Vue.component('toolbar-x', {
       class="mdi mdi-plus-box-outline home-link"
       @click="store.state.newStudent.dialog = true"
       v-if="store.state.status == 'Admin' && $route.meta.showNewStudent && store.state.studyStatus == true"
-      title="Зареєструвати нового студента"
+      title="Зареєструвати студента"
       ></v-span>
       <new-student-x ref="newStudentForm"></new-student-x>
       <v-span
       class="mdi mdi-plus-box-outline home-link"
       @click="store.state.newTeacher.dialog = true"
       v-if="store.state.status == 'Admin' && $route.meta.showNewTeacher"
-      title="Зареєструвати нового викладача"
+      title="Зареєструвати викладача"
       ></v-span>
       <new-teacher-x ref="newTeacherForm"></new-teacher-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
@@ -110,14 +126,26 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-span
       class="mdi mdi-account-minus home-link"
       @click="store.dispatch('minusStudent')"
-      v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"
-      title="Виключити студента(ів) зі списку"
+      v-if="store.state.status == 'Admin' && store.state.selectedStudents.length === 1 && store.state.studyStatus == true"
+      title="Вилучити студента зі списку"
+      ></v-span>
+      <v-span
+      class="mdi mdi-account-minus home-link"
+      @click="store.dispatch('minusStudent')"
+      v-else-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 1 && store.state.studyStatus == true"
+      title="Вилучити студентів зі списку"
       ></v-span>
       <v-span
       class="mdi mdi-account-minus home-link"
       @click="store.dispatch('minusTeacher')"
-      v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"
-      title="Виключити викладача(ів) зі списку"
+      v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length === 1"
+      title="Вилучити викладача зі списку"
+      ></v-span>
+      <v-span
+      class="mdi mdi-account-minus home-link"
+      @click="store.dispatch('minusTeacher')"
+      v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 1"
+      title="Вилучити викладачів зі списку"
       ></v-span>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
@@ -128,14 +156,14 @@ const Toolbar = Vue.component('toolbar-x', {
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editStudent;store.state.editStudent.dialog = true"
       v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"
-      title="Редагувати профіль"
+      title="Редагувати профіль студента"
       ></v-span>
       <edit-student-x ref="editStudentForm"></edit-student-x>
       <v-span
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editTeacher;store.state.editTeacher.dialog = true"
       v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"
-      title="Редагувати профіль"
+      title="Редагувати профіль викладача"
       ></v-span>
       <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
@@ -143,10 +171,10 @@ const Toolbar = Vue.component('toolbar-x', {
 
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
       <v-span
-      class="mdi mdi-database-plus home-link"
+      class="mdi mdi-chart-line home-link"
       @click="store.dispatch('loadSemesters', store.state.selectedStudents)"
       v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"
-      title="Внести оцінки"
+      title="Додати оцінки"
       ></v-span>
       <new-grade-x ref="newGradeForm"></new-grade-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
@@ -156,14 +184,14 @@ const Toolbar = Vue.component('toolbar-x', {
       class="mdi mdi-book-plus home-link"
       @click="store.getters.getListOfSubjects;store.state.newSemester.dialog = true"
       v-if="store.state.status == 'Admin' && $route.meta.showNewStudent && store.state.studyStatus == true"
-      title="Додати новий навчальний семестр"
+      title="Додати навчальний семестр"
       ></v-span>
       <new-semester-x ref="newSemesterForm"></new-semester-x>
       <v-span
       class="mdi mdi-note-plus-outline home-link"
       @click="store.state.newSubject.dialog = true"
       v-if="store.state.status == 'Admin' && $route.meta.showNewTeacher"
-      title="Додати нову навчальну дисципліну"
+      title="Додати навчальну дисципліну"
       ></v-span>
       <new-subject-x ref="newSubjectForm"></new-subject-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
@@ -171,17 +199,30 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-spacer></v-spacer>
 
       <v-divider v-if="store.state.authenticated" class="mx-2" inset vertical replace></v-divider>
-      <v-span class="home-link mdi mdi-exit-to-app" v-if="store.state.authenticated" @click="store.dispatch('logoutUser')" title="Вийти" replace></v-span>
+      <v-span class="home-link mdi mdi-exit-to-app" v-if="store.state.authenticated" @click="store.dispatch('logoutUser')" title="Вихід" replace></v-span>
       <v-divider class="mx-2" inset vertical></v-divider>
-      <div id="full-toggle" title="Toggle fullscreen" class="home-link"><span class="mdi mdi-fullscreen"></span></div>
+      <div id="full-toggle" class="home-link"><span class="mdi mdi-fullscreen" title="Увімкнути повноекранний режим"></span></div>
     </v-toolbar>
-  </v-card>
   `
 })
 const Footer = Vue.component('footer-x', {
+  data() {
+    return {
+      created: 2020,
+      today: new Date().getFullYear(),
+      copyRight: null
+    }
+  },
+  mounted() {
+    if (this.created === this.today) {
+      this.copyRight = `${this.created}`
+    } else {
+      this.copyRight = `${this.created}-${this.today}`
+    }
+  },
   template: `
   <v-footer height="35">
-    <p class="caption mb-0">&copy; 2020 <span class="caption font-weight-black">Flex Grade</span></p>
+    <p class="caption mb-0">&copy; {{ copyRight }} <span class="caption font-weight-black">Flex Grade</span></p>
     <a class="subtitle-2 mb-0 mr-3 home-link" href="https://www.linkedin.com/in/viktorkozachok" target="_blank" title="Developer">
       <span class="mdi mdi-linkedin"></span>
     </a>
@@ -189,21 +230,34 @@ const Footer = Vue.component('footer-x', {
   `
 })
 const AddStudentForm = Vue.component('new-student-x',{
+  computed: {
+    showDialog() {
+      return store.state.newStudent.dialog
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newStudentForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.newStudentForm.$refs.form.resetValidation()
+        }
+      }
+    }
+  },
   template: `
   <v-dialog v-model="store.state.newStudent.dialog" persistent max-width="700px">
-    <v-card class="text-center py-0 my-0">
+    <v-card id="addStudentForm" class="text-center pt-3">
       <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Реєстрація нового користувача (студент)</span>
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати студента</span>
       </v-title>
-        <v-container class="my-0 py-0">
+        <v-container>
           <v-form
             ref="form"
             v-model="store.state.newStudent.valid"
             :lazy-validation="store.state.newStudent.lazy"
-            class="my-0 py-0"
             >
           <v-row no-gutters>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="5" md="5" class="px-2 py-2">
               <v-text-field
               label="Ім'я користувача*"
               :rules="[store.state.rules.spaces(store.state.newStudent.username),store.state.rules.min(10, store.state.newStudent.username), store.state.rules.max(30, store.state.newStudent.username)]"
@@ -212,7 +266,7 @@ const AddStudentForm = Vue.component('new-student-x',{
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="10" sm="5" md="5" class="px-2 py-2">
               <v-text-field
               label="Пароль*"
               :rules="[store.state.rules.spaces(store.state.newStudent.password),store.state.rules.min(10, store.state.newStudent.password), store.state.rules.max(20, store.state.newStudent.password)]"
@@ -221,60 +275,64 @@ const AddStudentForm = Vue.component('new-student-x',{
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-            <v-col cols="12">
-              <v-btn class="home-link my-3" @click="store.dispatch('getPassword', store.state.newStudent)">Згенерувати логін та пароль</v-btn>
+            <v-col cols="2">
+              <v-btn text class="home-link my-3" title="Отримати логін та пароль" @click="store.dispatch('getPassword', store.state.newStudent)"><span class="mdi mdi-24px mdi-account-key"></span></v-btn>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="Прізвище"
+              label="Прізвище*"
               :rules="[store.state.rules.spaces(store.state.newStudent.lastName),store.state.rules.min(2, store.state.newStudent.lastName), store.state.rules.max(50, store.state.newStudent.lastName)]"
               v-model="store.state.newStudent.lastName"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="Ім'я"
+              label="Ім'я*"
               :rules="[store.state.rules.spaces(store.state.newStudent.firstName),store.state.rules.min(2, store.state.newStudent.firstName), store.state.rules.max(50, store.state.newStudent.firstName)]"
               v-model="store.state.newStudent.firstName"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="По батькові"
+              label="По батькові*"
               :rules="[store.state.rules.spaces(store.state.newStudent.surName),store.state.rules.min(2, store.state.newStudent.surName), store.state.rules.max(50, store.state.newStudent.surName)]"
               v-model="store.state.newStudent.surName"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="6" class="px-2 py-2">
               <v-text-field
-              label="Номер залікової книжки"
+              label="Номер залікової книжки*"
               :rules="[store.state.rules.spaces(store.state.newStudent.bookNumber),store.state.rules.min(2, store.state.newStudent.bookNumber), store.state.rules.max(15, store.state.newStudent.bookNumber)]"
               v-model="store.state.newStudent.bookNumber"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col class="d-flex px-1" cols="6">
+            <v-col cols="6" class="px-2 py-2">
              <v-select
               :items="store.state.groups"
               v-model="store.state.newStudent.group"
-              label="Група"
+              label="Група*"
+              item-color="teal darken-4"
+              color="teal darken-4"
+              no-data-text="Не знайдено відповідних записів"
               :rules="[store.state.rules.min(3, store.state.newStudent.group)]"
               dense required
              ></v-select>
            </v-col>
-           <v-col class="d-flex px-1" cols="6">
+           <v-col cols="12" sm="6" md="6" class="px-2 py-2">
              <v-file-input
               :rules="[store.state.rules.maxFile(store.state.newStudent.avatar)]"
               accept="image/png, image/jpeg, image/bmp, image/jpg"
               v-model="store.state.newStudent.avatar"
               show-size
+              color="teal darken-4"
               outlined dense
               placeholder="Оберіть фото"
               prepend-icon="mdi-camera"
@@ -284,91 +342,9 @@ const AddStudentForm = Vue.component('new-student-x',{
           </v-row>
           <v-card-actions class="my-0 py-0">
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('addStudent', $root.$refs.toolbar.$refs.newStudentForm.$refs.form)">Зареєструвати</v-btn>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addStudent', $root.$refs.toolbar.$refs.newStudentForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.newStudent.dialog = false">Згорнути</v-btn>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-form>
-        </v-container>
-    </v-card>
-  </v-dialog>
-  `
-})
-const EditStudentForm = Vue.component('edit-student-x',{
-  template: `
-  <v-dialog v-model="store.state.editStudent.dialog" persistent max-width="700px">
-    <v-card class="text-center py-0 my-0">
-      <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Редагувати профіль (студент)</span>
-      </v-title>
-        <v-container class="my-0 py-0">
-          <v-form
-            ref="form"
-            v-model="store.state.editStudent.valid"
-            :lazy-validation="store.state.editStudent.lazy"
-            class="my-0 py-0"
-            >
-          <v-row no-gutters>
-            <v-col cols="6" class="px-1">
-              <v-text-field
-              label="Прізвище"
-              @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.spaces(store.state.editStudent.lastName),store.state.rules.min(2, store.state.editStudent.lastName), store.state.rules.max(50, store.state.editStudent.lastName)]"
-              v-model="store.state.editStudent.lastName"
-              @keydown.native.space.prevent
-              color="teal darken-4" required
-              ></v-text-field>
-            </v-col>
-            <v-col cols="6" class="px-1">
-              <v-text-field
-              label="Ім'я"
-              @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.spaces(store.state.editStudent.firstName),store.state.rules.min(2, store.state.editStudent.firstName), store.state.rules.max(50, store.state.editStudent.firstName)]"
-              v-model="store.state.editStudent.firstName"
-              @keydown.native.space.prevent
-              color="teal darken-4" required
-              ></v-text-field>
-            </v-col>
-            <v-col cols="6" class="px-1">
-              <v-text-field
-              label="По батькові"
-              @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.spaces(store.state.editStudent.surName),store.state.rules.min(2, store.state.editStudent.surName), store.state.rules.max(50, store.state.editStudent.surName)]"
-              v-model="store.state.editStudent.surName"
-              @keydown.native.space.prevent
-              color="teal darken-4" required
-              ></v-text-field>
-            </v-col>
-            <v-col cols="6" class="px-1">
-              <v-text-field
-              label="Номер залікової книжки"
-              @input="store.state.editStudent.wasEdited = true"
-              :rules="[store.state.rules.spaces(store.state.editStudent.bookNumber),store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(15, store.state.editStudent.bookNumber)]"
-              v-model="store.state.editStudent.bookNumber"
-              @keydown.native.space.prevent
-              color="teal darken-4" required
-              ></v-text-field>
-            </v-col>
-           <v-col class="d-flex px-1" cols="6">
-             <v-file-input
-              :rules="[store.state.rules.maxFile(store.state.editStudent.avatar)]"
-              accept="image/png, image/jpeg, image/bmp, image/jpg"
-              v-model="store.state.editStudent.avatar"
-              show-size
-              @change="store.state.editStudent.wasEdited = true"
-              outlined dense
-              placeholder="Оберіть фото"
-              prepend-icon="mdi-camera"
-              label="Фото"
-           ></v-file-input>
-          </v-col>
-          </v-row>
-          <v-card-actions class="my-0 py-0">
-            <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('editStudent', $root.$refs.toolbar.$refs.editStudentForm.$refs.form)">Зареєструвати</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.editStudent.dialog = false">Згорнути</v-btn>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newStudent.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-form>
@@ -378,21 +354,34 @@ const EditStudentForm = Vue.component('edit-student-x',{
   `
 })
 const AddTeacherForm = Vue.component('new-teacher-x',{
+  computed: {
+    showDialog() {
+      return store.state.newTeacher.dialog
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newTeacherForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.newTeacherForm.$refs.form.resetValidation()
+        }
+      }
+    }
+  },
   template: `
   <v-dialog v-model="store.state.newTeacher.dialog" persistent max-width="700px">
-    <v-card class="text-center py-0 my-0">
-      <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Реєстрація нового користувача (викладач)</span>
-      </v-title>
-        <v-container class="my-0 py-0">
+    <v-card id="addTeacherForm" class="text-center pt-3">
+    <v-title class="subtitle-2 text-center">
+      <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати викладача</span>
+    </v-title>
+        <v-container>
           <v-form
             ref="form"
             v-model="store.state.newTeacher.valid"
             :lazy-validation="store.state.newTeacher.lazy"
-            class="my-0 py-0"
             >
           <v-row no-gutters>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="5" md="5" class="px-2 py-2">
               <v-text-field
               label="Ім'я користувача*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.username),store.state.rules.min(10, store.state.newTeacher.username), store.state.rules.max(30, store.state.newTeacher.username)]"
@@ -401,7 +390,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="10" sm="5" md="5" class="px-2 py-2">
               <v-text-field
               label="Пароль*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.password),store.state.rules.min(10, store.state.newTeacher.password), store.state.rules.max(20, store.state.newTeacher.password)]"
@@ -410,51 +399,52 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-            <v-col cols="12">
-              <v-btn class="home-link my-3" @click="store.dispatch('getPassword', store.state.newTeacher)">Згенерувати логін та пароль</v-btn>
+            <v-col cols="2">
+              <v-btn text class="home-link my-3" title="Отримати логін та пароль" @click="store.dispatch('getPassword', store.state.newTeacher)"><span class="mdi mdi-24px mdi-account-key"></span></v-btn>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="Прізвище"
+              label="Прізвище*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.lastName),store.state.rules.min(2, store.state.newTeacher.lastName), store.state.rules.max(50, store.state.newTeacher.lastName)]"
               v-model="store.state.newTeacher.lastName"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="Ім'я"
+              label="Ім'я*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.firstName),store.state.rules.min(2, store.state.newTeacher.firstName), store.state.rules.max(50, store.state.newTeacher.firstName)]"
               v-model="store.state.newTeacher.firstName"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="По батькові"
+              label="По батькові*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.surName),store.state.rules.min(2, store.state.newTeacher.surName), store.state.rules.max(50, store.state.newTeacher.surName)]"
               v-model="store.state.newTeacher.surName"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
-              label="Email"
+              label="Email*"
               :rules="[store.state.rules.spaces(store.state.newTeacher.email),store.state.rules.min(2, store.state.newTeacher.email), store.state.rules.emailRules(store.state.newTeacher.email)]"
               v-model="store.state.newTeacher.email"
               @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-           <v-col class="d-flex px-1" cols="6">
+           <v-col cols="12" sm="6" md="6" class="px-2 py-2">
              <v-file-input
               :rules="[store.state.rules.maxFile(store.state.newTeacher.avatar)]"
               accept="image/png, image/jpeg, image/bmp, image/jpg"
               v-model="store.state.newTeacher.avatar"
               show-size
+              color="teal darken-4"
               outlined dense
               placeholder="Оберіть фото"
               prepend-icon="mdi-camera"
@@ -464,9 +454,105 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
           </v-row>
           <v-card-actions class="my-0 py-0">
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('addTeacher', $root.$refs.toolbar.$refs.newTeacherForm.$refs.form)">Зареєструвати</v-btn>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addTeacher', $root.$refs.toolbar.$refs.newTeacherForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.newTeacher.dialog = false">Згорнути</v-btn>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newTeacher.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
+const EditStudentForm = Vue.component('edit-student-x',{
+  computed: {
+    showDialog() {
+      return store.state.editStudent.dialog
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.editStudentForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.editStudentForm.$refs.form.resetValidation()
+        }
+      }
+    }
+  },
+  template: `
+  <v-dialog v-model="store.state.editStudent.dialog" persistent max-width="700px">
+    <v-card id="editStudentForm" class="text-center pt-3">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Редагування профілю</span>
+      </v-title>
+        <v-container>
+          <v-form
+            ref="form"
+            v-model="store.state.editStudent.valid"
+            :lazy-validation="store.state.editStudent.lazy"
+            >
+          <v-row no-gutters>
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
+              <v-text-field
+              label="Прізвище"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.spaces(store.state.editStudent.lastName),store.state.rules.min(2, store.state.editStudent.lastName), store.state.rules.max(50, store.state.editStudent.lastName)]"
+              v-model="store.state.editStudent.lastName"
+              @keydown.native.space.prevent
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
+              <v-text-field
+              label="Ім'я"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.spaces(store.state.editStudent.firstName),store.state.rules.min(2, store.state.editStudent.firstName), store.state.rules.max(50, store.state.editStudent.firstName)]"
+              v-model="store.state.editStudent.firstName"
+              @keydown.native.space.prevent
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
+              <v-text-field
+              label="По батькові"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.spaces(store.state.editStudent.surName),store.state.rules.min(2, store.state.editStudent.surName), store.state.rules.max(50, store.state.editStudent.surName)]"
+              v-model="store.state.editStudent.surName"
+              @keydown.native.space.prevent
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
+              <v-text-field
+              label="Номер залікової книжки"
+              @input="store.state.editStudent.wasEdited = true"
+              :rules="[store.state.rules.spaces(store.state.editStudent.bookNumber),store.state.rules.min(2, store.state.editStudent.bookNumber), store.state.rules.max(15, store.state.editStudent.bookNumber)]"
+              v-model="store.state.editStudent.bookNumber"
+              @keydown.native.space.prevent
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+           <v-col cols="12" sm="6" md="6" class="px-2 py-2">
+             <v-file-input
+              :rules="[store.state.rules.maxFile(store.state.editStudent.avatar)]"
+              accept="image/png, image/jpeg, image/bmp, image/jpg"
+              v-model="store.state.editStudent.avatar"
+              show-size
+              @change="store.state.editStudent.wasEdited = true"
+              outlined dense
+              color="teal darken-4"
+              placeholder="Оберіть фото"
+              prepend-icon="mdi-camera"
+              label="Фото"
+           ></v-file-input>
+          </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('editStudent', $root.$refs.toolbar.$refs.editStudentForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.editStudent.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-form>
@@ -476,21 +562,34 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
   `
 })
 const EditTeacherForm = Vue.component('edit-teacher-x',{
+  computed: {
+    showDialog() {
+      return store.state.editTeacher.dialog
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.editTeacherForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.editTeacherForm.$refs.form.resetValidation()
+        }
+      }
+    }
+  },
   template: `
   <v-dialog v-model="store.state.editTeacher.dialog" persistent max-width="700px">
-    <v-card class="text-center py-0 my-0">
+    <v-card id="editTeacherForm" class="text-center pt-3">
       <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Редагувати профіль (студент)</span>
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Редагування профілю</span>
       </v-title>
-        <v-container class="my-0 py-0">
+        <v-container>
           <v-form
             ref="form"
             v-model="store.state.editTeacher.valid"
             :lazy-validation="store.state.editTeacher.lazy"
-            class="my-0 py-0"
             >
           <v-row no-gutters>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
               label="Прізвище"
               @input="store.state.editTeacher.wasEdited = true"
@@ -500,7 +599,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
               label="Ім'я"
               @input="store.state.editTeacher.wasEdited = true"
@@ -510,7 +609,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
               label="По батькові"
               @input="store.state.editTeacher.wasEdited = true"
@@ -520,7 +619,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="6" class="px-1">
+            <v-col cols="12" sm="6" md="6" class="px-2 py-2">
               <v-text-field
               label="Email"
               @input="store.state.editTeacher.wasEdited = true"
@@ -530,7 +629,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-           <v-col class="d-flex px-1" cols="6">
+           <v-col cols="12" sm="6" md="6" class="px-2 py-2">
              <v-file-input
               :rules="[store.state.rules.maxFile(store.state.editTeacher.avatar)]"
               accept="image/png, image/jpeg, image/bmp, image/jpg"
@@ -538,6 +637,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               show-size
               @change="store.state.editTeacher.wasEdited = true"
               outlined dense
+              color="teal darken-4"
               placeholder="Оберіть фото"
               prepend-icon="mdi-camera"
               label="Фото"
@@ -546,9 +646,9 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
           </v-row>
           <v-card-actions class="my-0 py-0">
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('editTeacher', $root.$refs.toolbar.$refs.editTeacherForm.$refs.form)">Зареєструвати</v-btn>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('editTeacher', $root.$refs.toolbar.$refs.editTeacherForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.editTeacher.dialog = false">Згорнути</v-btn>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.editTeacher.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-form>
@@ -558,21 +658,53 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
   `
 })
 const AddSubjectForm = Vue.component('new-subject-x',{
+  data() {
+    return {
+      teachers: []
+    }
+  },
+  computed: {
+    list() {
+      return store.state.teachers
+    },
+    showDialog() {
+      return store.state.newSubject.dialog
+    }
+  },
+  watch: {
+    list: {
+      handler() {
+        store.state.newSubject.subject = ''
+        store.state.newSubject.teacher = ''
+        this.teachers = store.getters.getListOfTeachers
+      },
+      deep: true,
+    },
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newSubjectForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.newSubjectForm.$refs.form.resetValidation()
+        }
+      }
+    }
+  },
+  mounted() {
+    this.teachers = store.getters.getListOfTeachers
+  },
   template: `
   <v-dialog v-model="store.state.newSubject.dialog" persistent max-width="700px">
-    <v-card class="text-center py-0 my-0">
+    <v-card id="addSubjectForm" class="text-center pt-3">
       <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Додати нову навчальну дисципліну</span>
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати навчальну дисципліну</span>
       </v-title>
-        <v-container class="my-0 py-0">
+        <v-container>
           <v-form
             ref="form"
             v-model="store.state.newSubject.valid"
             :lazy-validation="store.state.newSubject.lazy"
-            class="my-0 py-0"
             >
           <v-row no-gutters>
-            <v-col cols="12" class="px-1">
+            <v-col cols="12" class="px-2 py-2">
               <v-text-field
               label="Назва дисципліни"
               :rules="[store.state.rules.spaces(store.state.newSubject.subject),store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
@@ -581,10 +713,12 @@ const AddSubjectForm = Vue.component('new-subject-x',{
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
-            <v-col cols="12">
+            <v-col cols="12" class="px-2 py-2">
               <v-combobox
                 v-model="store.state.newSubject.teacher"
-                :items="store.getters.getListOfTeachers"
+                :items="teachers"
+                item-color="teal darken-4"
+                no-data-text="Не знайдено відповідних записів"
                 color="teal darken-4"
                 @keydown.native.space.prevent
                 :rules="[store.state.rules.spaces(store.state.newSubject.teacher),store.state.rules.min(10, store.state.newSubject.teacher), store.state.rules.max(100, store.state.newSubject.teacher)]"
@@ -594,9 +728,9 @@ const AddSubjectForm = Vue.component('new-subject-x',{
           </v-row>
           <v-card-actions class="my-0 py-0">
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('addSubject', $root.$refs.toolbar.$refs.newSubjectForm.$refs.form)">Зареєструвати</v-btn>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addSubject', $root.$refs.toolbar.$refs.newSubjectForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.newSubject.dialog = false">Згорнути</v-btn>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newSubject.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-form>
@@ -608,10 +742,36 @@ const AddSubjectForm = Vue.component('new-subject-x',{
 const AddSemesterForm = Vue.component('new-semester-x',{
   data () {
     return {
-      items: []
+      items: [],
+      subjects: []
+    }
+  },
+  computed: {
+    list() {
+      return store.state.subjects
+    },
+    showDialog() {
+      return store.state.newSemester.dialog
+    }
+  },
+  watch: {
+    list: {
+      handler() {
+        this.subjects = store.getters.getListOfSubjects
+      },
+      deep: true,
+    },
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newSemesterForm.$refs.form != 'undefined') {
+          store.state.newSemester.semester = ''
+          this.$root.$refs.toolbar.$refs.newSemesterForm.$refs.form.resetValidation()
+        }
+      }
     }
   },
   mounted () {
+    this.subjects = store.getters.getListOfSubjects
     const currentYear = new Date()
     let { firstYear, lastYear } = 0
     if (currentYear.getMonth() < 8) {
@@ -627,33 +787,35 @@ const AddSemesterForm = Vue.component('new-semester-x',{
   },
   template: `
   <v-dialog v-model="store.state.newSemester.dialog" persistent max-width="1200px">
-    <v-card class="text-center py-0 my-0">
+    <v-card id="addSemesterForm" class="text-center pt-3">
       <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Додати новий навчальний семестр</span>
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати навчальний семестр</span>
       </v-title>
-        <v-container class="my-0 py-0">
+        <v-container>
           <v-form
             ref="form"
             v-model="store.state.newSemester.valid"
             :lazy-validation="store.state.newSemester.lazy"
-            class="my-0 py-0"
             >
           <v-row no-gutters>
-            <v-col cols="12">
+            <v-col cols="12" class="px-2 py-2">
               <v-select
                 v-model="store.state.newSemester.semester"
                 :items="items"
+                item-color="teal darken-4"
                 color="teal darken-4"
                 :rules="[store.state.rules.minGroup(1, store.state.newSemester.semester)]"
                 label="Семестр навчального року"
               ></v-select>
             </v-col>
-            <v-col cols="12" class="px-1">
+            <v-col cols="12" class="px-2 py-2">
               <v-select
                 v-model="store.state.newSemester.groups"
                 @keydown.native.space.prevent
                 :items="store.state.groups"
                 color="teal darken-4"
+                item-color="teal darken-4"
+                no-data-text="Не знайдено відповідних записів"
                 :rules="[store.state.rules.minGroup(1, store.state.newSemester.groups)]"
                 label="Групи"
                 multiple required
@@ -661,29 +823,32 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             </v-col>
           </v-row>
           <v-row no-gutters>
-            <v-col cols="3" class="px-1">
+            <v-col cols="12" sm="6" md="3" class="px-2 py-2">
               <v-combobox
                 v-model="store.state.newSemester.discipline"
                 @change="store.getters.getTeacherForSubject(store.state.newSemester.discipline)"
-                :items="store.state.newSemester.listOfSubjects"
+                :items="subjects"
                 @keydown.native.space.prevent
                 color="teal darken-4"
+                item-color="teal darken-4"
+                no-data-text="Не знайдено відповідних записів"
                 :rules="[store.state.rules.spaces(store.state.newSemester.discipline),store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
                 label="Навчальна дисципліна"
                 required
               ></v-combobox>
             </v-col>
-            <v-col cols="2" class="px-1">
+            <v-col cols="6" sm="3" md="2" class="px-2 py-2">
               <v-select
                 v-model="store.state.newSemester.form"
                 :items="['Залік','Екзамен','Курсовий проект','Навчальна практика','Виробнича практика','Переддипломна практика']"
                 color="teal darken-4"
+                item-color="teal darken-4"
                 :rules="[store.state.rules.minGroup(1, store.state.newSemester.form)]"
                 label="Форма"
                 required
               ></v-select>
             </v-col>
-            <v-col cols="1" class="px-1">
+            <v-col cols="3" sm="3" md="1" class="px-2 py-2">
               <v-text-field
               label="Годин"
               @keydown.native.space.prevent
@@ -695,7 +860,7 @@ const AddSemesterForm = Vue.component('new-semester-x',{
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-            <v-col cols="1" class="px-1">
+            <v-col cols="3" sm="3" md="1" class="px-2 py-2">
               <v-text-field
               label="Кредитів"
               type="number"
@@ -707,7 +872,7 @@ const AddSemesterForm = Vue.component('new-semester-x',{
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-            <v-col cols="2" class="px-1">
+            <v-col cols="4" sm="3" md="2" class="px-2 py-2">
               <v-menu
                 v-model="store.state.newSemester.menu"
                 :close-on-content-click="false"
@@ -734,32 +899,26 @@ const AddSemesterForm = Vue.component('new-semester-x',{
                 ></v-date-picker>
               </v-menu>
             </v-col>
-            <v-col cols="3" class="px-1">
+            <v-col cols="6" sm="3" md="2" class="px-2 py-2">
               <v-text-field
               label="Викладач"
-              v-model="store.state.newSemester.teacher" required
+              v-model="store.state.newSemester.teacher"
+              :rules="[store.state.rules.spaces(store.state.newSemester.teacher),store.state.rules.min(10, store.state.newSemester.teacher), store.state.rules.max(50, store.state.newSemester.teacher)]"
               readonly
               color="teal darken-4"
               ></v-text-field>
             </v-col>
-          </v-row>
-          <v-row no-gutters>
-            <v-col cols="12">
-              <v-spacer></v-spacer>
-              <v-btn class="home-link my-3" @click="store.dispatch('addSubjectToSemester', $root.$refs.toolbar.$refs.newSemesterForm.$refs.form)">Додати</v-btn>
-              <v-spacer></v-spacer>
+            <v-col cols="2" sm="1" md="1" class="px-2 py-2">
+            <v-spacer></v-spacer>
+            <v-btn text class="home-link my-3" title="Додати до списку" @click="store.dispatch('addSubjectToSemester', $root.$refs.toolbar.$refs.newSemesterForm.$refs.form)"><span class="mdi mdi-24px mdi-arrow-down-bold-box-outline"></span></v-btn>
+            <v-spacer></v-spacer>
             </v-col>
           </v-row>
           <v-flex v-if="store.state.newSemester.subjects.length > 0">
-            <h2 class="text--secondary">Перелік навчальних дисциплін</h2>
+            <h5 class="font-weight-bold teal--text text--darken-4">Перелік навчальних дисциплін</h5>
             <v-divider class="my-3"></v-divider>
             <v-row no-gutters v-for="(item, index) in store.state.newSemester.subjects" :key="item.index">
               <v-col cols="1">
-                <v-span
-                class="mdi mdi-12px mdi-close-outline home-link mr-3"
-                @click="store.dispatch('removeSubjectFromSemester', index )"
-                title="Вилучити дисципліну"
-                ></v-span>
                   {{ index+1 }}
               </v-col>
               <v-col cols="3" class="text-left">
@@ -777,17 +936,24 @@ const AddSemesterForm = Vue.component('new-semester-x',{
               <v-col cols="2">
                 {{ item.date }}
               </v-col>
-              <v-col cols="3" class="text-left">
+              <v-col cols="2" class="text-left">
                 {{ item.teacher }}
+              </v-col>
+              <v-col cols="1">
+              <v-span
+              class="mdi mdi-24px mdi-close-outline home-link"
+              @click="store.dispatch('removeSubjectFromSemester', index )"
+              title="Вилучити зі списку"
+              ></v-span>
               </v-col>
             </v-row>
             <v-divider class="my-3"></v-divider>
           </v-flex>
           <v-card-actions class="my-0 py-0">
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('addSemester', $root.$refs.toolbar.$refs.newSemesterForm.$refs.form)">Зареєструвати</v-btn>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addSemester', $root.$refs.toolbar.$refs.newSemesterForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.newSemester.dialog = false">Згорнути</v-btn>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newSemester.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-form>
@@ -797,46 +963,63 @@ const AddSemesterForm = Vue.component('new-semester-x',{
   `
 })
 const AddGradeForm = Vue.component('new-grade-x',{
+  computed: {
+    showDialog() {
+      return store.state.newGrade.dialog
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newGradeForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.newGradeForm.$refs.form.resetValidation()
+        }
+      }
+    }
+  },
   template: `
   <v-dialog v-model="store.state.newGrade.dialog" persistent max-width="1000px">
-    <v-card class="text-center py-0 my-0">
+    <v-card id="addGradeForm" class="text-center pt-3">
       <v-title class="subtitle-2 text-center">
-        <span class="headline mx-auto">Внести оцінки</span>
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати оцінки</span>
       </v-title>
-        <v-container class="my-0 py-0">
+        <v-container>
           <v-row no-gutters>
-            <v-col cols="8" class="px-1">
+            <v-col cols="12" sm="8" md="8" class="px-2 py-2">
               <v-select
                 v-model="store.state.newGrade.semester"
                 @change="store.getters.getListOfDiscipline(store.state.newGrade.semester)"
                 :items="store.getters.getListOfSemesters"
                 color="teal darken-4"
+                item-color="teal darken-4"
+                no-data-text="Не знайдено відповідних записів"
                 label="Семестер"
                 required
               ></v-select>
             </v-col>
-            <v-col cols="4" class="px-1">
+            <v-col cols="12" sm="4" md="4" class="px-2 py-2">
               <v-select
                 v-if="store.state.newGrade.disciplines.length > 0"
                 v-model="store.state.newGrade.discipline"
+                no-data-text="Не знайдено відповідних записів"
                 :items="store.state.newGrade.disciplines"
                 color="teal darken-4"
+                item-color="teal darken-4"
                 label="Навчальна дисципліна"
                 required
               ></v-select>
             </v-col>
           </v-row>
           <v-row no-gutters>
-            <v-col cols="12">
+            <v-col cols="12" class="px-1">
               <v-divider class="my-1"></v-divider>
               <v-form
                 ref="form"
                 v-model="store.state.newGrade.valid"
                 :lazy-validation="store.state.newGrade.lazy"
-                class="my-0 py-0"
                 >
               <v-simple-table>
-                <v-divider class="my-1"></v-divider>
+                <v-divider class="py-1"></v-divider>
                 <template v-slot:default>
                   <thead>
                     <tr>
@@ -881,14 +1064,14 @@ const AddGradeForm = Vue.component('new-grade-x',{
                 </template>
               </v-simple-table>
               </v-form>
-              <v-divider class="my-1"></v-divider>
+              <v-divider class="py-1"></v-divider>
             </v-col>
           </v-row>
           <v-card-actions class="my-0 py-0">
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.dispatch('addGrade', $root.$refs.toolbar.$refs.newGradeForm.$refs.form)">Зареєструвати</v-btn>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addGrade', $root.$refs.toolbar.$refs.newGradeForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
-            <v-btn class="home-link my-3" @click="store.state.newGrade.dialog = false">Згорнути</v-btn>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newGrade.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-container>
@@ -899,7 +1082,7 @@ const AddGradeForm = Vue.component('new-grade-x',{
 // The Login Form
 const Login = {
   template: `
-  <div class="text-center mx-10">
+  <div class="text-center mx-3" v-if="form === true">
     <h3 class="text--secondary">Авторизація</h3>
     <v-text-field
     hide-details="auto"
@@ -910,7 +1093,7 @@ const Login = {
     single-line
     :rules="[store.state.rules.spaces(username)]"
     @keydown.native.space.prevent
-    prepend-inner-icon="mdi-lock-outline"
+    prepend-inner-icon="mdi-face"
     v-model="username"
     @keypress.enter="userLogin"
     class="my-5"
@@ -920,14 +1103,13 @@ const Login = {
     :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
     :type="show ? 'text' : 'password'"
     color="teal darken-4"
-    counter="30"
     maxlength="30"
     hint="Введіть ваш пароль"
     placeholder="Введіть ваш пароль"
     :rules="[store.state.rules.spaces(password)]"
     @keydown.native.space.prevent
     single-line
-    prepend-inner-icon="mdi-lock-outline"
+    prepend-inner-icon="mdi-key"
     v-model="password"
     class="my-5"
     @keypress.enter="userLogin"
@@ -950,20 +1132,25 @@ const Login = {
       username: "",
       password: "",
       show: false,
-      loading: false
+      loading: false,
+      form: false
     }
   },
   mounted() {
     store.dispatch('checkAuth')
-    if (store.state.authenticated) {
-        router.replace({
-          name: "home"
-        })
-        store.dispatch('loadStudents')
-        store.dispatch('loadTeachers')
-        store.dispatch('loadGroups')
-        store.dispatch('loadSubjects')
-    }
+      .then(() => {
+        if (store.state.authenticated) {
+          router.replace({
+            name: "home"
+          })
+          store.dispatch('loadStudents')
+          store.dispatch('loadTeachers')
+          store.dispatch('loadGroups')
+          store.dispatch('loadSubjects')
+        } else {
+          this.form = true
+        }
+      })
   },
   methods: {
     userLogin() {
@@ -976,23 +1163,18 @@ const Login = {
           this.loading = true
           sessionStorage.setItem('username', this.username)
           store.dispatch('loginUser', data)
-          setTimeout(() => {
-            const result = JSON.parse(sessionStorage.getItem("response"))
-            if (!result.key) {
-              Notiflix.Notify.Failure('Не вдається увійти за допомогою наданих облікових даних.')
-            } else if (typeof result.key != 'undefined') {
-              sessionStorage.setItem("auth_token", result.key)
-              router.replace({
-                name: "home"
-              })
-              Notiflix.Notify.Success('Авторизація пройшла успішно.')
-              store.dispatch('loadStudents')
-              store.dispatch('loadTeachers')
-              store.dispatch('loadGroups')
-              store.dispatch('loadSubjects')
-            }
-            this.loading = false
-          }, 3000)
+            .then(result => {
+              if (!result.key) {
+                Notiflix.Notify.Failure('Не вдається увійти за допомогою наданих облікових даних.')
+              } else if (typeof result.key != 'undefined') {
+                sessionStorage.setItem("auth_token", result.key)
+                router.replace({
+                  name: "home"
+                })
+                Notiflix.Notify.Success('Авторизація пройшла успішно.')
+              }
+              this.loading = false
+            })
         } else {
           this.loading = false
           Notiflix.Notify.Warning('Поле "пароль" не може бути порожнім.')
@@ -1041,10 +1223,10 @@ const Contact = {
     <div class="text-justify contact-section">
       <span class="mdi mdi-earth"></span>
       <span class="text--secondary font-weight-black">Призначення:</span>
-      <span> облік результатів здачі студентом залікової сесії.</span> <br>
+      <span> облік результатів залікової сесії</span> <br>
       <span class="mdi mdi-account-outline"></span>
       <span class="text--secondary font-weight-black">Розробник:</span>
-      <a class="home-link" href="https://www.facebook.com/BeCeJIyH4iK" target="_blank"> Козачок Віктор</a> <br>
+      <a class="home-link" href="https://www.linkedin.com/in/viktorkozachok" target="_blank"> Козачок Віктор</a> <br>
       <span class="mdi mdi-phone"></span>
       <span class="text--secondary font-weight-black">Телефон:</span>
       <span> 096-123-7959</span> <br>
@@ -1055,8 +1237,9 @@ const Contact = {
     <h3>Адміністратори системи</h3>
     <div class="text-justify contact-section" v-for="admin in store.state.admins">
       <span class="mdi mdi-account-outline"></span>
-      <span> {{ admin.fullname }}</span>
-      <span class="text--secondary font-weight-black ml-3">Email:</span>
+      <span> {{ admin.fullname }}</span> <br>
+      <span class="mdi mdi-gmail"></span>
+      <span class="text--secondary font-weight-black">Email:</span>
       <span> {{ admin.email }}</span> <br>
     </div>
   </div>
@@ -1080,7 +1263,9 @@ const StudentsList = {
       v-model="search"
       append-icon="mdi-magnify"
       label="Пошук..."
+      color="teal darken-4"
       @keydown.native.space.prevent
+      @input="store.state.selectedStudents = []"
       single-line
       hide-details
       ></v-text-field>
@@ -1107,7 +1292,7 @@ const StudentsList = {
     no-data-text="Не знайдено відповідних записів"
     v-model="store.state.selectedStudents"
     :single-select="singleSelect"
-    show-select
+    :show-select="store.state.showSelected"
     :options.sync="options"
     :items-per-page="itemsPerPage"
     @page-count="pageCount = $event"
@@ -1137,6 +1322,7 @@ const StudentsList = {
     <v-text-field
     v-model="totalItems"
     v-if="totalItems"
+    color="teal darken-4"
     prepend-inner-icon="mdi-emoticon"
     solo
     readonly
@@ -1191,13 +1377,21 @@ const StudentsList = {
       ],
     }
   },
+  computed: {
+    watcher() {
+      options = this.options
+      students = store.state.students
+      return { options, students }
+    }
+  },
   watch: {
-    options: {
+    watcher: {
       handler() {
         this.getData()
           .then(data => {
             this.students = data.result
-            this.totalItems = " Загальна кількість студентів: " + data.total;
+            this.totalItems = " Загальна кількість студентів: " + data.total
+            this.loading = false
           })
       },
       deep: true,
@@ -1205,18 +1399,19 @@ const StudentsList = {
   },
   mounted() {
     if (!store.state.authenticated) {
-      router.push({
+      router.replace({
         name: "login"
-      });
-    } else {
-    this.getData()
-      .then(data => {
-        this.students = data.result
-        this.totalItems = " Загальна кількість студентів: " + data.total;
       })
+    } else {
+      this.getData()
+        .then(data => {
+          this.students = data.result
+          this.totalItems = " Загальна кількість студентів: " + data.total
+          this.loading = false
+        })
     }
   },
-  beforeRouteLeave (to, from, next) {
+  beforeRouteLeave(to, from, next) {
     store.state.selectedStudents = []
     next()
   },
@@ -1224,20 +1419,16 @@ const StudentsList = {
     getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
-        let {
-          studyStatus,
-          page
-          } = this.options
-          store.dispatch('checkStatus', studyStatus)
-          let result = store.getters.getStudents(studyStatus)
-          setTimeout(() => {
-            let total = result.length
-            this.loading = false
-            resolve({
-              result,
-              total
-            })
-          }, 2000)
+        let { studyStatus, page } = this.options
+        store.dispatch('checkStatus', studyStatus)
+        let result = store.getters.getStudents(studyStatus)
+        let total = result.length
+        setTimeout(function() {
+          resolve({
+            result,
+            total
+          })
+        }, 1000);
       })
     },
     moreInfo(student) {
@@ -1299,7 +1490,7 @@ const StudentsPerson = {
               width="250"
               >
               <v-span
-              class="mdi mdi-36px mdi-border-color home-link mr-1"
+              class="mdi mdi-24px mdi-border-color home-link mr-1"
               @click="dialog = true"
               v-if="edit == true"
               title="Змінити фото"
@@ -1307,7 +1498,7 @@ const StudentsPerson = {
             </v-img>
               <span class="font-weight-bold mb-1">Дата реєстрації:</span> {{ person.registered }}
           </div>
-          <h1 class="text--secondary">Електронна залікова книжка №: {{ person.book_number }}</h1>
+          <h2 class="text--secondary">Електронна залікова книжка №: {{ person.book_number }}</h2>
           <h3 class="mb-1">{{ person.fullname }}</h3>
           <v-divider class="my-3"></v-divider>
           <div class="text-justify">
@@ -1319,9 +1510,9 @@ const StudentsPerson = {
       <v-row>
         <v-col cols="12">
           <v-divider class="my-3"></v-divider>
-          <h2 class="text--secondary">
+          <h3 class="text--secondary">
             Заліки, екзамени, курсові роботи, практики
-          </h2>
+          </h3>
           <v-divider class="my-3"></v-divider>
           <v-progress-linear
           :active="loading"
@@ -1332,7 +1523,7 @@ const StudentsPerson = {
           <p v-if="!gotData">Не знайдено відповідних записів</p>
             <div v-if="gotData" v-for="(semester, index) in semesters" :key="index" class="mb-5">
               <v-divider class="my-1"></v-divider>
-              <h4 class="title ml-5 my-3 text-left">{{ semester.semester }}</h4>
+              <h5 class="title ml-5 my-3 text-left">{{ semester.semester }}</h5>
               <v-divider class="my-1"></v-divider>
               <v-simple-table>
                 <template v-slot:default>
@@ -1400,17 +1591,17 @@ const StudentsPerson = {
       } else {
         this.edit = false
       }
-    this.person = this.$route.params.profile
-    this.getData()
-    .then(data => {
-      this.semesters = data.semesters
-      this.loading = false
-      if (data.semesters.length > 0) {
-        this.gotData = true
-      } else {
-        this.gotData = false
-      }
-    })
+      this.person = this.$route.params.profile
+      this.getData()
+        .then(data => {
+          this.semesters = data.semesters
+          this.loading = false
+          if (data.semesters.length > 0) {
+            this.gotData = true
+          } else {
+            this.gotData = false
+          }
+        })
 
     }
   },
@@ -1419,29 +1610,29 @@ const StudentsPerson = {
       this.loading = true
       return new Promise((resolve, reject) => {
         store.dispatch('getSemesters', this.person.code)
-        let semesters = []
-        setTimeout(function() {
-          semesters = store.state.semestersForStudent
-        }, 1000);
-        setTimeout(function() {
-          resolve({
-            semesters
+          .then(() => {
+            let semesters = store.state.semestersForStudent
+            setTimeout(function() {
+              resolve({
+                semesters
+              })
+            }, 1000);
           })
-        }, 2000)
       })
     },
     changeAvatar() {
       if (this.avatar && this.avatar != '') {
-        const params = {
-          person: this.person.code,
-          avatar: this.avatar
-        }
-        store.dispatch('editPhoto', params)
-        this.person.avatar = this.avatar
+        store.dispatch('editPhoto', {
+            person: this.person.code,
+            avatar: this.avatar
+          })
+          .then(result => {
+            store.dispatch('checkAuth')
+            this.person.avatar = result
+            this.avatar = ''
+            Notiflix.Notify.Success('Інформацію успішно змінено.')
+          })
         this.dialog = false
-        setTimeout(function() {
-          store.dispatch('checkAuth')
-        }, 2000)
       } else {
         Notiflix.Notify.Info('Змін не виявлено.')
       }
@@ -1459,7 +1650,9 @@ const TeachersList = {
       v-model="search"
       append-icon="mdi-magnify"
       label="Пошук..."
+      color="teal darken-4"
       @keydown.native.space.prevent
+      @input="store.state.selectedTeachers = []"
       single-line
       hide-details
       ></v-text-field>
@@ -1473,7 +1666,7 @@ const TeachersList = {
     :search="search"
     v-model="store.state.selectedTeachers"
     :single-select="singleSelect"
-    show-select
+    :show-select="store.state.showSelected"
     no-results-text="Не знайдено відповідних записів"
     no-data-text="Не знайдено відповідних записів"
     :page="page"
@@ -1505,6 +1698,7 @@ const TeachersList = {
     v-model="totalItems"
     v-if="totalItems"
     prepend-inner-icon="mdi-emoticon"
+    color="teal darken-4"
     solo readonly
     ></v-text-field>
   </div>
@@ -1536,13 +1730,19 @@ const TeachersList = {
       ],
     }
   },
+  computed: {
+    watcher() {
+      return store.state.teachers
+    }
+  },
   watch: {
-    options: {
+    watcher: {
       handler() {
         this.getData()
           .then(data => {
             this.teachers = data.loaded
-            this.totalItems = " Загальна кількість викладачів: " + data.total;
+            this.totalItems = " Загальна кількість викладачів: " + data.total
+            this.loading = false
           })
       },
       deep: true,
@@ -1552,21 +1752,17 @@ const TeachersList = {
     if (!store.state.authenticated) {
       router.replace({
         name: "login"
-      });
-    } else {
-    if (this.$route.params.teacherName != null) {
-        this.search = this.$route.params.teacherName
-    } else {
-        this.search = ''
-    }
-    this.getData()
-      .then(data => {
-        this.teachers = data.loaded
-        this.totalItems = " Загальна кількість викладачів: " + data.total;
       })
+    } else {
+      this.getData()
+        .then(data => {
+          this.teachers = data.loaded
+          this.totalItems = " Загальна кількість викладачів: " + data.total
+          this.loading = false
+        })
     }
   },
-  beforeRouteLeave (to, from, next) {
+  beforeRouteLeave(to, from, next) {
     store.state.selectedTeachers = []
     next()
   },
@@ -1574,19 +1770,14 @@ const TeachersList = {
     getData() {
       this.loading = true
       return new Promise((resolve, reject) => {
-        let loaded = []
-        let total = null
+        let loaded = store.state.teachers
+        let total = loaded.length
         setTimeout(() => {
-          loaded = store.state.teachers
-          total = loaded.length
-        }, 1000)
-        setTimeout(() => {
-          this.loading = false
           resolve({
             loaded,
             total,
           })
-        }, 2000)
+        }, 1000)
       })
     },
     moreInfo(teacher) {
@@ -1648,7 +1839,7 @@ const TeachersPerson = {
            width="250"
            >
            <v-span
-           class="mdi mdi-36px mdi-border-color home-link mr-1"
+           class="mdi mdi-24px mdi-border-color home-link mr-1"
            @click="dialog = true"
            v-if="edit == true"
            title="Змінити фото"
@@ -1667,7 +1858,7 @@ const TeachersPerson = {
     <v-row>
       <v-col cols="12">
         <v-divider class="my-3"></v-divider>
-        <h2 class="text--secondary">Викладає навчальні дисципліни:</h2>
+        <h3 class="text--secondary">Викладає навчальні дисципліни:</h3>
         <v-divider class="my-3"></v-divider>
         <v-progress-linear
         :active="loading"
@@ -1710,22 +1901,22 @@ const TeachersPerson = {
         name: "login"
       });
     } else {
-    this.person = this.$route.params.profile
-    if (this.$route.params.edit) {
-      this.edit = true
-    } else {
-      this.edit = false
-    }
-    this.getData()
-    .then(data => {
-      this.subjects = data.loaded
-      this.loading = false
-      if (data.loaded.length > 0) {
-        this.gotData = true
+      this.person = this.$route.params.profile
+      if (this.$route.params.edit) {
+        this.edit = true
       } else {
-        this.gotData = false
+        this.edit = false
       }
-    })
+      this.getData()
+        .then(data => {
+          this.subjects = data.loaded
+          this.loading = false
+          if (data.loaded.length > 0) {
+            this.gotData = true
+          } else {
+            this.gotData = false
+          }
+        })
     }
   },
   methods: {
@@ -1742,16 +1933,17 @@ const TeachersPerson = {
     },
     changeAvatar() {
       if (this.avatar && this.avatar != '') {
-        const params = {
-          person: this.person.code,
-          avatar: this.avatar
-        }
-        store.dispatch('editPhoto', params)
-        this.person.avatar = this.avatar
+        store.dispatch('editPhoto', {
+            person: this.person.code,
+            avatar: this.avatar
+          })
+          .then(result => {
+            store.dispatch('checkAuth')
+            this.person.avatar = result
+            this.avatar = ''
+            Notiflix.Notify.Success('Інформацію успішно змінено.')
+          })
         this.dialog = false
-        setTimeout(function() {
-          store.dispatch('checkAuth')
-        }, 2000)
       } else {
         Notiflix.Notify.Info('Змін не виявлено.')
       }
@@ -1880,9 +2072,7 @@ const router = new VueRouter({
 Vue.use(Vuex)
 let store = new Vuex.Store({
   state: {
-    showNotification: false,
-    notificationType: 'success',
-    notificationMessage: 'test',
+    showSelected: false,
     authenticated: false,
     rules: {
       spaces(v) {
@@ -1974,7 +2164,6 @@ let store = new Vuex.Store({
       dialog: false,
       subject: '',
       teacher: '',
-      code: ''
     },
     newSemester: {
       valid: true,
@@ -1982,7 +2171,6 @@ let store = new Vuex.Store({
       dialog: false,
       semester: '',
       groups: [],
-      listOfSubjects: '',
       discipline: '',
       form: '',
       hours: '',
@@ -2007,77 +2195,437 @@ let store = new Vuex.Store({
   },
   actions: {
     checkAuth: ({ commit }) => {
-      commit('CHECK_AUTH')
+      if (sessionStorage.getItem('auth_token')) {
+        return new Promise((resolve, reject) => {
+          let username = sessionStorage.getItem('username')
+          fetch(`/api/app/active_user/${username}`, {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              }
+            })
+            .then(r => r.json())
+            .then(response => {
+              sessionStorage.removeItem("profile")
+              sessionStorage.setItem("profile", JSON.stringify(response.profile))
+              resolve(commit('CHECK_AUTH', {
+                response: response
+              }))
+            })
+        })
+      } else {
+        commit('CHECK_AUTH')
+      }
     },
     loginUser: ({ commit }, data) => {
-      commit('LOGIN', data)
+      let csrftoken = getCookie('csrftoken')
+      return new Promise((resolve, reject) => {
+        fetch('/api/auth/login/', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify(data)
+          })
+          .then(r => r.json())
+          .then(response => {
+            sessionStorage.setItem("response", JSON.stringify(response))
+            resolve(response)
+          })
+      })
     },
     logoutUser: ({ commit }) => {
-      commit('LOGOUT')
+      Notiflix.Confirm.Show(
+        'Підтвердіть дію', 'Ви дійсно хочете вийти?', 'Так', 'Ні',
+        function() {
+          return new Promise((resolve, reject) => {
+            fetch('/api/auth/logout/')
+              .then(() => {
+                sessionStorage.removeItem("auth_token")
+                sessionStorage.removeItem("username")
+                sessionStorage.removeItem("response")
+                sessionStorage.removeItem("profile")
+                router.replace({
+                  name: "login"
+                })
+                resolve(commit('CHECK_AUTH'))
+              })
+          })
+        },
+        function() {});
     },
     getPassword: ({ commit }, person) => {
-      commit('GET_PASSWORD', person)
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/registration/')
+          .then(r => r.json())
+          .then(result => {
+            resolve(commit('GET_PASSWORD', {
+              person: person,
+              result: result
+            }))
+          })
+      })
     },
     getAdmins: ({ commit }) => {
-      commit('GET_ADMINS')
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/admins/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('GET_ADMINS', response))
+          })
+      })
     },
-    addStudent: ({ commit }, form) => {
+    addStudent: ({ commit, state, dispatch }, form) => {
       if (form.validate()) {
-      commit('ADD_STUDENT', form)
+        Notiflix.Block.Circle('div#addStudentForm', 'Зачекайте, будь ласка ...')
+        let data = new FormData()
+        data.append('username', state.newStudent.username)
+        data.append('password', state.newStudent.password)
+        data.append('first_name', state.newStudent.firstName)
+        data.append('last_name', state.newStudent.lastName)
+        data.append('sur_name', state.newStudent.surName)
+        data.append('book_number', state.newStudent.bookNumber)
+        data.append('group_number', state.newStudent.group)
+        if (state.newStudent.avatar != '') {
+          data.append('avatar', state.newStudent.avatar)
+        }
+        let csrftoken = getCookie('csrftoken')
+        return new Promise((resolve, reject) => {
+          fetch('/api/app/registration/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              Notiflix.Block.Remove('div#addStudentForm')
+              if (response.success) {
+                dispatch('loadStudents')
+                resolve(commit('ADD_STUDENT', {
+                  form: form,
+                  response: response
+                }))
+              } else if (!response.success) {
+                Notiflix.Notify.Failure(response.message)
+              }
+            })
+        })
       } else {
         Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
       }
     },
-    editStudent: ({ commit, state }, form) => {
+    addTeacher: ({ commit, state, dispatch }, form) => {
+      if (form.validate()) {
+        Notiflix.Block.Circle('div#addTeacherForm', 'Зачекайте, будь ласка ...')
+        let data = new FormData()
+        data.append('username', state.newTeacher.username)
+        data.append('password', state.newTeacher.password)
+        data.append('first_name', state.newTeacher.firstName)
+        data.append('last_name', state.newTeacher.lastName)
+        data.append('sur_name', state.newTeacher.surName)
+        data.append('email', state.newTeacher.email)
+        if (state.newTeacher.avatar != '') {
+          data.append('avatar', state.newTeacher.avatar)
+        }
+        let csrftoken = getCookie('csrftoken')
+        return new Promise((resolve, reject) => {
+          fetch('/api/app/registration/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              Notiflix.Block.Remove('div#addTeacherForm')
+              if (response.success) {
+                dispatch('loadTeachers')
+                resolve(commit('ADD_TEACHER', {
+                  form: form,
+                  response: response
+                }))
+              } else if (!response.success) {
+                Notiflix.Notify.Failure(response.message)
+              }
+            })
+        })
+      } else {
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+      }
+    },
+    editStudent: ({ commit, state, dispatch }, form) => {
       if (state.editStudent.wasEdited) {
         if (form.validate()) {
-        commit('EDIT_STUDENT', form)
+          Notiflix.Block.Circle('div#editStudentForm', 'Зачекайте, будь ласка ...')
+          let data = new FormData()
+          data.append('code', state.editStudent.code)
+          data.append('first_name', state.editStudent.firstName)
+          data.append('last_name', state.editStudent.lastName)
+          data.append('sur_name', state.editStudent.surName)
+          data.append('book_number', state.editStudent.bookNumber)
+          if (state.editStudent.avatar && state.editStudent.avatar != '') {
+            data.append('avatar', state.editStudent.avatar)
+          }
+          let csrftoken = getCookie('csrftoken')
+          return new Promise((resolve, reject) => {
+            fetch('/api/app/edit_profile/', {
+                method: 'PUT',
+                headers: {
+                  'X-CSRFToken': csrftoken,
+                },
+                body: data
+              })
+              .then(r => r.json())
+              .then(response => {
+                Notiflix.Block.Remove('div#editStudentForm')
+                if (response.success) {
+                  dispatch('loadStudents')
+                  resolve(commit('EDIT_STUDENT', {
+                    form: form,
+                    response: response
+                  }))
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+              })
+          })
         } else {
           Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
         }
-      }
-      else {
+      } else {
         Notiflix.Notify.Info('Змін не виявлено.')
       }
     },
-    minusStudent: ({ commit }) => {
-      commit('MINUS_STUDENT')
-    },
-    checkStatus: ({ state }, status) => {
-      state.studyStatus = status
-    },
-    addTeacher: ({ commit }, form) => {
-      if (form.validate()) {
-        commit('ADD_TEACHER', form)
-      } else {
-        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
-      }
-    },
-    editTeacher: ({ commit, state }, form) => {
+    editTeacher: ({ commit, state, dispatch }, form) => {
       if (state.editTeacher.wasEdited) {
         if (form.validate()) {
-        commit('EDIT_TEACHER', form)
+          Notiflix.Block.Circle('div#editTeacherForm', 'Зачекайте, будь ласка ...')
+          let data = new FormData()
+          data.append('code', state.editTeacher.code)
+          data.append('first_name', state.editTeacher.firstName)
+          data.append('last_name', state.editTeacher.lastName)
+          data.append('sur_name', state.editTeacher.surName)
+          data.append('email', state.editTeacher.email)
+          if (state.editTeacher.avatar && state.editTeacher.avatar != '') {
+            data.append('avatar', state.editTeacher.avatar)
+          }
+          let csrftoken = getCookie('csrftoken')
+          return new Promise((resolve, reject) => {
+            fetch('/api/app/edit_profile/', {
+                method: 'PUT',
+                headers: {
+                  'X-CSRFToken': csrftoken,
+                },
+                body: data
+              })
+              .then(r => r.json())
+              .then(response => {
+                Notiflix.Block.Remove('div#editTeacherForm')
+                if (response.success) {
+                  dispatch('loadTeachers')
+                  commit('EDIT_TEACHER', {
+                    form: form,
+                    response: response
+                  })
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+                Notiflix.Block.Remove('div#editTeacherForm')
+              })
+          })
         } else {
           Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
         }
-      }
-      else {
+      } else {
         Notiflix.Notify.Info('Змін не виявлено.')
       }
     },
-    minusTeacher: ({ commit }) => {
-      commit('MINUS_TEACHER')
+    minusStudent: ({ commit, state, dispatch }) => {
+      Notiflix.Confirm.Show(
+        'Підтвердіть дію', 'Виключити студента(ів) зі списку?', 'Так', 'Ні',
+        function() {
+          let students = []
+          state.selectedStudents.forEach(item => {
+            students.push(item.code)
+          })
+          let csrftoken = getCookie('csrftoken')
+          return new Promise((resolve, reject) => {
+            fetch('/api/app/registration/', {
+                method: 'PUT',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({
+                  'students': students
+                })
+              })
+              .then(r => r.json())
+              .then(response => {
+                if (response.success) {
+                  dispatch('loadStudents')
+                  resolve(commit('MINUS_USER'))
+                  Notiflix.Notify.Success(response.message)
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+              })
+          })
+        },
+        function() {})
     },
-    addSubject: ({ commit, state, getters }, form) => {
+    minusTeacher: ({ commit, state, dispatch }) => {
+      Notiflix.Confirm.Show(
+        'Підтвердіть дію', 'Виключити викладача(ів) зі списку?', 'Так', 'Ні',
+        function() {
+          let teachers = []
+          state.selectedTeachers.forEach(item => {
+            teachers.push(item.code)
+          })
+          let csrftoken = getCookie('csrftoken')
+          return new Promise((resolve, reject) => {
+            fetch('/api/app/registration/', {
+                method: 'PUT',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({
+                  'teachers': teachers
+                })
+              })
+              .then(r => r.json())
+              .then(response => {
+                if (response.success) {
+                  dispatch('loadTeachers')
+                  dispatch('loadSubjects')
+                  resolve(commit('MINUS_USER'))
+                  Notiflix.Notify.Success(response.message)
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+              })
+          })
+        },
+        function() {})
+    },
+    loadStudents: ({ commit }) => {
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/students/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('LOAD_STUDENTS', response))
+          })
+      })
+    },
+    loadTeachers: ({ commit }) => {
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/teachers/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('LOAD_TEACHERS', response))
+          })
+      })
+    },
+    checkStatus: ({ commit }, status) => {
+      commit('CHECK_STATUS', status)
+    },
+    loadSubjects: ({ commit }) => {
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/subjects/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('LOAD_SUBJECTS', response))
+          })
+      })
+    },
+    addSubject: ({ commit, state, dispatch, getters }, form) => {
       if (form.validate()) {
-        state.newSubject.code = getters.getTeacherCode(state.newSubject.teacher)
-        commit('ADD_SUBJECT', form)
+        Notiflix.Block.Circle('div#addSubjectForm', 'Зачекайте, будь ласка ...')
+        let data = new FormData()
+        data.append('subject', state.newSubject.subject)
+        data.append('teacher', getters.getTeacherCode(state.newSubject.teacher))
+        let csrftoken = getCookie('csrftoken')
+        return new Promise((resolve, reject) => {
+          fetch('/api/app/edit_subject/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+            .then(r => r.json())
+            .then(response => {
+              Notiflix.Block.Remove('div#addSubjectForm')
+              if (response.success) {
+                dispatch('loadSubjects')
+                resolve(commit('ADD_SUBJECT', {
+                  form: form,
+                  response: response
+                }))
+              } else if (!response.success) {
+                Notiflix.Notify.Failure(response.message)
+              }
+            })
+        })
       } else {
         Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
       }
     },
-    addSemester: ({ commit}, form) => {
-      commit('ADD_SEMESTER', form)
+    addSemester: ({ commit, state }, form) => {
+      if (state.newSemester.semester != '') {
+        if (state.newSemester.groups.length > 0) {
+          if (state.newSemester.subjects.length > 0) {
+            Notiflix.Block.Circle('div#addSemesterForm', 'Зачекайте, будь ласка ...')
+            const data = {
+              'semester': state.newSemester.semester,
+              'groups': state.newSemester.groups,
+              'disciplines': state.newSemester.subjects
+            }
+            let csrftoken = getCookie('csrftoken')
+            return new Promise((resolve, reject) => {
+              fetch('/api/app/edit_semester/', {
+                  method: 'POST',
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                  },
+                  body: JSON.stringify(data)
+                })
+                .then(r => r.json())
+                .then(response => {
+                  Notiflix.Block.Remove('div#addSemesterForm')
+                  if (response.success) {
+                    resolve(commit('ADD_SEMESTER', {
+                      form: form,
+                      response: response
+                    }))
+                  } else if (!response.success) {
+                    Notiflix.Notify.Failure(response.message)
+                  }
+                })
+            })
+          } else {
+            this.loading = false
+            Notiflix.Notify.Warning('Додайте щонайменше одну навчальну дисципліну.')
+          }
+        } else {
+          this.loading = false
+          Notiflix.Notify.Warning('Оберіть щонайменше одну групу.')
+        }
+      } else {
+        this.loading = false
+        Notiflix.Notify.Warning('Оберіть номер(назву) семестру.')
+      }
     },
     addSubjectToSemester: ({ commit }, form) => {
       if (form.validate()) {
@@ -2093,355 +2641,56 @@ let store = new Vuex.Store({
     removeSubjectFromSemester: ({ commit }, index) => {
       commit('REMOVE_SUBJECT_FROM_SEMESTER', index)
     },
-    loadStudents: ({ commit }) => {
-      commit('LOAD_STUDENTS')
-    },
-    loadTeachers: ({ commit }) => {
-      commit('LOAD_TEACHERS')
+    getSemesters: ({ commit }, code) => {
+      return new Promise((resolve, reject) => {
+        fetch(`/api/app/edit_semester/${code}`)
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('GET_SEMESTERS', response.semesters))
+          })
+      })
     },
     loadGroups: ({ commit }) => {
-      commit('LOAD_GROUPS')
-    },
-    loadSubjects: ({ commit }) => {
-      commit('LOAD_SUBJECTS')
-    },
-    getSemesters: ({ commit }, code) => {
-      commit('GET_SEMESTERS', code)
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/groups/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('LOAD_GROUPS', response))
+          })
+      })
     },
     loadSemesters: ({ commit, getters }, students) => {
       if (getters.filterGroup.length > 0) {
         Notiflix.Notify.Warning('Оцінки можна вносити лише для однієї групи.')
       } else {
-        commit('LOAD_SEMESTERS', students)
+        return new Promise((resolve, reject) => {
+          fetch(`/api/app/edit_grade/${students[0].code}`)
+            .then(r => r.json())
+            .then(response => {
+              resolve(commit('LOAD_SEMESTERS', response))
+            })
+        })
       }
     },
     addGrade: ({ commit, state }, form) => {
       if (state.newGrade.discipline != '' && form.validate()) {
-        commit('ADD_GRADE', form)
-      } else {
-        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
-      }
-    },
-    editPhoto: ({ commit }, params) => {
-      console.log(params.avatar)
-      commit('EDIT_PHOTO', params)
-    }
-  },
-  mutations: {
-    CHECK_AUTH: (state) => {
-      if (sessionStorage.getItem('auth_token')) {
-        state.authenticated = true
-        let username = sessionStorage.getItem('username')
-        fetch(`/api/app/active_user/${username}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          }
-        })
-          .then(r => r.json())
-          .then(response => {
-            if (response.profile) {
-              sessionStorage.removeItem("profile")
-              sessionStorage.setItem("profile", JSON.stringify(response.profile))
-              state.status = response.profile.status
-            } else if (response.status) {
-              state.status = response.status
-            } else {
-              Notiflix.Notify.Failure(response.message)
-            }
-          })
-      } else {
-        state.authenticated = false
-      }
-    },
-    LOGIN: (state, data) => {
-      let csrftoken = getCookie('csrftoken')
-      fetch('/api/auth/login/', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken,
-          },
-          body: JSON.stringify(data)
-        })
-        .then(r => r.json())
-        .then(response => {
-          sessionStorage.setItem("response", JSON.stringify(response))
-        })
-    },
-    LOGOUT: (state) => {
-      fetch('/api/auth/logout/')
-        .then(r => {
-          sessionStorage.removeItem("auth_token")
-          sessionStorage.removeItem("username")
-          state.authenticated = false
-          router.replace({name: "login"})
-          sessionStorage.removeItem("response")
-          sessionStorage.removeItem("profile")
-      })
-    },
-    GET_PASSWORD: (state, person) => {
-      fetch('/api/app/registration/')
-      .then(r => r.json())
-      .then(result => {
-        person.username = result.username
-        person.password = result.password
-      })
-    },
-    GET_ADMINS: (state) => {
-      fetch('/api/app/admins/')
-      .then(r => r.json())
-      .then(response => {
-        state.admins = response
-      })
-    },
-    ADD_STUDENT: (state, form) => {
-          let data = new FormData()
-          data.append('username', state.newStudent.username)
-          data.append('password', state.newStudent.password)
-          data.append('first_name', state.newStudent.firstName)
-          data.append('last_name', state.newStudent.lastName)
-          data.append('sur_name', state.newStudent.surName)
-          data.append('book_number', state.newStudent.bookNumber)
-          data.append('group_number', state.newStudent.group)
-          if (state.newStudent.avatar != '') {
-            data.append('avatar', state.newStudent.avatar)
-          }
-          let csrftoken = getCookie('csrftoken')
-          fetch('/api/app/registration/', {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': csrftoken,
-              },
-              body: data
-            })
-            .then(r => r.json())
-            .then(response => {
-              if (response.success) {
-                store.dispatch('loadStudents')
-                state.newStudent.username = ''
-                state.newStudent.password = ''
-                state.newStudent.firstName = ''
-                state.newStudent.lastName = ''
-                state.newStudent.surName = ''
-                state.newStudent.bookNumber = ''
-                state.newStudent.avatar = ''
-                form.resetValidation()
-                Notiflix.Notify.Success(response.message)
-              } else if (!response.success) {
-                  Notiflix.Notify.Failure(response.message)
-              }
-            })
-    },
-    EDIT_STUDENT: (state, form) => {
-          let data = new FormData()
-          data.append('code', state.editStudent.code)
-          data.append('first_name', state.editStudent.firstName)
-          data.append('last_name', state.editStudent.lastName)
-          data.append('sur_name', state.editStudent.surName)
-          data.append('book_number', state.editStudent.bookNumber)
-          if (state.editStudent.avatar && state.editStudent.avatar != '') {
-            data.append('avatar', state.editStudent.avatar)
-          }
-          let csrftoken = getCookie('csrftoken')
-          fetch('/api/app/edit_profile/', {
-              method: 'PUT',
-              headers: {
-                'X-CSRFToken': csrftoken,
-              },
-              body: data
-            })
-            .then(r => r.json())
-            .then(response => {
-              if (response.success) {
-                store.dispatch('loadStudents')
-                state.editStudent.firstName = ''
-                state.editStudent.lastName = ''
-                state.editStudent.surName = ''
-                state.editStudent.bookNumber = ''
-                state.editStudent.avatar = ''
-                form.resetValidation()
-                state.editStudent.dialog = false
-                state.selectedStudents = []
-                Notiflix.Notify.Success(response.message)
-              } else if (!response.success) {
-                  Notiflix.Notify.Failure(response.message)
-              }
-            })
-    },
-    MINUS_STUDENT: (state) => {
-      Notiflix.Confirm.Show(
-        'Підтвердіть дію','Виключити студента(ів) зі списку?','Так','Ні',
-      function() {
+        Notiflix.Block.Circle('div#addGradeForm', 'Зачекайте, будь ласка ...')
+        let semester = state.newGrade.semesters.filter(semester => semester.semester === state.newGrade.semester)
+        let discipline = state.newGrade.disciplines.filter(discipline => discipline === state.newGrade.discipline)
         let students = []
-        state.selectedStudents.forEach(item => {
-          students.push(item.code)
+        state.selectedStudents.forEach(student => {
+          students.push(student.code)
         })
         const data = {
-          'students': students
+          'semester': semester[0].semester,
+          'discipline': discipline[0],
+          'students': students,
+          'scores': state.newGrade.scores,
+          'grades': state.newGrade.grades,
         }
-        fetch(`/api/app/registration/`, {
-          method: 'PUT',
-          headers: {
-            'Content-type': 'application/json; charset=UTF-8'
-          },
-          body: JSON.stringify(data)
-        })
-        .then(r => r.json())
-        .then(response => {
-          if (response.success) {
-            store.dispatch('loadStudents')
-            state.selectedStudents = []
-            Notiflix.Notify.Success(response.message)
-          } else if (!response.success) {
-              Notiflix.Notify.Failure(response.message)
-          }
-        })
-      },
-      function() {});
-    },
-    ADD_TEACHER: (state, form) => {
-          let data = new FormData()
-          data.append('username', state.newTeacher.username)
-          data.append('password', state.newTeacher.password)
-          data.append('first_name', state.newTeacher.firstName)
-          data.append('last_name', state.newTeacher.lastName)
-          data.append('sur_name', state.newTeacher.surName)
-          data.append('email', state.newTeacher.email)
-          if (state.newTeacher.avatar != '') {
-            data.append('avatar', state.newTeacher.avatar)
-          }
-          let csrftoken = getCookie('csrftoken')
-          fetch('/api/app/registration/', {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': csrftoken,
-              },
-              body: data
-            })
-            .then(r => r.json())
-            .then(response => {
-              if (response.success) {
-                store.dispatch('loadTeachers')
-                state.newTeacher.username = ''
-                state.newTeacher.password = ''
-                state.newTeacher.firstName = ''
-                state.newTeacher.lastName = ''
-                state.newTeacher.surName = ''
-                state.newTeacher.email = ''
-                state.newTeacher.avatar = ''
-                form.resetValidation()
-                Notiflix.Notify.Success(response.message)
-              } else if (!response.success) {
-                  Notiflix.Notify.Failure(response.message)
-              }
-            })
-    },
-    EDIT_TEACHER: (state, form) => {
-          let data = new FormData()
-          data.append('code', state.editTeacher.code)
-          data.append('first_name', state.editTeacher.firstName)
-          data.append('last_name', state.editTeacher.lastName)
-          data.append('sur_name', state.editTeacher.surName)
-          data.append('email', state.editTeacher.email)
-          if (state.editTeacher.avatar && state.editTeacher.avatar != '') {
-            data.append('avatar', state.editTeacher.avatar)
-          }
-          let csrftoken = getCookie('csrftoken')
-          fetch('/api/app/edit_profile/', {
-              method: 'PUT',
-              headers: {
-                'X-CSRFToken': csrftoken,
-              },
-              body: data
-            })
-            .then(r => r.json())
-            .then(response => {
-              if (response.success) {
-                store.dispatch('loadTeachers')
-                state.editTeacher.firstName = ''
-                state.editTeacher.lastName = ''
-                state.editTeacher.surName = ''
-                state.editTeacher.email = ''
-                state.editTeacher.avatar = ''
-                form.resetValidation()
-                state.editTeacher.dialog = false
-                state.selectedStudents = []
-                Notiflix.Notify.Success(response.message)
-              } else if (!response.success) {
-                  Notiflix.Notify.Failure(response.message)
-              }
-            })
-    },
-    MINUS_TEACHER: (state) => {
-      Notiflix.Confirm.Show(
-        'Підтвердіть дію','Виключити викладача(ів) зі списку?','Так','Ні',
-      function() {
-        let teachers = []
-        state.selectedTeachers.forEach(item => {
-          teachers.push(item.code)
-        })
-        const data = {
-          'teachers': teachers
-        }
-        fetch(`/api/app/registration/`, {
-          method: 'PUT',
-          headers: {
-            'Content-type': 'application/json; charset=UTF-8'
-          },
-          body: JSON.stringify(data)
-        })
-        .then(r => r.json())
-        .then(response => {
-          if (response.success) {
-            store.dispatch('loadTeachers')
-            state.selectedTeachers = []
-            Notiflix.Notify.Success(response.message)
-          } else if (!response.success) {
-              Notiflix.Notify.Failure(response.message)
-          }
-        })
-      },
-      function() {});
-    },
-    ADD_SUBJECT: (state, form) => {
-          let data = new FormData()
-          data.append('subject', state.newSubject.subject)
-          data.append('teacher', state.newSubject.code)
-          let csrftoken = getCookie('csrftoken')
-          fetch('/api/app/edit_subject/', {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': csrftoken,
-              },
-              body: data
-            })
-            .then(r => r.json())
-            .then(response => {
-              if (response.success) {
-                Notiflix.Notify.Success(response.message)
-                store.dispatch('loadSubjects')
-                state.newSubject.subject = ''
-                state.newSubject.teacher = ''
-                form.resetValidation()
-              } else if (!response.success) {
-                  Notiflix.Notify.Failure(response.message)
-              }
-            })
-    },
-    ADD_SEMESTER: (state, form) => {
-      if (state.newSemester.semester != '') {
-        if (state.newSemester.groups.length > 0) {
-          if (state.newSemester.subjects.length > 0) {
-          const data = {
-            'semester': state.newSemester.semester,
-            'groups': state.newSemester.groups,
-            'disciplines': state.newSemester.subjects
-          }
-          let csrftoken = getCookie('csrftoken')
-          fetch('/api/app/edit_semester/', {
+        let csrftoken = getCookie('csrftoken')
+        return new Promise((resolve, reject) => {
+          fetch('/api/app/edit_grade/', {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
@@ -2452,28 +2701,137 @@ let store = new Vuex.Store({
             })
             .then(r => r.json())
             .then(response => {
-              if (response.success) {
-                state.newSemester.form = ''
-                state.newSemester.groups = []
-                state.newSemester.subjects = []
-                form.resetValidation()
-                Notiflix.Notify.Success(response.message)
-              } else if (!response.success) {
-                  Notiflix.Notify.Failure(response.message)
-              }
+              Notiflix.Block.Remove('div#addGradeForm')
+              commit('ADD_GRADE', {
+                form: form,
+                response: response
+              })
             })
-          } else {
-            this.loading = false
-            Notiflix.Notify.Warning('Додайте щонайменше одну навчальну дисципліну.')
+        })
+      } else {
+        Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+      }
+    },
+    editPhoto: ({ commit }, params) => {
+      let data = new FormData();
+      data.append('person', params.person)
+      data.append('avatar', params.avatar)
+      let csrftoken = getCookie('csrftoken')
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/active_user/', {
+            method: 'PUT',
+            headers: {
+              'X-CSRFToken': csrftoken,
+            },
+            body: data
+          })
+          .then(r => r.json())
+          .then(response => {
+            resolve(response.avatar)
+          })
+      })
+    }
+  },
+  mutations: {
+    CHECK_AUTH: (state, props) => {
+        if (props) {
+          state.authenticated = true
+          if (props.response.profile) {
+            state.status = props.response.profile.status
+              if (state.status === 'Teacher') {
+                  state.showSelected = true
+              } else {
+                  state.showSelected = false
+              }
+            } else if (props.response.status) {
+                state.status = props.response.status
+                state.showSelected = true
+            } else {
+              Notiflix.Notify.Failure(props.response.message)
           }
         } else {
-          this.loading = false
-          Notiflix.Notify.Warning('Оберіть щонайменше одну групу.')
-        }
-      } else {
-        this.loading = false
-        Notiflix.Notify.Warning('Оберіть номер(назву) семестру.')
+          state.authenticated = false
       }
+    },
+    GET_PASSWORD: (state, props) => {
+      props.person.username = props.result.username
+      props.person.password = props.result.password
+    },
+    GET_ADMINS: (state, response) => {
+      state.admins = response
+    },
+    ADD_STUDENT: (state, props) => {
+      state.newStudent.username = ''
+      state.newStudent.password = ''
+      state.newStudent.firstName = ''
+      state.newStudent.lastName = ''
+      state.newStudent.surName = ''
+      state.newStudent.bookNumber = ''
+      state.newStudent.avatar = ''
+      props.form.resetValidation()
+      Notiflix.Notify.Success(props.response.message)
+    },
+    ADD_TEACHER: (state, props) => {
+      state.newTeacher.username = ''
+      state.newTeacher.password = ''
+      state.newTeacher.firstName = ''
+      state.newTeacher.lastName = ''
+      state.newTeacher.surName = ''
+      state.newTeacher.email = ''
+      state.newTeacher.avatar = ''
+      props.form.resetValidation()
+      Notiflix.Notify.Success(props.response.message)
+    },
+    EDIT_STUDENT: (state, props) => {
+      state.editStudent.firstName = ''
+      state.editStudent.lastName = ''
+      state.editStudent.surName = ''
+      state.editStudent.bookNumber = ''
+      state.editStudent.avatar = ''
+      props.form.resetValidation()
+      state.editStudent.dialog = false
+      state.selectedStudents = []
+      Notiflix.Notify.Success(props.response.message)
+    },
+    EDIT_TEACHER: (state, props) => {
+      state.editTeacher.firstName = ''
+      state.editTeacher.lastName = ''
+      state.editTeacher.surName = ''
+      state.editTeacher.email = ''
+      state.editTeacher.avatar = ''
+      props.form.resetValidation()
+      state.editTeacher.dialog = false
+      state.selectedTeachers = []
+      Notiflix.Notify.Success(props.response.message)
+    },
+    MINUS_USER: (state) => {
+      state.selectedStudents = []
+      state.selectedTeachers = []
+    },
+    LOAD_STUDENTS: (state, response) => {
+      state.students = response
+    },
+    LOAD_TEACHERS: (state, response) => {
+      state.teachers = response
+    },
+    CHECK_STATUS: (state, status) => {
+      state.studyStatus = status
+    },
+    LOAD_SUBJECTS: (state, response) => {
+      state.subjects = response
+    },
+    ADD_SUBJECT: (state, props) => {
+      Notiflix.Notify.Success(props.response.message)
+      state.newSubject.subject = ''
+      state.newSubject.teacher = ''
+      props.form.resetValidation()
+    },
+    ADD_SEMESTER: (state, props) => {
+      state.newSemester.form = ''
+      state.newSemester.groups = []
+      state.newSemester.subjects = []
+      props.form.resetValidation()
+      Notiflix.Notify.Success(props.response.message)
     },
     ADD_SUBJECT_TO_SEMESTER: (state, form) => {
         let newDiscipline = {
@@ -2494,99 +2852,28 @@ let store = new Vuex.Store({
     REMOVE_SUBJECT_FROM_SEMESTER: (state, index) => {
       state.newSemester.subjects.splice(index, 1)
     },
-    LOAD_STUDENTS: (state) => {
-      fetch('/api/app/students/')
-        .then(r => r.json())
-        .then(data => {
-          state.students = data
-        })
+    GET_SEMESTERS: (state, semesters) => {
+      state.semestersForStudent = semesters
     },
-    LOAD_TEACHERS: (state) => {
-      fetch('/api/app/teachers/')
-        .then(r => r.json())
-        .then(data => {
-          state.teachers = data
-        })
-    },
-    LOAD_GROUPS: (state) => {
-      fetch('/api/app/groups/')
-        .then(r => r.json())
-        .then(data => {
-          data.forEach(item => {
-            state.groups.push(item.group)
-          });
-        })
-    },
-    LOAD_SUBJECTS: (state) => {
-      fetch('/api/app/subjects/')
-        .then(r => r.json())
-        .then(data => {
-          state.subjects = data
-        })
-    },
-    GET_SEMESTERS: (state, code) => {
-      fetch(`/api/app/edit_semester/${code}`)
-        .then(r => r.json())
-        .then(response => {
-            state.semestersForStudent = response.semesters
-        })
-    },
-    LOAD_SEMESTERS: (state, students) => {
-      fetch(`/api/app/edit_grade/${students[0].code}`)
-        .then(r => r.json())
-        .then(response => {
-          state.newGrade.semesters = []
-          state.newGrade.semesters = response.semesters
-          state.newGrade.disciplines = []
-          state.newGrade.semester = ''
-          state.newGrade.discipline = ''
-          state.newGrade.dialog = true
-        })
-    },
-    ADD_GRADE: (state, form) => {
-      let semester =  state.newGrade.semesters.filter(semester => semester.semester === state.newGrade.semester)
-      let discipline =  state.newGrade.disciplines.filter(discipline => discipline === state.newGrade.discipline)
-      let students = []
-      state.selectedStudents.forEach(student => {
-        students.push(student.code)
+    LOAD_GROUPS: (state, groups) => {
+      state.groups = []
+      groups.forEach(item => {
+        state.groups.push(item.group)
       })
-      const data = {
-        'semester': semester[0].semester,
-        'discipline': discipline[0],
-        'students': students,
-        'scores': state.newGrade.scores,
-        'grades': state.newGrade.grades,
-      }
-      let csrftoken = getCookie('csrftoken')
-      fetch('/api/app/edit_grade/', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken,
-          },
-          body: JSON.stringify(data)
-        })
-        .then(r => r.json())
-        .then(response => {
-          state.newGrade.scores = []
-          state.newGrade.grades = []
-          Notiflix.Notify.Success(response.message)
-          form.resetValidation()
-        })
     },
-    EDIT_PHOTO: (state, params) => {
-      let data = new FormData()
-      data.append('person', params.person)
-      data.append('avatar', params.avatar)
-      let csrftoken = getCookie('csrftoken')
-      fetch('/api/app/active_user/', {
-          method: 'PUT',
-          headers: {
-            'X-CSRFToken': csrftoken,
-          },
-          body: data
-        })
+    LOAD_SEMESTERS: (state, response) => {
+      state.newGrade.semesters = []
+      state.newGrade.semesters = response.semesters
+      state.newGrade.disciplines = []
+      state.newGrade.semester = ''
+      state.newGrade.discipline = ''
+      state.newGrade.dialog = true
+    },
+    ADD_GRADE: (state, props) => {
+      state.newGrade.scores = []
+      state.newGrade.grades = []
+      props.form.resetValidation()
+      Notiflix.Notify.Success(props.response.message)
     }
   },
   getters: {
@@ -2628,7 +2915,7 @@ let store = new Vuex.Store({
       state.subjects.forEach(item => {
         list.push(item.subject)
       })
-      state.newSemester.listOfSubjects = list
+      return list
     },
     getTeacherForSubject: (state) => (chosen) => {
       let teacher = state.subjects.filter(subject => subject.subject === chosen)
@@ -2648,9 +2935,11 @@ let store = new Vuex.Store({
     },
     getListOfSemesters: (state) => {
       let list = []
-      state.newGrade.semesters.forEach(item => {
-        list.push(item.semester)
-      })
+      if(typeof state.newGrade.semesters != 'undefined') {
+        state.newGrade.semesters.forEach(item => {
+          list.push(item.semester)
+        })
+      }
       return list
     },
     getListOfDiscipline: (state) => (find) => {
@@ -2667,7 +2956,6 @@ const app = new Vue({
   router,
   vuetify: new Vuetify(),
   mounted() {
-    store.dispatch('checkAuth')
     store.dispatch('getAdmins')
   },
   methods: {

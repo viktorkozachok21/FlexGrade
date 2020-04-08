@@ -5,7 +5,7 @@ from . import models
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FlexUser
-        fields = ('fullname', 'email')
+        fields = ('fullname', 'email', 'avatar')
 
 
 class StudentSerializer(serializers.ModelSerializer):

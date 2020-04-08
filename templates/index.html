@@ -14,16 +14,20 @@
   <link rel="stylesheet" href="{% static 'notiflix-2.1.2.min.css' %}" type="text/css">
 </head>
 
-<div class="line"></div>
 
 <body>
   <main id="app">
+    <div class="line"></div>
   <navbar-x></navbar-x>
   <v-app>
-    <toolbar-x ref="toolbar"></toolbar-x>
+    <v-app-bar class="grey lighten-5" height="55px" dense app fixed>
+      <toolbar-x ref="toolbar"></toolbar-x>
+    </v-app-bar>
+    <v-content>
     <section class="main">
       <router-view></router-view>
     </section>
+  </v-content>
     <footer-x></footer-x>
   </v-app>
 </main>
