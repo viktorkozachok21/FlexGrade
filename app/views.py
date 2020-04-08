@@ -51,7 +51,7 @@ class AddUserView(APIView):
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
             user.save()
-            school = get_object_or_404(School)
+            school = get_object_or_404(School, pk=1)
             teacher = Teacher.objects.create(user=user, school=school)
             teacher.save()
             return Response({"success":True, "message":"Нового користувача успішно зареєстровано."}, status=200)

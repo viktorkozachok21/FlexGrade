@@ -1596,8 +1596,10 @@ const StudentsPerson = {
         .then(data => {
           this.semesters = data.semesters
           this.loading = false
-          if (data.semesters.length > 0) {
-            this.gotData = true
+          if (typeof data.semesters != 'undefined') {
+            if (data.semesters.length > 0) {
+              this.gotData = true
+            }
           } else {
             this.gotData = false
           }
@@ -1628,6 +1630,7 @@ const StudentsPerson = {
           })
           .then(result => {
             store.dispatch('checkAuth')
+            store.dispatch('loadStudents')
             this.person.avatar = result
             this.avatar = ''
             Notiflix.Notify.Success('Інформацію успішно змінено.')
@@ -1911,8 +1914,10 @@ const TeachersPerson = {
         .then(data => {
           this.subjects = data.loaded
           this.loading = false
-          if (data.loaded.length > 0) {
-            this.gotData = true
+          if (typeof data.loaded != 'undefined') {
+            if (data.loaded.length > 0) {
+              this.gotData = true
+            }
           } else {
             this.gotData = false
           }
@@ -1939,6 +1944,7 @@ const TeachersPerson = {
           })
           .then(result => {
             store.dispatch('checkAuth')
+            store.dispatch('loadTeachers')
             this.person.avatar = result
             this.avatar = ''
             Notiflix.Notify.Success('Інформацію успішно змінено.')
@@ -2823,7 +2829,6 @@ let store = new Vuex.Store({
     ADD_SUBJECT: (state, props) => {
       Notiflix.Notify.Success(props.response.message)
       state.newSubject.subject = ''
-      state.newSubject.teacher = ''
       props.form.resetValidation()
     },
     ADD_SEMESTER: (state, props) => {
