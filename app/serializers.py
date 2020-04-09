@@ -8,6 +8,18 @@ class UserSerializer(ModelSerializer):
         fields = ('fullname', 'email', 'avatar')
 
 
+class SchoolSerializer(ModelSerializer):
+    class Meta:
+        model = models.School
+        fields = ('__all__')
+
+
+class DepartmentSerializer(ModelSerializer):
+    class Meta:
+        model = models.Department
+        fields = ('__all__')
+
+
 class StudentSerializer(ModelSerializer):
     code = ReadOnlyField(source='user.code')
     fullname = ReadOnlyField(source='user.fullname')

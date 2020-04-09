@@ -42,10 +42,10 @@ class School(models.Model):
     """
     full_name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=100)
-    head_of_school = models.CharField(max_length=100)
-    head_of_school_short = models.CharField(max_length=50)
-    head_assistant = models.CharField(max_length=100)
-    head_assistant_short = models.CharField(max_length=50)
+    director = models.CharField(max_length=100)
+    director_short = models.CharField(max_length=50)
+    assistant = models.CharField(max_length=100)
+    assistant_short = models.CharField(max_length=50)
 
     def __str__(self):
         return '(%s) %s' % (self.pk,self.short_name)
@@ -57,8 +57,8 @@ class Department(models.Model):
     """
     school = models.ForeignKey(School, on_delete=models.CASCADE, blank=True, null=True)
     full_name = models.CharField(max_length=255)
-    head_of_department = models.CharField(max_length=100)
-    head_of_department_short = models.CharField(max_length=50)
+    manager = models.CharField(max_length=100)
+    manager_short = models.CharField(max_length=50)
 
     def __str__(self):
         return '%s (%s)' % (self.full_name,self.school.short_name)

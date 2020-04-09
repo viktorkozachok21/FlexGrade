@@ -49,6 +49,16 @@ footer {
   bottom: 0;
 }
 
+.btn-hide {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+}
+
+.capitalize input {
+  text-transform: capitalize;
+}
+
 .home-link:hover{
   color: var(--icon-hover)!important;
 }

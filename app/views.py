@@ -47,6 +47,8 @@ class RegistrationView(APIView):
             email = request.data.get('email').strip()
             if FlexUser.objects.filter(username__iexact=username).exists():
                 return Response({"success":False, "message":"Надане ім'я користувача вже використовується."}, status=200)
+            elif Teacher.objects.filter(user__last_name__iexact=last_name, user__first_name__iexact=first_name, user__sur_name__iexact=sur_name).exists():
+                return Response({"success":False, "message":"Викладач з наданим П.І.Б. вже зареєстровий."}, status=200)
             user = FlexUser.objects.create(username=username, email=email, first_name=first_name, last_name=last_name, sur_name=sur_name, status='Teacher')
             user.set_password(str(request.data.get('password')))
             if 'avatar' in request.FILES:
@@ -76,6 +78,9 @@ class RegistrationView(APIView):
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
+            if Student.objects.filter(group=group, user__last_name__iexact=last_name, user__first_name__iexact=first_name, user__sur_name__iexact=sur_name).exists():
+                user.delete()
+                return Response({"success":False, "message":"Студент з наданим П.І.Б. вже зареєстровий в обраній групі."}, status=200)
             new_student = Student.objects.create(user=user, group=group, book_number=book_number)
             students = [student for student in Student.objects.filter(group=group)]
             for student in students:
@@ -201,6 +206,33 @@ class ActiveUserView(APIView):
         user_avatar = UserSerializer(user).data
         avatar = str(user_avatar['avatar'][7:])
         return Response({"success":True, "message":'Інформацію успішно змінено.', 'avatar':avatar}, status=200)
+
+
+class SchoolView(APIView):
+    """
+    Features to manage the information about school
+    """
+    def get(self, request):
+        if School.objects.filter(pk=1).exists():
+            school = SchoolSerializer(get_object_or_404(School, pk=1)).data
+            return Response({"success":True, "school":school}, status=200)
+        else:
+            return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
+
+    def post(self, request):
+        if School.objects.filter(pk=1).exists():
+            school = get_object_or_404(School, pk=1)
+            school.full_name = request.data.get('full_name')
+            school.short_name = request.data.get('short_name')
+            school.director = request.data.get('director')
+            school.director_short = request.data.get('director_short')
+            school.assistant = request.data.get('assistant')
+            school.assistant_short = request.data.get('assistant_short')
+            school.save()
+            new_school = SchoolSerializer(school).data
+            return Response({"success":True, "school":new_school}, status=200)
+        else:
+            return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
 
 
 class SubjectListView(generics.ListAPIView):
