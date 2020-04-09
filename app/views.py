@@ -213,6 +213,9 @@ class SchoolView(APIView):
     Features to manage the information about school
     """
     def get(self, request):
+        """
+        Get all information about school
+        """
         if School.objects.filter(pk=1).exists():
             school = SchoolSerializer(get_object_or_404(School, pk=1)).data
             return Response({"success":True, "school":school}, status=200)
@@ -220,6 +223,9 @@ class SchoolView(APIView):
             return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
 
     def post(self, request):
+        """
+        Save the school if information has been changed
+        """
         if School.objects.filter(pk=1).exists():
             school = get_object_or_404(School, pk=1)
             school.full_name = request.data.get('full_name')
@@ -233,6 +239,42 @@ class SchoolView(APIView):
             return Response({"success":True, "school":new_school}, status=200)
         else:
             return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
+
+
+class DepartmentListView(generics.ListAPIView):
+    """
+    Department listview serializer to get the list of exists departments
+    """
+    queryset = Department.objects.all().order_by('full_name')
+    serializer_class = DepartmentSerializer
+
+
+class DepartmentView(APIView):
+    """
+    View to manage the department of school
+    """
+    def post(self, request):
+        """
+        Get all existing departments
+        """
+        full_name = request.data.get('full_name')
+        if Department.objects.filter(full_name__iexact=full_name).exists():
+            return Response({"success":False, "message":"Відділення з наданою назвою вже зареєстровано."}, status=200)
+        department = Department.objects.create(full_name=full_name, manager=request.data.get('manager'), manager_short=request.data.get('manager_short'))
+        departments = DepartmentSerializer(Department.objects.all(), many=True).data
+        return Response({"success":True, "departments":departments, "message":"Нове відділення успішно зареєстровано."}, status=200)
+
+    def put(self, request):
+        """
+        Get all existing departments
+        """
+        department = get_object_or_404(Department, pk=request.data.get('id'))
+        department.full_name = request.data.get('full_name')
+        department.manager = request.data.get('manager')
+        department.manager_short = request.data.get('manager_short')
+        department.save()
+        departments = DepartmentSerializer(Department.objects.all(), many=True).data
+        return Response({"success":True, "departments":departments}, status=200)
 
 
 class SubjectListView(generics.ListAPIView):

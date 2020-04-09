@@ -188,6 +188,16 @@ const Toolbar = Vue.component('toolbar-x', {
       <new-subject-x ref="newSubjectForm"></new-subject-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
 
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && $route.meta.directory"></v-divider>
+      <v-span
+      class="mdi mdi-folder-plus home-link"
+      @click="store.state.newDepartment.dialog = true"
+      v-if="store.state.status == 'Admin' && $route.meta.directory"
+      title="Додати відділення"
+      ></v-span>
+      <new-department-x ref="newDepartmentForm"></new-department-x>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && $route.meta.directory"></v-divider>
+
       <v-spacer></v-spacer>
 
       <v-divider v-if="store.state.authenticated" class="mx-2" inset vertical replace></v-divider>
@@ -1118,6 +1128,82 @@ const AddGradeForm = Vue.component('new-grade-x',{
   </v-dialog>
   `
 })
+const AddDepartmentForm = Vue.component('new-department-x',{
+  computed: {
+    showDialog() {
+      return store.state.newDepartment.dialog
+    },
+    shortManager() {
+      return store.state.newDepartment.manager
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newDepartmentForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.newDepartmentForm.$refs.form.resetValidation()
+        }
+      }
+    },
+    shortManager: {
+      handler: function(val) {
+        let manager = val.trim().split(' ')
+        if (manager.length > 2) {
+          store.state.newDepartment.managerShort = `${manager[0]} ${manager[1].charAt(0)}. ${manager[2].charAt(0)}.`
+        } else {
+          store.state.newDepartment.managerShort = ''
+        }
+      },
+      deep: true,
+    },
+  },
+  template: `
+  <v-dialog v-model="store.state.newDepartment.dialog" persistent max-width="700px">
+    <v-card id="addDepartmentForm" class="text-center pt-3">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати відділення</span>
+      </v-title>
+        <v-container>
+          <v-form
+            ref="form"
+            v-model="store.state.newDepartment.valid"
+            :lazy-validation="store.state.newDepartment.lazy"
+            >
+          <v-row no-gutters>
+            <v-col cols="12" class="px-2 py-2">
+              <v-text-field
+              @keypress.native="$root.validateKey($event)"
+              label="Назва відділення"
+              maxlength="150"
+              :rules="[store.state.rules.spaces(store.state.newDepartment.fullName),store.state.rules.min(3, store.state.newDepartment.fullName)]"
+              v-model="store.state.newDepartment.fullName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" class="px-2 py-2">
+              <v-text-field
+              @keypress.native="$root.validateKey($event)"
+              label="Завідувач відділенням"
+              maxlength="50"
+              :rules="[store.state.rules.spaces(store.state.newDepartment.manager),store.state.rules.min(3, store.state.newDepartment.manager)]"
+              v-model="store.state.newDepartment.manager"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addDepartment', $root.$refs.toolbar.$refs.newDepartmentForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newDepartment.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
 // The Login Form
 const Login = {
   template: `
@@ -1295,13 +1381,19 @@ const Directory = {
   data() {
     return {
       school: '',
+      departments: [],
       wasEdited: false,
-      editSchool: false
+      editSchool: false,
+      editDepartment: false,
+      edited: ''
     }
   },
   computed: {
     schoolMonitor() {
       return store.state.school
+    },
+    departmentMonitor() {
+      return store.state.departments
     }
   },
   watch: {
@@ -1311,11 +1403,19 @@ const Directory = {
       },
       deep: true,
     },
+    departmentMonitor: {
+      handler() {
+        this.departments = store.state.departments
+      },
+      deep: true,
+    },
     'school.director': {
       handler: function(val) {
         let director = val.trim().split(' ')
         if (director.length > 2) {
           this.school.directorShort = `${director[0]} ${director[1].charAt(0)}. ${director[2].charAt(0)}.`
+        } else {
+          this.school.directorShort = ''
         }
       },
       deep: true,
@@ -1325,6 +1425,24 @@ const Directory = {
         let assistant = val.trim().split(' ')
         if (assistant.length > 2) {
           this.school.assistantShort = `${assistant[0]} ${assistant[1].charAt(0)}. ${assistant[2].charAt(0)}.`
+        } else {
+          this.school.assistantShort = ''
+        }
+      },
+      deep: true,
+    },
+    editSchool: {
+      handler() {
+        if (this.editSchool == false) {
+          this.wasEdited = false
+        }
+      },
+      deep: true,
+    },
+    editDepartment: {
+      handler() {
+        if (this.editDepartment == false) {
+          this.wasEdited = false
         }
       },
       deep: true,
@@ -1340,10 +1458,23 @@ const Directory = {
         .then(() => {
           this.school = store.state.school
         })
+        store.dispatch('getDepartments')
+        .then(() => {
+          this.departments = store.state.departments
+        })
     }
   },
   methods: {
-    saveChanges() {
+    shortManager(long) {
+      let manager = this.departments.filter(item => item.id == long)
+      let short = manager[0].manager.trim().split(' ')
+      if (short.length > 2) {
+        manager[0].manager_short = `${short[0]} ${short[1].charAt(0)}. ${short[2].charAt(0)}.`
+      } else {
+        manager[0].manager_short = ''
+      }
+    },
+    saveSchool() {
       if (this.wasEdited) {
         const data = {
           "full_name": this.school.fullName,
@@ -1354,6 +1485,23 @@ const Directory = {
           "assistant_short": this.school.assistantShort
         }
         store.dispatch('editSchool', data)
+        .then(() => {
+          this.wasEdited = false
+        })
+      } else {
+        Notiflix.Notify.Info('Змін не виявлено.')
+      }
+    },
+    saveDepartment(id) {
+      if (this.wasEdited) {
+        let changed = this.departments.filter(department => department.id == id)
+        const data = {
+          "id": changed[0].id,
+          "full_name": changed[0].full_name,
+          "manager": changed[0].manager,
+          "manager_short": changed[0].manager_short,
+        }
+        store.dispatch('editDepartment', data)
         .then(() => {
           this.wasEdited = false
         })
@@ -2230,6 +2378,7 @@ let store = new Vuex.Store({
       assistant: '',
       assistantShort: ''
     },
+    departments: [],
     students: [],
     groups: [],
     teachers: [],
@@ -2321,6 +2470,14 @@ let store = new Vuex.Store({
       discipline: '',
       scores: [],
       grades: []
+    },
+    newDepartment: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      fullName: '',
+      manager: '',
+      managerShort: ''
     }
   },
   actions: {
@@ -2384,6 +2541,70 @@ let store = new Vuex.Store({
           .then(response => {
             if (response.success) {
               resolve(commit('GET_SCHOOL', response.school))
+              Notiflix.Notify.Success('Інформацію успішно збережено.')
+            }
+          })
+      })
+    },
+    getDepartments: ({ commit }) => {
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/departments/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('GET_DEPARTMENTS', response))
+          })
+      })
+    },
+    addDepartment: ({ commit, state, dispatch }, form) => {
+      if (form.validate()) {
+        Notiflix.Block.Circle('div#addDepartmentForm', 'Зачекайте, будь ласка ...')
+        let data = new FormData()
+        data.append('full_name', state.newDepartment.fullName)
+        data.append('manager', state.newDepartment.manager)
+        data.append('manager_short', state.newDepartment.managerShort)
+        let csrftoken = getCookie('csrftoken')
+        return new Promise((resolve, reject) => {
+          fetch('/api/app/department/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+          .then(r => r.json())
+          .then(response => {
+                Notiflix.Block.Remove('div#addDepartmentForm')
+                if (response.success) {
+                  dispatch('getDepartments')
+                  resolve(commit('GET_DEPARTMENTS', {
+                    form: form,
+                    response: response
+                  }))
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+              })
+          })
+        } else {
+          Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+        }
+      },
+    editDepartment: ({ commit }, data) => {
+      let csrftoken = getCookie('csrftoken')
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/department/', {
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify(data)
+          })
+          .then(r => r.json())
+          .then(response => {
+            if (response.success) {
+              resolve(commit('GET_DEPARTMENTS', response.departments))
               Notiflix.Notify.Success('Інформацію успішно збережено.')
             }
           })
@@ -2929,6 +3150,18 @@ let store = new Vuex.Store({
       state.school.directorShort = response.director_short
       state.school.assistant = response.assistant
       state.school.assistantShort = response.assistant_short
+    },
+    GET_DEPARTMENTS: (state, props) => {
+      if (props.form) {
+        state.departments = props.response.departments
+        state.newDepartment.fullName = ''
+        state.newDepartment.manager = ''
+        state.newDepartment.managerShort = ''
+        props.form.resetValidation()
+        Notiflix.Notify.Success(props.response.message)
+      } else {
+        state.departments = props
+      }
     },
     ADD_STUDENT: (state, props) => {
       state.newStudent.username = ''

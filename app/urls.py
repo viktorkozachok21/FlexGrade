@@ -7,6 +7,8 @@ urlpatterns = [
     path('edit_profile/', EditProfileView.as_view()),
 
     path('school/', SchoolView.as_view()),
+    path('departments/', DepartmentListView.as_view()),
+    path('department/', DepartmentView.as_view()),
 
     path('active_user/', ActiveUserView.as_view()),
     path('active_user/<username>', ActiveUserView.as_view()),
