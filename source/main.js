@@ -722,7 +722,6 @@ const AddSubjectForm = Vue.component('new-subject-x',{
               label="Назва дисципліни"
               :rules="[store.state.rules.spaces(store.state.newSubject.subject),store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
               v-model="store.state.newSubject.subject"
-              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -845,7 +844,6 @@ const AddSemesterForm = Vue.component('new-semester-x',{
                 @keydown.native.space.prevent
                 color="teal darken-4"
                 item-color="teal darken-4"
-                @keypress.native="$root.validateKey($event)"
                 no-data-text="Не знайдено відповідних записів"
                 :rules="[store.state.rules.spaces(store.state.newSemester.discipline),store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
                 label="Навчальна дисципліна"
@@ -2038,7 +2036,8 @@ const router = new VueRouter({
       name: 'student',
       component: StudentsPerson,
       meta: {
-        showBack: true
+        showBack: true,
+        showNewStudent: true
       }
     },
     {
@@ -2055,7 +2054,8 @@ const router = new VueRouter({
       name: 'teacher',
       component: TeachersPerson,
       meta: {
-        showBack: true
+        showBack: true,
+        showNewTeacher: true
       }
     },
     {
@@ -2849,8 +2849,9 @@ let store = new Vuex.Store({
       Notiflix.Notify.Success(props.response.message)
     },
     ADD_SUBJECT_TO_SEMESTER: (state, form) => {
+      let discipline = state.newSemester.discipline.split('^')
         let newDiscipline = {
-          'discipline': state.newSemester.discipline,
+          'discipline': discipline[1],
           'form': state.newSemester.form,
           'hours': state.newSemester.hours,
           'credits': state.newSemester.credits,
@@ -2928,12 +2929,13 @@ let store = new Vuex.Store({
     getListOfSubjects: (state) => {
       let list = []
       state.subjects.forEach(item => {
-        list.push(item.subject)
+        list.push(`${item.pk}^${item.subject}`)
       })
       return list
     },
     getTeacherForSubject: (state) => (chosen) => {
-      let teacher = state.subjects.filter(subject => subject.subject === chosen)
+      let pk = chosen.split('^')
+      let teacher = state.subjects.filter(subject => subject['pk'] == pk[0])
       if (teacher != '') {
         state.newSemester.teacher = teacher[0].teacher_name
       }

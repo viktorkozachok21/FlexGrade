@@ -722,7 +722,6 @@ const AddSubjectForm = Vue.component('new-subject-x',{
               label="Назва дисципліни"
               :rules="[store.state.rules.spaces(store.state.newSubject.subject),store.state.rules.min(3, store.state.newSubject.subject), store.state.rules.max(100, store.state.newSubject.subject)]"
               v-model="store.state.newSubject.subject"
-              @keydown.native.space.prevent
               color="teal darken-4" required
               ></v-text-field>
             </v-col>
@@ -845,7 +844,6 @@ const AddSemesterForm = Vue.component('new-semester-x',{
                 @keydown.native.space.prevent
                 color="teal darken-4"
                 item-color="teal darken-4"
-                @keypress.native="$root.validateKey($event)"
                 no-data-text="Не знайдено відповідних записів"
                 :rules="[store.state.rules.spaces(store.state.newSemester.discipline),store.state.rules.minGroup(1, store.state.newSemester.discipline), store.state.rules.max(50, store.state.newSemester.discipline)]"
                 label="Навчальна дисципліна"
@@ -1205,7 +1203,6 @@ const Login = {
     }
   }
 }
-// <!--- The Login Form
 // The Home Page
 const Home = {
   template: `
@@ -1233,7 +1230,6 @@ const Home = {
     }
   }
 }
-// <!--- Home Page
 // The Contact Info Page
 const Contact = {
   template: `
@@ -1271,7 +1267,6 @@ const Contact = {
     }
   }
 }
-// <!--- The Contact Info Page
 // The List Of Students
 const StudentsList = {
   template: `
@@ -1463,7 +1458,6 @@ const StudentsList = {
     }
   }
 }
-// <!--- The List Of Students
 // The More Details About A Student
 const StudentsPerson = {
   template: `
@@ -1661,7 +1655,6 @@ const StudentsPerson = {
     }
   }
 }
-// <!--- The More Details About A Student
 // The List Of Teachers
 const TeachersList = {
   template: `
@@ -1815,7 +1808,6 @@ const TeachersList = {
     }
   }
 }
-// <!--- The List Of Teachers
 // The More Details About A Teacher
 const TeachersPerson = {
   template: `
@@ -1975,7 +1967,6 @@ const TeachersPerson = {
     }
   }
 }
-// <!--- The More Details About A Teacher
 // The Profile Of A User
 const Profile = {
   mounted() {
@@ -2012,7 +2003,6 @@ const Profile = {
     }
   }
 }
-// <!--- The Profile Of A User
 // The router
 const router = new VueRouter({
   mode: 'history',
@@ -2046,7 +2036,8 @@ const router = new VueRouter({
       name: 'student',
       component: StudentsPerson,
       meta: {
-        showBack: true
+        showBack: true,
+        showNewStudent: true
       }
     },
     {
@@ -2063,7 +2054,8 @@ const router = new VueRouter({
       name: 'teacher',
       component: TeachersPerson,
       meta: {
-        showBack: true
+        showBack: true,
+        showNewTeacher: true
       }
     },
     {
@@ -2092,7 +2084,6 @@ const router = new VueRouter({
     }
   ]
 })
-
 // Vuex store to keep the data in use
 Vue.use(Vuex)
 let store = new Vuex.Store({
@@ -2243,6 +2234,15 @@ let store = new Vuex.Store({
         commit('CHECK_AUTH')
       }
     },
+    getAdmins: ({ commit }) => {
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/admins/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('GET_ADMINS', response))
+          })
+      })
+    },
     loginUser: ({ commit }, data) => {
       let csrftoken = getCookie('csrftoken')
       return new Promise((resolve, reject) => {
@@ -2291,15 +2291,6 @@ let store = new Vuex.Store({
               person: person,
               result: result
             }))
-          })
-      })
-    },
-    getAdmins: ({ commit }) => {
-      return new Promise((resolve, reject) => {
-        fetch('/api/app/admins/')
-          .then(r => r.json())
-          .then(response => {
-            resolve(commit('GET_ADMINS', response))
           })
       })
     },
@@ -2400,7 +2391,7 @@ let store = new Vuex.Store({
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
             fetch('/api/app/edit_profile/', {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                   'X-CSRFToken': csrftoken,
                 },
@@ -2443,7 +2434,7 @@ let store = new Vuex.Store({
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
             fetch('/api/app/edit_profile/', {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                   'X-CSRFToken': csrftoken,
                 },
@@ -2481,7 +2472,7 @@ let store = new Vuex.Store({
           })
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
-            fetch('/api/app/registration/', {
+            fetch('/api/app/edit_profile/', {
                 method: 'PUT',
                 headers: {
                   'Accept': 'application/json',
@@ -2516,7 +2507,7 @@ let store = new Vuex.Store({
           })
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
-            fetch('/api/app/registration/', {
+            fetch('/api/app/edit_profile/', {
                 method: 'PUT',
                 headers: {
                   'Accept': 'application/json',
@@ -2858,8 +2849,9 @@ let store = new Vuex.Store({
       Notiflix.Notify.Success(props.response.message)
     },
     ADD_SUBJECT_TO_SEMESTER: (state, form) => {
+      let discipline = state.newSemester.discipline.split('^')
         let newDiscipline = {
-          'discipline': state.newSemester.discipline,
+          'discipline': discipline[1],
           'form': state.newSemester.form,
           'hours': state.newSemester.hours,
           'credits': state.newSemester.credits,
@@ -2937,12 +2929,13 @@ let store = new Vuex.Store({
     getListOfSubjects: (state) => {
       let list = []
       state.subjects.forEach(item => {
-        list.push(item.subject)
+        list.push(`${item.pk}^${item.subject}`)
       })
       return list
     },
     getTeacherForSubject: (state) => (chosen) => {
-      let teacher = state.subjects.filter(subject => subject.subject === chosen)
+      let pk = chosen.split('^')
+      let teacher = state.subjects.filter(subject => subject['pk'] == pk[0])
       if (teacher != '') {
         state.newSemester.teacher = teacher[0].teacher_name
       }

@@ -13,7 +13,7 @@ class StudentSerializer(ModelSerializer):
     fullname = ReadOnlyField(source='user.fullname')
     avatar = ReadOnlyField(source='user.photo')
     is_active = ReadOnlyField(source='user.is_active')
-    registered = ReadOnlyField(source='user.date_joined')
+    registered = ReadOnlyField(source='user.registered')
 
     class Meta:
         model = models.Student
@@ -50,7 +50,7 @@ class TeacherSerializer(ModelSerializer):
     email = ReadOnlyField(source='user.email')
     avatar = ReadOnlyField(source='user.photo')
     is_active = ReadOnlyField(source='user.is_active')
-    registered = ReadOnlyField(source='user.date_joined')
+    registered = ReadOnlyField(source='user.registered')
 
     class Meta:
         model = models.Teacher
@@ -60,4 +60,4 @@ class TeacherSerializer(ModelSerializer):
 class SubjectSerializer(ModelSerializer):
     class Meta:
         model = models.Subject
-        fields = ('subject', 'teacher_name')
+        fields = ('pk','subject','teacher_name')
