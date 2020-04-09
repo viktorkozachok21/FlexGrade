@@ -22,6 +22,12 @@ class FlexUser(AbstractUser):
     def fullname(self):
         return '%s %s %s' % (self.last_name,self.first_name,self.sur_name)
 
+    def photo(self):
+        return '%s' % self.avatar
+
+    def registered(self):
+        return '%s' % self.date_joined.date()
+
     def change_active(self):
         if self.is_active == True:
             self.is_active = False
@@ -107,21 +113,9 @@ class Student(models.Model):
     def __str__(self):
         return self.user.fullname()
 
-    def fullname(self):
-        return self.__str__()
-
-    def is_active(self):
-        return self.user.is_active
-
-    def code(self):
-        return '%s' % self.user.code
-
     def end(self):
         self.group = None
         self.save()
-
-    def avatar(self):
-        return '%s' % self.user.avatar
 
     def group_number(self):
         if self.group != None:
@@ -135,9 +129,6 @@ class Student(models.Model):
         else:
             return "Відраховані"
 
-    def registered(self):
-        return self.user.date_joined.date()
-
 
 class Teacher(models.Model):
     """
@@ -148,24 +139,6 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.user.fullname()
-
-    def fullname(self):
-        return self.__str__()
-
-    def code(self):
-        return '%s' % self.user.code
-
-    def email(self):
-        return '%s' % self.user.email
-
-    def avatar(self):
-        return '%s' % self.user.avatar
-
-    def registered(self):
-        return self.user.date_joined.date()
-
-    def is_active(self):
-        return self.user.is_active
 
 
 class Subject(models.Model):
@@ -179,7 +152,7 @@ class Subject(models.Model):
         return '%s (%s)' % (self.subject,self.teacher_name())
 
     def teacher_name(self):
-        return self.teacher.fullname()
+        return self.teacher.__str__()
 
     class Meta:
         ordering = ['subject']
@@ -190,6 +163,7 @@ class Semester(models.Model):
     Education period for group
     """
     semester = models.CharField(max_length=100)
+    number = models.IntegerField(default="0")
     students = models.ManyToManyField(Student)
     is_active = models.BooleanField(default=True)
 

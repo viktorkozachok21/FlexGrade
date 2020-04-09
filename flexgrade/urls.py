@@ -7,8 +7,9 @@ from app.views import app, home
 
 urlpatterns = [
     path('flexgrade/root/admin/', admin.site.urls),
-    path('api/', include('api.urls')),
     path('', app),
+    path('api/auth/', include('rest_auth.urls')),
+    path('api/app/', include('app.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)

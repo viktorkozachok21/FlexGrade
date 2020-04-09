@@ -1205,7 +1205,6 @@ const Login = {
     }
   }
 }
-// <!--- The Login Form
 // The Home Page
 const Home = {
   template: `
@@ -1233,7 +1232,6 @@ const Home = {
     }
   }
 }
-// <!--- Home Page
 // The Contact Info Page
 const Contact = {
   template: `
@@ -1271,7 +1269,6 @@ const Contact = {
     }
   }
 }
-// <!--- The Contact Info Page
 // The List Of Students
 const StudentsList = {
   template: `
@@ -1463,7 +1460,6 @@ const StudentsList = {
     }
   }
 }
-// <!--- The List Of Students
 // The More Details About A Student
 const StudentsPerson = {
   template: `
@@ -1661,7 +1657,6 @@ const StudentsPerson = {
     }
   }
 }
-// <!--- The More Details About A Student
 // The List Of Teachers
 const TeachersList = {
   template: `
@@ -1815,7 +1810,6 @@ const TeachersList = {
     }
   }
 }
-// <!--- The List Of Teachers
 // The More Details About A Teacher
 const TeachersPerson = {
   template: `
@@ -1975,7 +1969,6 @@ const TeachersPerson = {
     }
   }
 }
-// <!--- The More Details About A Teacher
 // The Profile Of A User
 const Profile = {
   mounted() {
@@ -2012,7 +2005,6 @@ const Profile = {
     }
   }
 }
-// <!--- The Profile Of A User
 // The router
 const router = new VueRouter({
   mode: 'history',
@@ -2092,7 +2084,6 @@ const router = new VueRouter({
     }
   ]
 })
-
 // Vuex store to keep the data in use
 Vue.use(Vuex)
 let store = new Vuex.Store({
@@ -2243,6 +2234,15 @@ let store = new Vuex.Store({
         commit('CHECK_AUTH')
       }
     },
+    getAdmins: ({ commit }) => {
+      return new Promise((resolve, reject) => {
+        fetch('/api/app/admins/')
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('GET_ADMINS', response))
+          })
+      })
+    },
     loginUser: ({ commit }, data) => {
       let csrftoken = getCookie('csrftoken')
       return new Promise((resolve, reject) => {
@@ -2291,15 +2291,6 @@ let store = new Vuex.Store({
               person: person,
               result: result
             }))
-          })
-      })
-    },
-    getAdmins: ({ commit }) => {
-      return new Promise((resolve, reject) => {
-        fetch('/api/app/admins/')
-          .then(r => r.json())
-          .then(response => {
-            resolve(commit('GET_ADMINS', response))
           })
       })
     },
@@ -2400,7 +2391,7 @@ let store = new Vuex.Store({
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
             fetch('/api/app/edit_profile/', {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                   'X-CSRFToken': csrftoken,
                 },
@@ -2443,7 +2434,7 @@ let store = new Vuex.Store({
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
             fetch('/api/app/edit_profile/', {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                   'X-CSRFToken': csrftoken,
                 },
@@ -2481,7 +2472,7 @@ let store = new Vuex.Store({
           })
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
-            fetch('/api/app/registration/', {
+            fetch('/api/app/edit_profile/', {
                 method: 'PUT',
                 headers: {
                   'Accept': 'application/json',
@@ -2516,7 +2507,7 @@ let store = new Vuex.Store({
           })
           let csrftoken = getCookie('csrftoken')
           return new Promise((resolve, reject) => {
-            fetch('/api/app/registration/', {
+            fetch('/api/app/edit_profile/', {
                 method: 'PUT',
                 headers: {
                   'Accept': 'application/json',
