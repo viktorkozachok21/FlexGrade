@@ -18,6 +18,44 @@ function goToTop() {
     behavior: "smooth"
   });
 };
+function compressArray(original) {
+  var compressed = [];
+  var copy = original.slice(0);
+  for (var i = 0; i < original.length; i++) {
+    var myCount = 0;
+    for (var w = 0; w < copy.length; w++) {
+      if (original[i] == copy[w]) {
+        myCount++;
+        delete copy[w];
+      }
+    }
+    if (myCount > 0) {
+      var a = new Object();
+      a.value = original[i];
+      a.count = myCount;
+      compressed.push(a);
+    }
+  }
+  return compressed;
+};
+function compareValues(key) {
+  return function innerSort(a, b) {
+    if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+      return 0;
+    }
+    const varA = (typeof a[key] === 'string') ?
+      a[key].toUpperCase() : a[key];
+    const varB = (typeof b[key] === 'string') ?
+      b[key].toUpperCase() : b[key];
+    let comparison = 0;
+    if (varA > varB) {
+      comparison = 1;
+    } else if (varA < varB) {
+      comparison = -1;
+    }
+    return comparison;
+  };
+};
 const goTop = document.getElementById("go-top-btn");
 window.onscroll = () => {
   if (document.body.scrollTop > 700 || document.documentElement.scrollTop > 700) {

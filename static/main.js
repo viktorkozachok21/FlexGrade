@@ -159,15 +159,15 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
 
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && (store.state.selectedStudents.length > 0 || $route.meta.showNewGrade) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-keyboard-close home-link"
-      @click="store.dispatch('loadSemesters', store.state.selectedStudents)"
-      v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"
+      @click="$route.meta.showNewGrade ? store.dispatch('loadSemesters', store.state.student) : store.dispatch('loadSemesters', store.state.selectedStudents)"
+      v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && (store.state.selectedStudents.length > 0 || $route.meta.showNewGrade) && store.state.studyStatus == true"
       title="Додати оцінки"
       ></v-span>
       <new-grade-x ref="newGradeForm"></new-grade-x>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && (store.state.selectedStudents.length > 0 || $route.meta.showNewGrade) && store.state.studyStatus == true"></v-divider>
 
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && ($route.meta.showNewTeacher || $route.meta.showNewStudent) && store.state.studyStatus == true"></v-divider>
       <v-span
@@ -1006,9 +1006,15 @@ const AddSemesterForm = Vue.component('new-semester-x',{
   `
 })
 const AddGradeForm = Vue.component('new-grade-x',{
+  data: () => ({
+    students: []
+  }),
   computed: {
     showDialog() {
       return store.state.newGrade.dialog
+    },
+    showStudent() {
+      return store.state.student
     }
   },
   watch: {
@@ -1020,6 +1026,12 @@ const AddGradeForm = Vue.component('new-grade-x',{
           this.$root.$refs.toolbar.$refs.newGradeForm.$refs.form.resetValidation()
         }
       }
+    },
+    showStudent: {
+      handler() {
+        this.students = store.state.student
+      },
+      deep: true,
     }
   },
   template: `
@@ -1080,8 +1092,41 @@ const AddGradeForm = Vue.component('new-grade-x',{
                       <th></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody v-if="store.state.selectedStudents.length > 0">
                     <tr v-for="(student, index) in store.state.selectedStudents" :key="index">
+                      <td><v-divider vertical></v-divider></td>
+                      <td class="text-left">{{ student.fullname }}</td>
+                      <td class="text-center"><v-divider vertical></v-divider></td>
+                      <td class="text-center" width="100px">
+                          <v-text-field
+                            v-if="store.state.newGrade.discipline"
+                            @keydown.native.space.prevent
+                            v-model="store.state.newGrade.scores[index]"
+                            single-line
+                            type="number"
+                            min="1"
+                            max="99"
+                            onkeypress="if(this.value.length>1&&this.value>2)return false;"
+                            :rules="[store.state.rules.spaces(store.state.newGrade.scores[index]),store.state.rules.min(1, store.state.newGrade.scores[index])]"
+                            color="teal darken-4"
+                          ></v-text-field>
+                      </td>
+                      <td class="text-center"><v-divider vertical></v-divider></td>
+                      <td class="text-center" width="100px">
+                        <v-select
+                          v-if="store.state.newGrade.discipline"
+                          v-model="store.state.newGrade.grades[index]"
+                          :items="['5','4','3','2','1','зарах']"
+                          :rules="[store.state.rules.minGroup(1, store.state.newGrade.grades[index])]"
+                          color="teal darken-4"
+                          item-color="teal darken-4"
+                        ></v-select>
+                      </td>
+                      <td><v-divider vertical></v-divider></td>
+                    </tr>
+                  </tbody>
+                  <tbody v-else>
+                    <tr v-for="(student, index) in students" :key="index">
                       <td><v-divider vertical></v-divider></td>
                       <td class="text-left">{{ student.fullname }}</td>
                       <td class="text-center"><v-divider vertical></v-divider></td>
@@ -1831,6 +1876,8 @@ const StudentsList = {
     moreInfo(student) {
       sessionStorage.removeItem("student")
       sessionStorage.setItem("student", JSON.stringify(student))
+      store.state.student = []
+      store.state.student.push(student)
       router.push({
         name: 'student',
         params: {
@@ -1906,17 +1953,15 @@ const StudentsPerson = {
               <v-sparkline
               v-if="scores"
               :value="scores"
+              :labels="labels"
               color="rgba(4, 37, 34, 0.49)"
               smooth="1"
               padding="5"
               label-size="7"
               type="bar"
-              auto-draw
               max-width="calc(100%-30px)"
               auto-line-width
-              ><template v-slot:label="item">
-                {{ item.value }}
-              </template></v-sparkline>
+              ></v-sparkline>
             </v-col>
             </v-row>
           </v-col>
@@ -1986,27 +2031,65 @@ const StudentsPerson = {
     gotData: true,
     person: {},
     semesters: [],
-    scores: null,
+    scores: [],
+    labels: [],
     loading: true,
     edit: false,
     dialog: false,
     avatar: '',
     wasEdited: false
   }),
+  computed: {
+    gradeWatcher() {
+      return [ store.state.newGrade.grades, store.state.newSemester.update ]
+    }
+  },
   watch: {
     semesters: {
       handler() {
-        let trend, grades = []
-        this.semesters.forEach(item => {
-          item.grades.forEach(grade => {
-            grades.push(parseInt(grade.score))
-            trend = new Set(grades)
+        let grades = []
+        this.scores = []
+        this.labels = []
+        if (this.semesters) {
+          this.semesters.forEach(item => {
+            item.grades.forEach( function(item) {
+              if (item.score) {
+                grades.push(item.score)
+              }
+            })
           })
-        })
-        grades = [...trend]
-        this.scores = grades.sort()
+          if (grades.length > 0) {
+            const trend = compressArray(grades).sort(compareValues('value'))
+            trend.forEach(item => {
+              this.labels.push(item.value)
+              this.scores.push(item.count)
+            })
+          }
+        }
       },
       deep: true,
+    },
+    gradeWatcher: {
+      handler() {
+        if (store.state.newGrade.update === true || store.state.newSemester.update === true) {
+          store.state.newGrade.update = false
+          store.state.newSemester.update = false
+          this.getData()
+            .then(data => {
+              this.semesters = data.semesters
+              this.loading = false
+              if (typeof data.semesters != 'undefined') {
+                if (data.semesters.length > 0) {
+                  this.gotData = true
+                } else {
+                  this.gotData = false
+                }
+              } else {
+                this.gotData = false
+              }
+            })
+        }
+      }
     }
   },
   mounted() {
@@ -2454,7 +2537,8 @@ const router = new VueRouter({
       component: StudentsPerson,
       meta: {
         showBack: true,
-        showNewStudent: true
+        showNewStudent: true,
+        showNewGrade: true
       }
     },
     {
@@ -2549,6 +2633,7 @@ let store = new Vuex.Store({
     },
     departments: [],
     specialties: [],
+    student: [],
     students: [],
     groups: [],
     teachers: [],
@@ -2628,7 +2713,8 @@ let store = new Vuex.Store({
       menu: false,
       teacher: '',
       subjects: [],
-      isFinished: false
+      isFinished: false,
+      update: false
     },
     newGrade: {
       valid: true,
@@ -2639,7 +2725,8 @@ let store = new Vuex.Store({
       disciplines: [],
       discipline: '',
       scores: [],
-      grades: []
+      grades: [],
+      update: false
     },
     newDepartment: {
       valid: true,
@@ -3290,8 +3377,18 @@ let store = new Vuex.Store({
       })
     },
     loadSemesters: ({ commit, getters }, students) => {
-      if (getters.filterGroup.length > 0) {
-        Notiflix.Notify.Warning('Оцінки можна вносити лише для однієї групи.')
+      if (getters.filterGroup) {
+        if (getters.filterGroup.length > 0) {
+          Notiflix.Notify.Warning('Оцінки можна вносити лише для однієї групи.')
+        } else {
+          return new Promise((resolve, reject) => {
+            fetch(`/api/app/grades/${students[0].code}`)
+              .then(r => r.json())
+              .then(response => {
+                resolve(commit('LOAD_SEMESTERS', response))
+              })
+          })
+        }
       } else {
         return new Promise((resolve, reject) => {
           fetch(`/api/app/grades/${students[0].code}`)
@@ -3308,9 +3405,13 @@ let store = new Vuex.Store({
         let semester = state.newGrade.semesters.filter(semester => semester.semester === state.newGrade.semester)
         let discipline = state.newGrade.disciplines.filter(discipline => discipline === state.newGrade.discipline)
         let students = []
-        state.selectedStudents.forEach(student => {
-          students.push(student.code)
-        })
+        if (store.state.selectedStudents.length > 0) {
+          state.selectedStudents.forEach(student => {
+            students.push(student.code)
+          })
+        } else {
+          students.push(state.student[0].code)
+        }
         const data = {
           'semester': semester[0].semester,
           'discipline': discipline[0],
@@ -3497,6 +3598,7 @@ let store = new Vuex.Store({
       state.newSemester.form = ''
       state.newSemester.groups = []
       state.newSemester.subjects = []
+      state.newSemester.update = true
       props.form.resetValidation()
       Notiflix.Notify.Success(props.response.message)
     },
@@ -3540,6 +3642,7 @@ let store = new Vuex.Store({
     ADD_GRADE: (state, props) => {
       state.newGrade.scores = []
       state.newGrade.grades = []
+      state.newGrade.update = true
       props.form.resetValidation()
       Notiflix.Notify.Success(props.response.message)
     }
@@ -3601,8 +3704,10 @@ let store = new Vuex.Store({
       return state.newSemester.subjects.filter(subject => subject.discipline === state.newSemester.discipline)
     },
     filterGroup: (state) => {
-      const group = state.selectedStudents[0].group_number
-      return state.selectedStudents.filter(student => student.group_number != group)
+      if (state.selectedStudents.length > 0) {
+        const group = state.selectedStudents[0].group_number
+        return state.selectedStudents.filter(student => student.group_number != group)
+      }
     },
     getListOfSemesters: (state) => {
       let list = []
