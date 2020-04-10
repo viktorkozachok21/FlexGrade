@@ -204,6 +204,106 @@
         </v-expansion-panel-content>
       </v-expansion-panel>
 
+      <v-expansion-panel>
+        <v-expansion-panel-header expand-icon="mdi-chart-timeline" class="mb-3">
+          <template v-slot:default="{ open }">
+            <v-row no-gutters>
+              <v-col cols="4"><h5 class="title">Спеціальності<h5/></v-col>
+            </v-row>
+          </template>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-expansion-panels focusable>
+          <v-expansion-panel
+            v-for="item in specialties"
+            :key="item.id"
+          >
+          <v-expansion-panel-header disable-icon-rotate expand-icon="mdi-credit-card-multiple">
+            <template v-slot:default="{ open }">
+              <v-row no-gutters>
+                <v-col cols="10"><h5 class="title">{{ item.full_name }} ({{ item.degree }})<h5/></v-col>
+              </v-row>
+            </template>
+          </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-row no-gutters v-if="store.state.status === 'Admin'">
+                <v-col cols="12" class="px-2 py-2">
+                  <v-text-field
+                  label="Назва спеціальності"
+                  maxlength="150"
+                  :rules="[store.state.rules.spaces(item.full_name),store.state.rules.min(10, item.full_name)]"
+                  v-model="item.full_name"
+                  @input="wasEdited = true"
+                  color="teal darken-4"
+                  :readonly="!editSpecialty"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" class="px-2 py-2">
+                  <v-select
+                   :items="store.getters.getListOfDepartmants"
+                   label="Відділення"
+                   item-color="teal darken-4"
+                   v-model="item.department_name"
+                   @change="wasEdited = true"
+                   color="teal darken-4"
+                   :readonly="!editSpecialty"
+                   :rules="[store.state.rules.minGroup(1, item.department_name)]"
+                   dense required
+                  ></v-select>
+                </v-col>
+                <v-col cols="3" class="px-2 py-2">
+                  <v-text-field
+                  label="Скорочена назва"
+                  maxlength="5"
+                  :rules="[store.state.rules.spaces(item.short_name),store.state.rules.min(1, item.short_name)]"
+                  v-model="item.short_name"
+                  @input="wasEdited = true"
+                  color="teal darken-4"
+                  :readonly="!editSpecialty"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="6" class="px-2 py-2">
+                  <v-select
+                    v-if="store.state.status === 'Admin'"
+                   :items="['Молодший бакалавр','Бакалавр','Молодший спеціаліст','Магістр','Спеціаліст']"
+                   label="Рівень освіти"
+                   item-color="teal darken-4"
+                   v-model="item.degree"
+                   @change="wasEdited = true"
+                   color="teal darken-4"
+                   :readonly="!editSpecialty"
+                   :rules="[store.state.rules.minGroup(1, item.degree)]"
+                   dense required
+                  ></v-select>
+                </v-col>
+                <v-col cols="3" class="d-flex justify-center align-center" v-if="store.state.status === 'Admin'">
+                  <div :title="editSpecialty ? 'Вимкнути редагування' : 'Ввімкнути редагування'">
+                    <v-switch
+                    v-model="editSpecialty"
+                    flat
+                    dense
+                    color="teal darken-4"
+                    ></v-switch>
+                  </div>
+                  <v-btn text v-if="editSpecialty" class="home-link my-3" title="Зберегти зміни" @click="saveSpecialty(item.id)"><span class="mdi mdi-36px mdi-content-save"></span></v-btn>
+                </v-col>
+              </v-row>
+              <v-row no-gutters v-else>
+                <v-col cols="12" class="px-2 py-2">
+                  <v-text-field
+                  label="Відділення"
+                  v-model="item.department_name"
+                  color="teal darken-4"
+                  readonly
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+
     </v-expansion-panels>
   </template>
 {% endverbatim %}

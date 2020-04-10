@@ -197,6 +197,15 @@ const Toolbar = Vue.component('toolbar-x', {
       ></v-span>
       <new-department-x ref="newDepartmentForm"></new-department-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && $route.meta.directory"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && $route.meta.directory"></v-divider>
+      <v-span
+      class="mdi mdi-credit-card-plus home-link"
+      @click="store.state.newSpecialty.dialog = true"
+      v-if="store.state.status == 'Admin' && $route.meta.directory"
+      title="Додати спеціальність"
+      ></v-span>
+      <new-specialty-x ref="newSpecialtyForm"></new-specialty-x>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && $route.meta.directory"></v-divider>
 
       <v-spacer></v-spacer>
 
@@ -1204,6 +1213,106 @@ const AddDepartmentForm = Vue.component('new-department-x',{
   </v-dialog>
   `
 })
+const AddSpecialtyForm = Vue.component('new-specialty-x',{
+  date() {
+    return {
+      existsDepartments: []
+    }
+  },
+  computed: {
+    showDialog() {
+      return store.state.newSpecialty.dialog
+    },
+    departments() {
+      return store.state.departments
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.newSpecialtyForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.newSpecialtyForm.$refs.form.resetValidation()
+        }
+      }
+    },
+    departments: {
+      handler() {
+        this.existsDepartments = store.getters.getListOfDepartmants
+      },
+      deep: true,
+    }
+  },
+  template: `
+  <v-dialog v-model="store.state.newSpecialty.dialog" persistent max-width="700px">
+    <v-card id="addSpecialtyForm" class="text-center pt-3">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Додати відділення</span>
+      </v-title>
+        <v-container>
+          <v-form
+            ref="form"
+            v-model="store.state.newSpecialty.valid"
+            :lazy-validation="store.state.newSpecialty.lazy"
+            >
+          <v-row no-gutters>
+            <v-col cols="12" class="px-2 py-2">
+             <v-select
+              :items="existsDepartments"
+              v-if="typeof existsDepartments != 'undefined'"
+              v-model="store.state.newSpecialty.department"
+              label="Відділення*"
+              item-color="teal darken-4"
+              color="teal darken-4"
+              no-data-text="Не знайдено відповідних записів"
+              :rules="[store.state.rules.minGroup(1, store.state.newSpecialty.department)]"
+              dense required
+             ></v-select>
+           </v-col>
+            <v-col cols="12" class="px-2 py-2">
+              <v-text-field
+              @keypress.native="$root.validateKey($event)"
+              label="Назва спеціальності"
+              maxlength="150"
+              :rules="[store.state.rules.spaces(store.state.newSpecialty.fullName),store.state.rules.min(3, store.state.newSpecialty.fullName)]"
+              v-model="store.state.newSpecialty.fullName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-2 py-2">
+              <v-text-field
+              @keypress.native="$root.validateKey($event)"
+              label="Скорочена назва"
+              maxlength="5"
+              :rules="[store.state.rules.spaces(store.state.newSpecialty.shortName),store.state.rules.min(1, store.state.newSpecialty.shortName)]"
+              v-model="store.state.newSpecialty.shortName"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6" class="px-2 py-2">
+             <v-select
+              :items="['Молодший бакалавр','Бакалавр','Молодший спеціаліст','Магістр','Спеціаліст']"
+              v-model="store.state.newSpecialty.degree"
+              label="Рівень освіти*"
+              item-color="teal darken-4"
+              color="teal darken-4"
+              :rules="[store.state.rules.minGroup(1, store.state.newSpecialty.degree)]"
+              dense required
+             ></v-select>
+           </v-col>
+          </v-row>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('addSpecialty', $root.$refs.toolbar.$refs.newSpecialtyForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.newSpecialty.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
 // The Login Form
 const Login = {
   template: `
@@ -1382,10 +1491,11 @@ const Directory = {
     return {
       school: '',
       departments: [],
+      specialties: [],
       wasEdited: false,
       editSchool: false,
       editDepartment: false,
-      edited: ''
+      editSpecialty: false,
     }
   },
   computed: {
@@ -1394,6 +1504,9 @@ const Directory = {
     },
     departmentMonitor() {
       return store.state.departments
+    },
+    specialtyMonitor() {
+      return store.state.specialties
     }
   },
   watch: {
@@ -1406,6 +1519,12 @@ const Directory = {
     departmentMonitor: {
       handler() {
         this.departments = store.state.departments
+      },
+      deep: true,
+    },
+    specialtyMonitor: {
+      handler() {
+        this.specialties = store.state.specialties
       },
       deep: true,
     },
@@ -1435,6 +1554,7 @@ const Directory = {
       handler() {
         if (this.editSchool == false) {
           this.wasEdited = false
+          store.dispatch('getSchool')
         }
       },
       deep: true,
@@ -1443,6 +1563,16 @@ const Directory = {
       handler() {
         if (this.editDepartment == false) {
           this.wasEdited = false
+          store.dispatch('getDepartments')
+        }
+      },
+      deep: true,
+    },
+    editSpecialty: {
+      handler() {
+        if (this.editSpecialty == false) {
+          this.wasEdited = false
+          store.dispatch('getSpecialties')
         }
       },
       deep: true,
@@ -1461,6 +1591,10 @@ const Directory = {
         store.dispatch('getDepartments')
         .then(() => {
           this.departments = store.state.departments
+        })
+        store.dispatch('getSpecialties')
+        .then(() => {
+          this.specialties = store.state.specialties
         })
     }
   },
@@ -1502,6 +1636,24 @@ const Directory = {
           "manager_short": changed[0].manager_short,
         }
         store.dispatch('editDepartment', data)
+        .then(() => {
+          this.wasEdited = false
+        })
+      } else {
+        Notiflix.Notify.Info('Змін не виявлено.')
+      }
+    },
+    saveSpecialty(id) {
+      if (this.wasEdited) {
+        let changed = this.specialties.filter(specialty => specialty.id == id)
+        const data = {
+          "id": changed[0].id,
+          "department": changed[0].department_name,
+          "full_name": changed[0].full_name,
+          "short_name": changed[0].short_name,
+          "degree": changed[0].degree,
+        }
+        store.dispatch('editSpecialty', data)
         .then(() => {
           this.wasEdited = false
         })
@@ -2342,6 +2494,7 @@ let store = new Vuex.Store({
   state: {
     showSelected: false,
     authenticated: false,
+    schoolCode: '',
     rules: {
       spaces(v) {
         if (v) {
@@ -2379,6 +2532,7 @@ let store = new Vuex.Store({
       assistantShort: ''
     },
     departments: [],
+    specialties: [],
     students: [],
     groups: [],
     teachers: [],
@@ -2478,6 +2632,15 @@ let store = new Vuex.Store({
       fullName: '',
       manager: '',
       managerShort: ''
+    },
+    newSpecialty: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      department: '',
+      fullName: '',
+      shortName: '',
+      degree: ''
     }
   },
   actions: {
@@ -2514,9 +2677,9 @@ let store = new Vuex.Store({
           })
       })
     },
-    getSchool: ({ commit }) => {
+    getSchool: ({ commit, state }) => {
       return new Promise((resolve, reject) => {
-        fetch('/api/app/school/')
+        fetch(`/api/app/school/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
             if (response.success) {
@@ -2525,11 +2688,11 @@ let store = new Vuex.Store({
           })
       })
     },
-    editSchool: ({ commit }, data) => {
+    editSchool: ({ commit, state }, data) => {
       let csrftoken = getCookie('csrftoken')
       return new Promise((resolve, reject) => {
-        fetch('/api/app/school/', {
-            method: 'POST',
+        fetch(`/api/app/school/${state.schoolCode}`, {
+            method: 'PUT',
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
@@ -2546,12 +2709,13 @@ let store = new Vuex.Store({
           })
       })
     },
-    getDepartments: ({ commit }) => {
+
+    getDepartments: ({ commit, state }) => {
       return new Promise((resolve, reject) => {
-        fetch('/api/app/departments/')
+        fetch(`/api/app/departments/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('GET_DEPARTMENTS', response))
+            resolve(commit('GET_DEPARTMENTS', response.departments))
           })
       })
     },
@@ -2564,7 +2728,7 @@ let store = new Vuex.Store({
         data.append('manager_short', state.newDepartment.managerShort)
         let csrftoken = getCookie('csrftoken')
         return new Promise((resolve, reject) => {
-          fetch('/api/app/department/', {
+          fetch(`/api/app/departments/${state.schoolCode}`, {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2589,10 +2753,10 @@ let store = new Vuex.Store({
           Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
         }
       },
-    editDepartment: ({ commit }, data) => {
+    editDepartment: ({ commit, state }, data) => {
       let csrftoken = getCookie('csrftoken')
       return new Promise((resolve, reject) => {
-        fetch('/api/app/department/', {
+        fetch(`/api/app/departments/${state.schoolCode}`, {
             method: 'PUT',
             headers: {
               'Accept': 'application/json',
@@ -2610,6 +2774,73 @@ let store = new Vuex.Store({
           })
       })
     },
+
+    getSpecialties: ({ commit, state }) => {
+      return new Promise((resolve, reject) => {
+        fetch(`/api/app/specialties/${state.schoolCode}`)
+          .then(r => r.json())
+          .then(response => {
+            resolve(commit('GET_SPECIALTIES', response.specialties))
+          })
+      })
+    },
+    addSpecialty: ({ commit, state, dispatch }, form) => {
+      if (form.validate()) {
+        Notiflix.Block.Circle('div#addSpecialtyForm', 'Зачекайте, будь ласка ...')
+        let data = new FormData()
+        data.append('department', state.newSpecialty.department)
+        data.append('full_name', state.newSpecialty.fullName)
+        data.append('short_name', state.newSpecialty.shortName)
+        data.append('degree', state.newSpecialty.degree)
+        let csrftoken = getCookie('csrftoken')
+        return new Promise((resolve, reject) => {
+          fetch(`/api/app/specialties/${state.schoolCode}`, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrftoken,
+              },
+              body: data
+            })
+          .then(r => r.json())
+          .then(response => {
+                Notiflix.Block.Remove('div#addSpecialtyForm')
+                if (response.success) {
+                  dispatch('getSpecialties')
+                  resolve(commit('GET_SPECIALTIES', {
+                    form: form,
+                    response: response
+                  }))
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+              })
+          })
+        } else {
+          Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
+        }
+      },
+    editSpecialty: ({ commit, state }, data) => {
+      let csrftoken = getCookie('csrftoken')
+      return new Promise((resolve, reject) => {
+        fetch(`/api/app/specialties/${state.schoolCode}`, {
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify(data)
+          })
+          .then(r => r.json())
+          .then(response => {
+            if (response.success) {
+              resolve(commit('GET_SPECIALTIES', response.specialties))
+              Notiflix.Notify.Success('Інформацію успішно збережено.')
+            }
+          })
+      })
+    },
+
     loginUser: ({ commit }, data) => {
       let csrftoken = getCookie('csrftoken')
       return new Promise((resolve, reject) => {
@@ -2677,7 +2908,7 @@ let store = new Vuex.Store({
         }
         let csrftoken = getCookie('csrftoken')
         return new Promise((resolve, reject) => {
-          fetch('/api/app/registration/', {
+          fetch(`/api/app/registration/${state.schoolCode}`, {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2717,7 +2948,7 @@ let store = new Vuex.Store({
         }
         let csrftoken = getCookie('csrftoken')
         return new Promise((resolve, reject) => {
-          fetch('/api/app/registration/', {
+          fetch(`/api/app/registration/${state.schoolCode}`, {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2900,33 +3131,33 @@ let store = new Vuex.Store({
         },
         function() {})
     },
-    loadStudents: ({ commit }) => {
+    loadStudents: ({ commit, state }) => {
       return new Promise((resolve, reject) => {
-        fetch('/api/app/students/')
+        fetch(`/api/app/students/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_STUDENTS', response))
+            resolve(commit('LOAD_STUDENTS', response.students))
           })
       })
     },
-    loadTeachers: ({ commit }) => {
+    loadTeachers: ({ commit, state }) => {
       return new Promise((resolve, reject) => {
-        fetch('/api/app/teachers/')
+        fetch(`/api/app/teachers/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_TEACHERS', response))
+            resolve(commit('LOAD_TEACHERS', response.teachers))
           })
       })
     },
     checkStatus: ({ commit }, status) => {
       commit('CHECK_STATUS', status)
     },
-    loadSubjects: ({ commit }) => {
+    loadSubjects: ({ commit, state }) => {
       return new Promise((resolve, reject) => {
-        fetch('/api/app/subjects/')
+        fetch(`/api/app/subjects/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_SUBJECTS', response))
+            resolve(commit('LOAD_SUBJECTS', response.subjects))
           })
       })
     },
@@ -2938,7 +3169,7 @@ let store = new Vuex.Store({
         data.append('teacher', getters.getTeacherCode(state.newSubject.teacher))
         let csrftoken = getCookie('csrftoken')
         return new Promise((resolve, reject) => {
-          fetch('/api/app/edit_subject/', {
+          fetch(`/api/app/subjects/${state.schoolCode}`, {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrftoken,
@@ -2975,7 +3206,7 @@ let store = new Vuex.Store({
             }
             let csrftoken = getCookie('csrftoken')
             return new Promise((resolve, reject) => {
-              fetch('/api/app/edit_semester/', {
+              fetch(`/api/app/semester/${state.schoolCode}`, {
                   method: 'POST',
                   headers: {
                     'Accept': 'application/json',
@@ -3026,19 +3257,19 @@ let store = new Vuex.Store({
     },
     getSemesters: ({ commit }, code) => {
       return new Promise((resolve, reject) => {
-        fetch(`/api/app/edit_semester/${code}`)
+        fetch(`/api/app/semester/${code}`)
           .then(r => r.json())
           .then(response => {
             resolve(commit('GET_SEMESTERS', response.semesters))
           })
       })
     },
-    loadGroups: ({ commit }) => {
+    loadGroups: ({ commit, state }) => {
       return new Promise((resolve, reject) => {
-        fetch('/api/app/groups/')
+        fetch(`/api/app/groups/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_GROUPS', response))
+            resolve(commit('LOAD_GROUPS', response.groups))
           })
       })
     },
@@ -3047,7 +3278,7 @@ let store = new Vuex.Store({
         Notiflix.Notify.Warning('Оцінки можна вносити лише для однієї групи.')
       } else {
         return new Promise((resolve, reject) => {
-          fetch(`/api/app/edit_grade/${students[0].code}`)
+          fetch(`/api/app/grades/${students[0].code}`)
             .then(r => r.json())
             .then(response => {
               resolve(commit('LOAD_SEMESTERS', response))
@@ -3073,7 +3304,7 @@ let store = new Vuex.Store({
         }
         let csrftoken = getCookie('csrftoken')
         return new Promise((resolve, reject) => {
-          fetch('/api/app/edit_grade/', {
+          fetch('/api/app/grades/', {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
@@ -3121,6 +3352,7 @@ let store = new Vuex.Store({
           state.authenticated = true
           if (props.response.profile) {
             state.status = props.response.profile.status
+            state.schoolCode = props.response.profile.school
               if (state.status === 'Teacher') {
                   state.showSelected = true
               } else {
@@ -3128,6 +3360,7 @@ let store = new Vuex.Store({
               }
             } else if (props.response.status) {
                 state.status = props.response.status
+                state.schoolCode = props.response.school
                 state.showSelected = true
             } else {
               Notiflix.Notify.Failure(props.response.message)
@@ -3161,6 +3394,19 @@ let store = new Vuex.Store({
         Notiflix.Notify.Success(props.response.message)
       } else {
         state.departments = props
+      }
+    },
+    GET_SPECIALTIES: (state, props) => {
+      if (props.form) {
+        state.specialties = props.response.specialties
+        state.newSpecialty.department = ''
+        state.newSpecialty.fullName = ''
+        state.newSpecialty.shortName = ''
+        state.newSpecialty.degree = ''
+        props.form.resetValidation()
+        Notiflix.Notify.Success(props.response.message)
+      } else {
+        state.specialties = props
       }
     },
     ADD_STUDENT: (state, props) => {
@@ -3228,6 +3474,7 @@ let store = new Vuex.Store({
     ADD_SUBJECT: (state, props) => {
       Notiflix.Notify.Success(props.response.message)
       state.newSubject.subject = ''
+      state.subjects = props.response.subjects
       props.form.resetValidation()
     },
     ADD_SEMESTER: (state, props) => {
@@ -3356,6 +3603,15 @@ let store = new Vuex.Store({
       semesters[0].disciplines.forEach(semester => {
         state.newGrade.disciplines.push(semester.subject)
       })
+    },
+    getListOfDepartmants: (state) => {
+      let list = []
+      if(typeof state.departments != 'undefined') {
+        state.departments.forEach(item => {
+          list.push(item.full_name)
+        })
+      }
+      return list
     }
   }
 })

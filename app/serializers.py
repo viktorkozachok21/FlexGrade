@@ -20,6 +20,12 @@ class DepartmentSerializer(ModelSerializer):
         fields = ('__all__')
 
 
+class SpecialtySerializer(ModelSerializer):
+    class Meta:
+        model = models.Specialty
+        fields = ('id','full_name','short_name','degree','department_name')
+
+
 class StudentSerializer(ModelSerializer):
     code = ReadOnlyField(source='user.code')
     fullname = ReadOnlyField(source='user.fullname')

@@ -6,36 +6,6 @@ from model_utils import Choices
 import uuid
 
 
-class FlexUser(AbstractUser):
-    """
-    Custom user model which base on django user with new fields
-    """
-    code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    sur_name = models.CharField(max_length=100, blank=True, null=True)
-    avatar = models.ImageField(default="avatars/default.webp", blank=True, upload_to="avatars")
-    STATUS = Choices('Admin', 'Teacher','Student')
-    status = StatusField(choices_name='STATUS')
-
-    def __str__(self):
-        return '%s (%s)' % (self.username,self.fullname())
-
-    def fullname(self):
-        return '%s %s %s' % (self.last_name,self.first_name,self.sur_name)
-
-    def photo(self):
-        return '%s' % self.avatar
-
-    def registered(self):
-        return '%s' % self.date_joined.date()
-
-    def change_active(self):
-        if self.is_active == True:
-            self.is_active = False
-        else:
-            self.is_active = True
-        self.save()
-
-
 class School(models.Model):
     """
     School (institution of education)
@@ -49,6 +19,40 @@ class School(models.Model):
 
     def __str__(self):
         return '(%s) %s' % (self.pk,self.short_name)
+
+
+class FlexUser(AbstractUser):
+    """
+    Custom user model which base on django user with new fields
+    """
+    code = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    school = models.ForeignKey(School, on_delete=models.CASCADE, blank=True, null=True)
+    sur_name = models.CharField(max_length=100, blank=True, null=True)
+    avatar = models.ImageField(default="avatars/default.webp", blank=True, upload_to="avatars")
+    STATUS = Choices('Admin', 'Teacher','Student')
+    status = StatusField(choices_name='STATUS')
+
+    def __str__(self):
+        return '%s (%s)' % (self.username,self.fullname())
+
+    def fullname(self):
+        return '%s %s %s' % (self.last_name,self.first_name,self.sur_name)
+
+    def school_code(self):
+        return '%s' % self.school.pk
+
+    def photo(self):
+        return '%s' % self.avatar
+
+    def registered(self):
+        return '%s' % self.date_joined.date()
+
+    def change_active(self):
+        if self.is_active == True:
+            self.is_active = False
+        else:
+            self.is_active = True
+        self.save()
 
 
 class Department(models.Model):
@@ -79,6 +83,9 @@ class Specialty(models.Model):
 
     def __str__(self):
         return '%s (%s) (%s)' % (self.full_name,self.degree,self.department.school.short_name)
+
+    def department_name(self):
+        return '%s' % self.department.full_name
 
     class Meta:
         ordering = ['full_name']
@@ -135,7 +142,6 @@ class Teacher(models.Model):
     App user (teacher of a school)
     """
     user = models.OneToOneField(FlexUser, on_delete=models.CASCADE, primary_key=True)
-    school = models.ForeignKey(School, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.user.fullname()
