@@ -217,13 +217,11 @@ const Toolbar = Vue.component('toolbar-x', {
   `
 })
 const Footer = Vue.component('footer-x', {
-  data() {
-    return {
-      created: 2020,
-      today: new Date().getFullYear(),
-      copyRight: null
-    }
-  },
+  data: () => ({
+    created: 2020,
+    today: new Date().getFullYear(),
+    copyRight: null
+  }),
   mounted() {
     if (this.created === this.today) {
       this.copyRight = `${this.created}`
@@ -703,11 +701,9 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
   `
 })
 const AddSubjectForm = Vue.component('new-subject-x',{
-  data() {
-    return {
-      teachers: []
-    }
-  },
+  data: () => ({
+    teachers: []
+  }),
   computed: {
     list() {
       return store.state.teachers
@@ -786,12 +782,10 @@ const AddSubjectForm = Vue.component('new-subject-x',{
   `
 })
 const AddSemesterForm = Vue.component('new-semester-x',{
-  data () {
-    return {
-      items: [],
-      subjects: []
-    }
-  },
+  data: () => ({
+    items: [],
+    subjects: []
+  }),
   computed: {
     list() {
       return store.state.subjects
@@ -1214,11 +1208,9 @@ const AddDepartmentForm = Vue.component('new-department-x',{
   `
 })
 const AddSpecialtyForm = Vue.component('new-specialty-x',{
-  date() {
-    return {
-      existsDepartments: []
-    }
-  },
+  date: () => ({
+    existsDepartments: []
+  }),
   computed: {
     showDialog() {
       return store.state.newSpecialty.dialog
@@ -1361,15 +1353,13 @@ const Login = {
     </v-btn>
   </div>
   `,
-  data() {
-    return {
-      username: "",
-      password: "",
-      show: false,
-      loading: false,
-      form: false
-    }
-  },
+  data: () => ({
+    username: "",
+    password: "",
+    show: false,
+    loading: false,
+    form: false
+  }),
   mounted() {
     store.dispatch('checkAuth')
       .then(() => {
@@ -1487,17 +1477,15 @@ const Contact = {
 // The directory page
 const Directory = {
   template: document.getElementById('accordion'),
-  data() {
-    return {
-      school: '',
-      departments: [],
-      specialties: [],
-      wasEdited: false,
-      editSchool: false,
-      editDepartment: false,
-      editSpecialty: false,
-    }
-  },
+  data: () => ({
+    school: '',
+    departments: [],
+    specialties: [],
+    wasEdited: false,
+    editSchool: false,
+    editDepartment: false,
+    editSpecialty: false,
+  }),
   computed: {
     schoolMonitor() {
       return store.state.school
@@ -1692,6 +1680,7 @@ const StudentsList = {
       </v-layout>
     </v-row>
     <v-data-table
+    v-if="students"
     :headers="headers"
     :items="students"
     :item-key="itemKey"
@@ -1739,54 +1728,52 @@ const StudentsList = {
     ></v-text-field>
   </div>
   `,
-  data() {
-    return {
-      totalItems: '',
-      search: '',
-      students: [],
-      itemKey: 'code',
-      loading: false,
-      pageCount: 0,
-      options: {
-        page: 1,
-        studyStatus: true,
+  data: () => ({
+    totalItems: '',
+    search: '',
+    students: [],
+    itemKey: 'code',
+    loading: false,
+    pageCount: 0,
+    options: {
+      page: 1,
+      studyStatus: true,
+    },
+    sortBy: 'fullname',
+    itemsPerPage: 30,
+    selected: [],
+    singleSelect: false,
+    headers: [{
+        text: 'П.І.П.',
+        align: 'left',
+        value: 'fullname',
       },
-      sortBy: 'fullname',
-      itemsPerPage: 30,
-      selected: [],
-      singleSelect: false,
-      headers: [{
-          text: 'П.І.П.',
-          align: 'left',
-          value: 'fullname',
-        },
-        {
-          text: 'Група',
-          align: 'center',
-          width: '11%',
-          value: 'group_number',
-        },
-        {
-          text: 'Залікова книжка №',
-          align: 'left',
-          width: '15%',
-          value: 'book_number',
-        },
-        {
-          text: 'Рівень освіти',
-          align: 'left',
-          width: '12%',
-          value: 'degree',
-        },
-        {
-          text: 'Зареєстровано',
-          align: 'right',
-          width: '15%',
-          value: 'registered',
-        }
-      ],
-    }
-  },
+      {
+        text: 'Група',
+        align: 'center',
+        width: '11%',
+        value: 'group_number',
+      },
+      {
+        text: 'Залікова книжка №',
+        align: 'left',
+        width: '15%',
+        value: 'book_number',
+      },
+      {
+        text: 'Рівень освіти',
+        align: 'left',
+        width: '12%',
+        value: 'degree',
+      },
+      {
+        text: 'Зареєстровано',
+        align: 'right',
+        width: '15%',
+        value: 'registered',
+      }
+    ],
+  }),
   computed: {
     watcher() {
       options = this.options
@@ -1838,7 +1825,7 @@ const StudentsList = {
             result,
             total
           })
-        }, 1000);
+        }, 2000);
       })
     },
     moreInfo(student) {
@@ -1913,16 +1900,34 @@ const StudentsPerson = {
           <div class="text-justify">
             <span class="font-weight-bold ml-3">Група:</span> {{ person.group_number }}
           </div>
-          <v-divider class="my-3"></v-divider>
-        </v-col>
-      </v-row>
+          <v-divider class="my-1"></v-divider>
+          <v-row>
+            <v-col cols="12">
+              <v-sparkline
+              v-if="scores"
+              :value="scores"
+              color="rgba(4, 37, 34, 0.49)"
+              smooth="1"
+              padding="5"
+              label-size="7"
+              type="bar"
+              auto-draw
+              max-width="calc(100%-30px)"
+              auto-line-width
+              ><template v-slot:label="item">
+                {{ item.value }}
+              </template></v-sparkline>
+            </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
       <v-row>
         <v-col cols="12">
-          <v-divider class="my-3"></v-divider>
+          <v-divider class="my-2"></v-divider>
           <h3 class="text--secondary">
             Заліки, екзамени, курсові роботи, практики
           </h3>
-          <v-divider class="my-3"></v-divider>
+          <v-divider class="my-2"></v-divider>
           <v-progress-linear
           :active="loading"
           :indeterminate="loading"
@@ -1977,16 +1982,31 @@ const StudentsPerson = {
       </v-row>
   </div>
   `,
-  data() {
-    return {
-      gotData: true,
-      person: {},
-      semesters: [],
-      loading: true,
-      edit: false,
-      dialog: false,
-      avatar: '',
-      wasEdited: false
+  data: () => ({
+    gotData: true,
+    person: {},
+    semesters: [],
+    scores: null,
+    loading: true,
+    edit: false,
+    dialog: false,
+    avatar: '',
+    wasEdited: false
+  }),
+  watch: {
+    semesters: {
+      handler() {
+        let trend, grades = []
+        this.semesters.forEach(item => {
+          item.grades.forEach(grade => {
+            grades.push(parseInt(grade.score))
+            trend = new Set(grades)
+          })
+        })
+        grades = [...trend]
+        this.scores = grades.sort()
+      },
+      deep: true,
     }
   },
   mounted() {
@@ -2015,8 +2035,8 @@ const StudentsPerson = {
             this.gotData = false
           }
         })
-
     }
+    goToTop()
   },
   methods: {
     getData() {
@@ -2116,33 +2136,31 @@ const TeachersList = {
     ></v-text-field>
   </div>
   `,
-  data() {
-    return {
-      totalItems: '',
-      search: '',
-      teachers: [],
-      itemKey: 'code',
-      loading: false,
-      pageCount: 0,
-      page: 1,
-      sortBy: 'fullname',
-      selected: [],
-      singleSelect: false,
-      itemsPerPage: 30,
-      headers: [{
-          text: 'П.І.П.',
-          align: 'left',
-          value: 'fullname',
-        },
-        {
-          text: 'Email',
-          align: 'left',
-          sortable: false,
-          value: 'email'
-        }
-      ],
-    }
-  },
+  data: () => ({
+    totalItems: '',
+    search: '',
+    teachers: [],
+    itemKey: 'code',
+    loading: false,
+    pageCount: 0,
+    page: 1,
+    sortBy: 'fullname',
+    selected: [],
+    singleSelect: false,
+    itemsPerPage: 30,
+    headers: [{
+        text: 'П.І.П.',
+        align: 'left',
+        value: 'fullname',
+      },
+      {
+        text: 'Email',
+        align: 'left',
+        sortable: false,
+        value: 'email'
+      }
+    ],
+  }),
   computed: {
     watcher() {
       return store.state.teachers
@@ -2190,7 +2208,7 @@ const TeachersList = {
             loaded,
             total,
           })
-        }, 1000)
+        }, 2000)
       })
     },
     moreInfo(teacher) {
@@ -2295,18 +2313,16 @@ const TeachersPerson = {
     </v-row>
   </div>
   `,
-  data() {
-    return {
-      person: {},
-      gotData: true,
-      subjects: [],
-      loading: true,
-      edit: false,
-      dialog: false,
-      avatar: '',
-      wasEdited: false
-    }
-  },
+  data: () => ({
+    person: {},
+    gotData: true,
+    subjects: [],
+    loading: true,
+    edit: false,
+    dialog: false,
+    avatar: '',
+    wasEdited: false
+  }),
   mounted() {
     if (!store.state.authenticated) {
       router.replace({
@@ -2323,7 +2339,6 @@ const TeachersPerson = {
         .then(data => {
           this.subjects = data.loaded
           this.loading = false
-          console.log('b');
           if (typeof data.loaded != 'undefined') {
             if (data.loaded.length > 0) {
               this.gotData = true
@@ -2335,6 +2350,7 @@ const TeachersPerson = {
           }
         })
     }
+    goToTop()
   },
   methods: {
     getData() {
