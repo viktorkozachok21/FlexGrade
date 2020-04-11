@@ -1949,15 +1949,15 @@ const StudentsPerson = {
           </div>
           <v-divider class="my-1"></v-divider>
           <v-row>
-            <v-col cols="12">
+            <v-col cols="6">
               <v-sparkline
               v-if="scores"
               :value="scores"
               :labels="labels"
               color="rgba(4, 37, 34, 0.49)"
               smooth="1"
-              padding="5"
-              label-size="7"
+              padding="15"
+              label-size="15"
               type="bar"
               max-width="calc(100%-30px)"
               auto-line-width
@@ -2053,15 +2053,15 @@ const StudentsPerson = {
         if (this.semesters) {
           this.semesters.forEach(item => {
             item.grades.forEach( function(item) {
-              if (item.score) {
-                grades.push(item.score)
+              if (item.grade) {
+                grades.push(item.grade)
               }
             })
           })
           if (grades.length > 0) {
             const trend = compressArray(grades).sort(compareValues('value'))
             trend.forEach(item => {
-              this.labels.push(item.value)
+              this.labels.push(`${item.value} (${item.count})`)
               this.scores.push(item.count)
             })
           }
