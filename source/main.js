@@ -2564,31 +2564,36 @@ const Profile = {
         name: "login"
       });
     } else {
-      if (store.state.status == 'Admin') {
-        router.replace({
-          name: 'home'
-        })
-      } else if (store.state.status == 'Student') {
-        student = JSON.parse(sessionStorage.getItem('profile'))
-        router.push({
-          name: 'student',
-          params: {
-            'id': student.code,
-            'profile': student,
-            'edit': student.code
-          }
-        })
-      } else if (store.state.status == 'Teacher') {
-        teacher = JSON.parse(sessionStorage.getItem('profile'))
-        router.push({
-          name: 'teacher',
-          params: {
-            'id': teacher.code,
-            'profile': teacher,
-            'edit': teacher.code
-          }
-        })
-      }
+      this.routeManager()
+    }
+  },
+  methods: {
+    routeManager() {
+        if (store.state.status === 'Admin') {
+          router.replace({
+            name: 'home'
+          })
+        } else if (store.state.status === 'Student') {
+          student = JSON.parse(sessionStorage.getItem('profile'))
+          router.replace({
+            name: 'studentProfile',
+            params: {
+              'id': student.code,
+              'profile': student,
+              'edit': student.code
+            }
+          })
+        } else if (store.state.status === 'Teacher') {
+          teacher = JSON.parse(sessionStorage.getItem('profile'))
+          router.replace({
+            name: 'teacherProfile',
+            params: {
+              'id': teacher.code,
+              'profile': teacher,
+              'edit': teacher.code
+            }
+          })
+        }
     }
   }
 }
@@ -2621,7 +2626,7 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/students/person/:code',
+      path: '/student/:id',
       name: 'student',
       component: StudentsPerson,
       meta: {
@@ -2640,7 +2645,7 @@ const router = new VueRouter({
       }
     },
     {
-      path: '/teachers/person/:id',
+      path: '/teacher/:id',
       name: 'teacher',
       component: TeachersPerson,
       meta: {
@@ -2649,9 +2654,25 @@ const router = new VueRouter({
       }
     },
     {
-      name: 'profile',
       path: '/profile',
+      name: 'profile',
       component: Profile,
+      meta: {
+        showBack: true
+      }
+    },
+    {
+      name: 'studentProfile',
+      path: '/student/:id',
+      component: StudentsPerson,
+      meta: {
+        showBack: true
+      }
+    },
+    {
+      name: 'teacherProfile',
+      path: '/teacher/:id',
+      component: TeachersPerson,
       meta: {
         showBack: true
       }
