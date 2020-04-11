@@ -33,25 +33,26 @@ class FlexUser(AbstractUser):
     status = StatusField(choices_name='STATUS')
 
     def __str__(self):
-        return '%s (%s)' % (self.username,self.fullname())
+        return '%s (%s)' % (self.username,self.fullname)
 
+    @property
     def fullname(self):
         return '%s %s %s' % (self.last_name,self.first_name,self.sur_name)
 
+    @property
     def school_code(self):
-        return '%s' % self.school.pk
+        return self.school.pk
 
+    @property
     def photo(self):
         return '%s' % self.avatar
 
+    @property
     def registered(self):
-        return '%s' % self.date_joined.date()
+        return self.date_joined.date()
 
     def change_active(self):
-        if self.is_active == True:
-            self.is_active = False
-        else:
-            self.is_active = True
+        self.is_active = False
         self.save()
 
 
@@ -84,6 +85,7 @@ class Specialty(models.Model):
     def __str__(self):
         return '%s (%s) (%s)' % (self.full_name,self.degree,self.department.school.short_name)
 
+    @property
     def department_name(self):
         return '%s' % self.department.full_name
 
@@ -102,11 +104,12 @@ class Group(models.Model):
     def __str__(self):
         return '%s-%s [%s] (%s)' % (self.number,self.specialty.short_name,self.specialty.degree,self.department.full_name)
 
+    @property
     def group(self):
         return '%s-%s' % (self.number, self.specialty.short_name)
 
     class Meta:
-        ordering = ['-number']
+        ordering = ['number']
 
 
 class Student(models.Model):
@@ -118,18 +121,20 @@ class Student(models.Model):
     group = models.ForeignKey(Group, models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return self.user.fullname()
+        return self.user.fullname
 
     def end(self):
         self.group = None
         self.save()
 
+    @property
     def group_number(self):
         if self.group != None:
             return '%s-%s' % (self.group.number,self.group.specialty.short_name)
         else:
             return "Відраховані"
 
+    @property
     def degree(self):
         if self.group != None:
             return '%s' % self.group.specialty.degree
@@ -144,7 +149,7 @@ class Teacher(models.Model):
     user = models.OneToOneField(FlexUser, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
-        return self.user.fullname()
+        return self.user.fullname
 
 
 class Subject(models.Model):
@@ -155,8 +160,9 @@ class Subject(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return '%s (%s)' % (self.subject,self.teacher_name())
+        return '%s (%s)' % (self.subject,self.teacher_name)
 
+    @property
     def teacher_name(self):
         return self.teacher.__str__()
 
@@ -176,11 +182,8 @@ class Semester(models.Model):
     def __str__(self):
         return '%s [%s]' % (self.semester,"], [".join([str(g.book_number) for g in self.students.all()]))
 
-    def group_name(self):
-        return self.group.group()
-
     class Meta:
-        ordering = ['semester']
+        ordering = ['number','semester']
 
 
 class Discipline(models.Model):
@@ -200,7 +203,7 @@ class Discipline(models.Model):
         return '%s (%s) [%s]' % (self.subject,self.teacher,self.semester.__str__())
 
     class Meta:
-        ordering = ['semester', 'number']
+        ordering = ['semester','number']
 
 
 class Grade(models.Model):
@@ -214,3 +217,6 @@ class Grade(models.Model):
 
     def __str__(self):
         return '[%s] %s [%s-%s]' % (self.grade,self.student.__str__(),self.discipline.subject,self.discipline.teacher)
+
+    class Meta:
+        ordering = ['pk']

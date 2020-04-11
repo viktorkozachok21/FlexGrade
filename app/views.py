@@ -40,41 +40,39 @@ class RegistrationView(APIView):
         """
         # if email in request then register a teacher
         school = get_object_or_404(School, pk=code)
-        if 'email' in request.data:
-            username = request.data.get('username').strip()
-            first_name = request.data.get('first_name').strip()
-            last_name = request.data.get('last_name').strip()
-            sur_name = request.data.get('sur_name').strip()
-            email = request.data.get('email').strip()
+        info = request.data
+        username = info.get('username').strip()
+        first_name = info.get('first_name').strip().capitalize()
+        last_name = info.get('last_name').strip().capitalize()
+        sur_name = info.get('sur_name').strip().capitalize()
+        if 'email' in info:
+            email = info.get('email').strip()
             if FlexUser.objects.filter(username__iexact=username).exists():
                 return Response({"success":False, "message":"Надане ім'я користувача вже використовується."}, status=200)
             elif Teacher.objects.filter(user__school=school, user__last_name__iexact=last_name, user__first_name__iexact=first_name, user__sur_name__iexact=sur_name).exists():
                 return Response({"success":False, "message":"Викладач з наданим П.І.Б. вже зареєстровий."}, status=200)
             user = FlexUser.objects.create(school=school, username=username, email=email, first_name=first_name, last_name=last_name, sur_name=sur_name, status='Teacher')
-            user.set_password(str(request.data.get('password')))
+            user.set_password(str(info.get('password')))
+            user.save(update_fields=['password'])
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
-            user.save()
+                user.save(update_fields=['avatar'])
             teacher = Teacher.objects.create(user=user)
-            teacher.save()
             return Response({"success":True, "message":"Нового користувача успішно зареєстровано."}, status=200)
         # if book_number in request then register a student
-        elif 'book_number' in request.data:
-            username = request.data.get('username').strip()
-            first_name = request.data.get('first_name').strip()
-            last_name = request.data.get('last_name').strip()
-            sur_name = request.data.get('sur_name').strip()
-            book_number = request.data.get('book_number').strip()
+        elif 'book_number' in info:
+            book_number = info.get('book_number').strip()
             if FlexUser.objects.filter(username__iexact=username).exists():
                 return Response({"success":False, "message":"Надане ім'я користувача вже використовується."}, status=200)
             elif Student.objects.filter(user__school=school, book_number__iexact=book_number, user__is_active=True).exists():
                 return Response({"success":False, "message":"Студент з наданим номером залікової книжки вже зареєстрований."}, status=200)
             user = FlexUser.objects.create(school=school, username=username, first_name=first_name, last_name=last_name, sur_name=sur_name, status='Student')
-            user.set_password(str(request.data.get('password')))
+            user.set_password(str(info.get('password')))
+            user.save(update_fields=['password'])
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
-            user.save()
-            group_number = request.data.get('group_number').strip()
+                user.save(update_fields=['avatar'])
+            group_number = info.get('group_number').strip()
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
@@ -82,10 +80,10 @@ class RegistrationView(APIView):
                 user.delete()
                 return Response({"success":False, "message":"Студент з наданим П.І.Б. вже зареєстровий в обраній групі."}, status=200)
             new_student = Student.objects.create(user=user, group=group, book_number=book_number)
-            students = [student for student in Student.objects.filter(user__school=school, group=group)]
+            students = [student for student in list(Student.objects.filter(user__school=school, group=group))]
             for student in students:
                 if Semester.objects.filter(students=student).exists():
-                    semesters = Semester.objects.filter(students=student, is_active=True)
+                    semesters = list(Semester.objects.filter(students=student, is_active=True))
                     for semester in semesters:
                         if new_student not in semester.students.all():
                             semester.students.add(new_student)
@@ -104,27 +102,30 @@ class EditProfileView(APIView):
         """
         Change information of user
         """
-        user = get_object_or_404(FlexUser, code=request.data.get('code'))
-        user.first_name = request.data.get('first_name').strip()
-        user.last_name = request.data.get('last_name').strip()
-        user.sur_name = request.data.get('sur_name').strip()
-        if 'email' in request.data:
-            user.email = request.data.get('email').strip()
+        info = request.data
+        user = get_object_or_404(FlexUser, code=info.get('code'))
+        user.first_name = info.get('first_name').strip().capitalize()
+        user.last_name = info.get('last_name').strip().capitalize()
+        user.sur_name = info.get('sur_name').strip().capitalize()
+        user.save(update_fields=['first_name','last_name','sur_name'])
+        if 'email' in info:
+            user.email = info.get('email').strip()
+            user.save(update_fields=['email'])
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
-            user.save()
+                user.save(update_fields=['avatar'])
             return Response({"success":True, "message":"Інформацію успішно змінено."}, status=200)
-        elif 'book_number' in request.data:
-            book_number = request.data.get('book_number').strip()
+        elif 'book_number' in info:
+            book_number = info.get('book_number').strip()
             if Student.objects.filter(book_number__iexact=book_number, user__is_active=True).exclude(user=user).exists():
                 return Response({"success":False, "message":"Студент з наданим номером залікової книжки вже зареєстрований."}, status=200)
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
-            user.save()
+                user.save(update_fields=['avatar'])
             student = get_object_or_404(Student, user=user)
             if student.book_number != book_number:
                 student.book_number = book_number
-            student.save()
+                student.save(update_fields=['book_number'])
             return Response({"success":True, "message":"Інформацію успішно змінено."}, status=200)
         else:
             return Response({"success":False, "message":"Під час виконання операції виникла помилка, спробуйте пізніше."}, status=200)
@@ -133,8 +134,9 @@ class EditProfileView(APIView):
         """
         Change user status to not active
         """
-        if 'students' in request.data:
-            students_list = request.data.get('students')
+        info = request.data
+        if 'students' in info:
+            students_list = info.get('students')
             for student in students_list:
                 user = get_object_or_404(FlexUser, code=student)
                 user.change_active()
@@ -144,8 +146,8 @@ class EditProfileView(APIView):
                 return Response({"success":True, "message":"Студентів успішно виключено зі списку активних."}, status=200)
             elif len(students_list) == 1:
                 return Response({"success":True, "message":"Студента успішно виключено зі списку активних."}, status=200)
-        if 'teachers' in request.data:
-            teachers_list = request.data.get('teachers')
+        if 'teachers' in info:
+            teachers_list = info.get('teachers')
             for teacher in teachers_list:
                 user = get_object_or_404(FlexUser, code=teacher)
                 user.change_active()
@@ -168,30 +170,23 @@ class ActiveUserView(APIView):
         """
         response = {}
         active_user = get_object_or_404(FlexUser, username=username)
+        if active_user.status == 'Admin':
+            school = active_user.school_code
+            return Response({"success":True, "school":school, "status":'Admin'}, status=200)
+        response['school'] = active_user.school_code
+        response['code'] = active_user.code
+        response['fullname'] = active_user.fullname
+        response['registered'] = active_user.registered
+        response['avatar'] = active_user.photo
+        response['status'] = active_user.status
         if active_user.status == 'Student':
-            active = get_object_or_404(Student, user=active_user)
-            response['school'] = active_user.school_code()
-            response['code'] = active_user.code
-            response['fullname'] = active_user.fullname()
-            response['book_number'] = active.book_number
-            response['group_number'] = active.group_number()
-            response['registered'] = active_user.registered()
-            response['avatar'] = active_user.photo()
-            response['status'] = active_user.status
+            student = get_object_or_404(Student, user=active_user)
+            response['book_number'] = student.book_number
+            response['group_number'] = student.group_number
             return Response({"success":True, "profile":response}, status=200)
         elif active_user.status == 'Teacher':
-            active = get_object_or_404(Teacher, user=active_user)
-            response['school'] = active_user.school_code()
-            response['code'] = active_user.code
-            response['fullname'] = active_user.fullname()
             response['email'] = active_user.email
-            response['registered'] = active_user.registered()
-            response['avatar'] = active_user.photo()
-            response['status'] = active_user.status
             return Response({"success":True, "profile":response}, status=200)
-        elif active_user.status == 'Admin':
-            school = active_user.school_code()
-            return Response({"success":True, "school":school, "status":'Admin'}, status=200)
         else:
             return Response({"success":False, "message":'Під час виконання операції виникла помилка, спробуйте пізніше.'}, status=200)
     # Change user avatar
@@ -202,7 +197,7 @@ class ActiveUserView(APIView):
         user = get_object_or_404(FlexUser, code=request.data.get('person'))
         if 'avatar' in request.FILES:
             user.avatar = request.FILES['avatar']
-            user.save()
+            user.save(update_fields=['avatar'])
         user_avatar = UserSerializer(user).data
         avatar = str(user_avatar['avatar'][7:])
         return Response({"success":True, "message":'Інформацію успішно змінено.', 'avatar':avatar}, status=200)
@@ -227,13 +222,14 @@ class SchoolView(APIView):
         Save the school if information has been changed
         """
         if School.objects.filter(pk=code).exists():
-            school = get_object_or_404(School, pk=1)
-            school.full_name = request.data.get('full_name')
-            school.short_name = request.data.get('short_name')
-            school.director = request.data.get('director')
-            school.director_short = request.data.get('director_short')
-            school.assistant = request.data.get('assistant')
-            school.assistant_short = request.data.get('assistant_short')
+            info = request.data
+            school = get_object_or_404(School, pk=code)
+            school.full_name = info.get('full_name')
+            school.short_name = info.get('short_name')
+            school.director = info.get('director')
+            school.director_short = info.get('director_short')
+            school.assistant = info.get('assistant')
+            school.assistant_short = info.get('assistant_short')
             school.save()
             new_school = SchoolSerializer(school).data
             return Response({"success":True, "school":new_school}, status=200)
@@ -254,11 +250,12 @@ class DepartmentView(APIView):
         """
         Get all existing departments
         """
+        info = request.data
         school = get_object_or_404(School, pk=code)
-        full_name = request.data.get('full_name')
+        full_name = info.get('full_name').capitalize()
         if Department.objects.filter(school=school, full_name__iexact=full_name).exists():
             return Response({"success":False, "message":"Відділення з наданою назвою вже зареєстровано."}, status=200)
-        department = Department.objects.create(school=school, full_name=full_name, manager=request.data.get('manager'), manager_short=request.data.get('manager_short'))
+        department = Department.objects.create(school=school, full_name=full_name, manager=info.get('manager'), manager_short=info.get('manager_short'))
         departments = DepartmentSerializer(Department.objects.filter(school=school), many=True).data
         return Response({"success":True, "departments":departments, "message":"Нове відділення успішно зареєстровано."}, status=200)
 
@@ -266,12 +263,13 @@ class DepartmentView(APIView):
         """
         Get all existing departments
         """
+        info = request.data
         school = get_object_or_404(School, pk=code)
-        department = get_object_or_404(Department, pk=request.data.get('id'), school=school)
-        department.full_name = request.data.get('full_name')
-        department.manager = request.data.get('manager')
-        department.manager_short = request.data.get('manager_short')
-        department.save()
+        department = get_object_or_404(Department, pk=info.get('id'), school=school)
+        department.full_name = info.get('full_name').capitalize()
+        department.manager = info.get('manager')
+        department.manager_short = info.get('manager_short')
+        department.save(update_fields=['full_name','manager','manager_short'])
         departments = DepartmentSerializer(Department.objects.filter(school=school), many=True).data
         return Response({"success":True, "departments":departments}, status=200)
 
@@ -289,13 +287,14 @@ class SpecialtyView(APIView):
         """
         Get all existing departments
         """
+        info = request.data
         school = get_object_or_404(School, pk=code)
-        full_name = request.data.get('full_name')
-        degree = request.data.get('degree')
-        department = get_object_or_404(Department, full_name__iexact=request.data.get('department'), school=school)
+        full_name = info.get('full_name').capitalize()
+        degree = info.get('degree')
+        department = get_object_or_404(Department, full_name__iexact=info.get('department'), school=school)
         if Specialty.objects.filter(department__school=school, department=department, full_name__iexact=full_name, degree=degree).exists():
             return Response({"success":False, "message":"Спеціальність з наданою назвою вже зареєстровано."}, status=200)
-        specialty = Specialty.objects.create(department=department, full_name=full_name, short_name=request.data.get('short_name'), degree=degree)
+        specialty = Specialty.objects.create(department=department, full_name=full_name, short_name=info.get('short_name'), degree=degree)
         specialties = SpecialtySerializer(Specialty.objects.filter(department__school=school), many=True).data
         return Response({"success":True, "specialties":specialties, "message":"Нову спеціальність успішно зареєстровано."}, status=200)
 
@@ -303,13 +302,14 @@ class SpecialtyView(APIView):
         """
         Get all existing departments
         """
+        info = request.data
         school = get_object_or_404(School, pk=code)
-        department = get_object_or_404(Department, full_name=request.data.get('department'), school=school)
-        specialty = get_object_or_404(Specialty, pk=request.data.get('id'), department__school=school)
+        department = get_object_or_404(Department, full_name=info.get('department'), school=school)
+        specialty = get_object_or_404(Specialty, pk=info.get('id'), department__school=school)
         specialty.department = department
-        specialty.full_name = request.data.get('full_name')
-        specialty.short_name = request.data.get('short_name')
-        specialty.degree = request.data.get('degree')
+        specialty.full_name = info.get('full_name').capitalize()
+        specialty.short_name = info.get('short_name')
+        specialty.degree = info.get('degree')
         specialty.save()
         specialties = SpecialtySerializer(Specialty.objects.filter(department__school=school), many=True).data
         return Response({"success":True, "specialties":specialties}, status=200)
@@ -350,7 +350,7 @@ class SubjectView(APIView):
         """
         school = get_object_or_404(School, pk=code)
         code = request.data.get('teacher')
-        subject = request.data.get('subject')
+        subject = request.data.get('subject').capitalize()
         user = get_object_or_404(FlexUser, code=code)
         teacher = get_object_or_404(Teacher, user=user)
         if Subject.objects.filter(subject__iexact=subject, teacher=teacher, teacher__user__school=school).exists():
@@ -383,10 +383,10 @@ class SemestersView(APIView):
         student = get_object_or_404(Student, user__code=code)
         if Semester.objects.filter(students=student).exists():
             semesters = []
-            for semester in Semester.objects.filter(students=student).order_by('number'):
+            for semester in list(Semester.objects.filter(students=student).order_by('number')):
                 examinations = {}
                 examinations['semester'] = semester.semester
-                disciplines = [discipline for discipline in Discipline.objects.filter(semester=semester)]
+                disciplines = [discipline for discipline in list(Discipline.objects.filter(semester=semester))]
                 grades = []
                 for discipline in disciplines:
                     grades.append(Grade.objects.filter(discipline=discipline, student=student).last())
@@ -401,30 +401,31 @@ class SemestersView(APIView):
         """
         Check if students exists in list of request.group and then create a new semester for them
         """
+        info = request.data
         school = get_object_or_404(School, pk=code)
-        groups = request.data.get('groups')
+        groups = info.get('groups')
         students = []
         for group_number in groups:
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, department__school=school, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
             if Student.objects.filter(group=group, user__is_active=True, user__school=school).exists():
-                for student in Student.objects.filter(group=group, user__school=school, user__is_active=True):
+                for student in list(Student.objects.filter(group=group, user__school=school, user__is_active=True)):
                     students.append(student)
             else:
                 return Response({"success":False, "message":'В групі ' + group_number + ' не зареєстровано студентів.'}, status=200)
-        semester = request.data.get('semester')
-        disciplines = request.data.get('disciplines')
+        semester = info.get('semester')
+        disciplines = info.get('disciplines')
         number, end = semester.split('-')
         new_semester = Semester.objects.create(number=number, semester=semester)
         for student in students:
-            if Semester.objects.filter(number=number, semester=semester, students=student).exclude(pk=new_semester.pk).exists():
+            if Semester.objects.filter(number__iexact=number, students=student).exclude(pk=new_semester.pk).exists():
                 new_semester.delete()
-                return Response({"success":False, "message":'Обраний семестр вже зареєстровано для групи.'}, status=200)
+                return Response({"success":False, "message":'Семестр з наданим номером вже зареєстровано для групи.'}, status=200)
             new_semester.students.add(student)
         new_semester.save()
-        for index, discipline in enumerate(disciplines, start=1):
-            new_descipline = Discipline.objects.create(semester=new_semester,number=index,subject=discipline['discipline'],form=discipline['form'],hours=discipline['hours'],credits=discipline['credits'],discipline_date=discipline['date'],teacher=discipline['teacher'])
+        for index, disc in enumerate(disciplines, start=1):
+            new_descipline = Discipline.objects.create(semester=new_semester,number=index,subject=disc['discipline'],form=disc['form'],hours=disc['hours'],credits=disc['credits'],discipline_date=disc['date'],teacher=disc['teacher'])
         return Response({"success":True, "message":'Семестр успішно додано.'}, status=200)
 
 
@@ -440,11 +441,11 @@ class GradesView(APIView):
         group_semesters = []
         student = get_object_or_404(Student, user__code=students)
         if Semester.objects.filter(students=student).exists():
-            semesters = [semester for semester in Semester.objects.filter(students=student, is_active=True).order_by('number')]
+            semesters = [semester for semester in list(Semester.objects.filter(students=student, is_active=True).order_by('number'))]
             for semester in semesters:
                 our_semester = {}
                 our_semester['semester'] = semester.semester
-                disciplines = [discipline for discipline in Discipline.objects.filter(semester=semester)]
+                disciplines = [discipline for discipline in list(Discipline.objects.filter(semester=semester))]
                 our_semester['disciplines'] = DisciplinesSerializer(disciplines, many=True).data
                 group_semesters.append(our_semester)
             return Response({"success":True, "semesters":group_semesters}, status=200)
@@ -455,11 +456,12 @@ class GradesView(APIView):
         """
         Record the added grades from given data
         """
-        students = request.data.get('students')
+        info = request.data
+        students = info.get('students')
         first_student = get_object_or_404(Student, user__code=students[0])
-        semester = get_object_or_404(Semester, semester=request.data.get('semester'), students=first_student)
-        discipline = get_object_or_404(Discipline, semester=semester, subject=request.data.get('discipline'))
-        for student, score, grade in zip(students, request.data.get('scores'), request.data.get('grades')):
+        semester = get_object_or_404(Semester, semester=info.get('semester'), students=first_student)
+        discipline = get_object_or_404(Discipline, semester=semester, subject=info.get('discipline'))
+        for student, score, grade in zip(students, info.get('scores'), info.get('grades')):
             new_student = get_object_or_404(Student, user__code=student)
             if Grade.objects.filter(discipline=discipline, discipline__semester=semester, student=new_student).exists():
                 old_grade = get_object_or_404(Grade, discipline=discipline, discipline__semester=semester, student=new_student)

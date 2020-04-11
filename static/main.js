@@ -294,6 +294,7 @@ const AddStudentForm = Vue.component('new-student-x',{
               @keypress.native="$root.validateKey($event)"
               label="Прізвище*"
               maxlength="30"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newStudent.lastName),store.state.rules.min(2, store.state.newStudent.lastName)]"
               v-model="store.state.newStudent.lastName"
               @keydown.native.space.prevent
@@ -305,6 +306,7 @@ const AddStudentForm = Vue.component('new-student-x',{
               @keypress.native="$root.validateKey($event)"
               label="Ім'я*"
               maxlength="30"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newStudent.firstName),store.state.rules.min(2, store.state.newStudent.firstName)]"
               v-model="store.state.newStudent.firstName"
               @keydown.native.space.prevent
@@ -316,6 +318,7 @@ const AddStudentForm = Vue.component('new-student-x',{
               @keypress.native="$root.validateKey($event)"
               label="По батькові*"
               maxlength="30"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newStudent.surName),store.state.rules.min(2, store.state.newStudent.surName)]"
               v-model="store.state.newStudent.surName"
               @keydown.native.space.prevent
@@ -428,6 +431,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
               @keypress.native="$root.validateKey($event)"
               label="Прізвище*"
               maxlength="30"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newTeacher.lastName),store.state.rules.min(2, store.state.newTeacher.lastName)]"
               v-model="store.state.newTeacher.lastName"
               @keydown.native.space.prevent
@@ -439,6 +443,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
               @keypress.native="$root.validateKey($event)"
               label="Ім'я*"
               maxlength="30"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newTeacher.firstName),store.state.rules.min(2, store.state.newTeacher.firstName)]"
               v-model="store.state.newTeacher.firstName"
               @keydown.native.space.prevent
@@ -450,6 +455,7 @@ const AddTeacherForm = Vue.component('new-teacher-x',{
               @keypress.native="$root.validateKey($event)"
               label="По батькові*"
               maxlength="30"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newTeacher.surName),store.state.rules.min(2, store.state.newTeacher.surName)]"
               v-model="store.state.newTeacher.surName"
               @keydown.native.space.prevent
@@ -525,6 +531,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
               <v-text-field
               label="Прізвище"
               maxlength="30"
+              class="capitalize"
               @keypress.native="$root.validateKey($event)"
               @input="store.state.editStudent.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editStudent.lastName),store.state.rules.min(2, store.state.editStudent.lastName)]"
@@ -538,6 +545,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
               @keypress.native="$root.validateKey($event)"
               label="Ім'я"
               maxlength="30"
+              class="capitalize"
               @input="store.state.editStudent.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editStudent.firstName),store.state.rules.min(2, store.state.editStudent.firstName)]"
               v-model="store.state.editStudent.firstName"
@@ -550,6 +558,7 @@ const EditStudentForm = Vue.component('edit-student-x',{
               @keypress.native="$root.validateKey($event)"
               label="По батькові"
               maxlength="30"
+              class="capitalize"
               @input="store.state.editStudent.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editStudent.surName),store.state.rules.min(2, store.state.editStudent.surName)]"
               v-model="store.state.editStudent.surName"
@@ -630,6 +639,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               @keypress.native="$root.validateKey($event)"
               label="Прізвище"
               maxlength="30"
+              class="capitalize"
               @input="store.state.editTeacher.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editTeacher.lastName),store.state.rules.min(2, store.state.editTeacher.lastName)]"
               v-model="store.state.editTeacher.lastName"
@@ -642,6 +652,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               @keypress.native="$root.validateKey($event)"
               label="Ім'я"
               maxlength="30"
+              class="capitalize"
               @input="store.state.editTeacher.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editTeacher.firstName),store.state.rules.min(2, store.state.editTeacher.firstName)]"
               v-model="store.state.editTeacher.firstName"
@@ -654,6 +665,7 @@ const EditTeacherForm = Vue.component('edit-teacher-x',{
               @keypress.native="$root.validateKey($event)"
               label="По батькові"
               maxlength="30"
+              class="capitalize"
               @input="store.state.editTeacher.wasEdited = true"
               :rules="[store.state.rules.spaces(store.state.editTeacher.surName),store.state.rules.min(2, store.state.editTeacher.surName)]"
               v-model="store.state.editTeacher.surName"
@@ -840,14 +852,14 @@ const AddSemesterForm = Vue.component('new-semester-x',{
             >
           <v-row no-gutters>
             <v-col cols="12" class="px-2 py-2">
-              <v-select
+              <v-combobox
                 v-model="store.state.newSemester.semester"
                 :items="items"
                 item-color="teal darken-4"
                 color="teal darken-4"
                 :rules="[store.state.rules.minGroup(1, store.state.newSemester.semester)]"
                 label="Семестр навчального року"
-              ></v-select>
+              ></v-combobox>
             </v-col>
             <v-col cols="12" class="px-2 py-2">
               <v-select
@@ -1233,6 +1245,7 @@ const AddDepartmentForm = Vue.component('new-department-x',{
               @keypress.native="$root.validateKey($event)"
               label="Завідувач відділенням"
               maxlength="50"
+              class="capitalize"
               :rules="[store.state.rules.spaces(store.state.newDepartment.manager),store.state.rules.min(3, store.state.newDepartment.manager)]"
               v-model="store.state.newDepartment.manager"
               color="teal darken-4" required
@@ -1320,6 +1333,7 @@ const AddSpecialtyForm = Vue.component('new-specialty-x',{
               @keypress.native="$root.validateKey($event)"
               label="Скорочена назва"
               maxlength="5"
+              @input="store.state.newSpecialty.shortName = store.state.newSpecialty.shortName.toUpperCase()"
               :rules="[store.state.rules.spaces(store.state.newSpecialty.shortName),store.state.rules.min(1, store.state.newSpecialty.shortName)]"
               v-model="store.state.newSpecialty.shortName"
               color="teal darken-4" required
@@ -1908,6 +1922,7 @@ const StudentsPerson = {
                          accept="image/png, image/jpeg, image/bmp, image/jpg"
                          v-model="avatar"
                          show-size
+                         color="teal darken-4"
                          @change="wasEdited = true"
                          outlined dense
                          placeholder="Оберіть фото"
@@ -1948,8 +1963,9 @@ const StudentsPerson = {
             <span class="font-weight-bold ml-3">Група:</span> {{ person.group_number }}
           </div>
           <v-divider class="my-1"></v-divider>
+          <v-container>
           <v-row no-gutters class="d-flex align-end justify-center">
-            <v-col cols="4" class="py-2">
+            <v-col cols="4" class="text-center py-2">
               <v-sparkline
               v-if="scores"
               :value="scores"
@@ -1962,8 +1978,11 @@ const StudentsPerson = {
               max-width="calc(100%-30px)"
               auto-line-width
               ></v-sparkline>
+              <p class="title mt-1" v-if="scores.length > 1">
+                Загальна успішність
+              </p>
             </v-col>
-            <v-col cols="8" class="py-2">
+            <v-col cols="8" class="text-center py-2">
               <v-sparkline
               v-if="grades"
               :value="grades"
@@ -1976,21 +1995,13 @@ const StudentsPerson = {
               max-width="calc(100%-30px)"
               auto-line-width
               ></v-sparkline>
+              <p class="title mt-1" v-if="grades.length > 1">
+                Середня успішність за семестр
+              </p>
             </v-col>
             </v-row>
             <v-divider v-if="scores && scores.length > 1" class="my-1"></v-divider>
-            <v-row>
-              <v-col cols="4" class="text-center py-0">
-              <p class="title" v-if="scores.length > 1">
-                Загальна успішність
-              </p>
-              </v-col>
-              <v-col cols="8" class="text-center py-0">
-                <p class="title" v-if="grades.length > 1">
-                  Середня успішність за семестр
-                </p>
-              </v-col>
-              </v-row>
+            </v-container>
           </v-col>
         </v-row>
       <v-row>
@@ -2373,6 +2384,7 @@ const TeachersPerson = {
                        accept="image/png, image/jpeg, image/bmp, image/jpg"
                        v-model="avatar"
                        show-size
+                       color="teal darken-4"
                        @change="wasEdited = true"
                        outlined dense
                        placeholder="Оберіть фото"
@@ -2412,34 +2424,34 @@ const TeachersPerson = {
           <span class="font-weight-bold">Email:</span> {{ person.email }}
         </div>
         <v-divider class="my-3"></v-divider>
+        <v-row no-gutters>
+          <v-col cols="12">
+            <h3 class="text--secondary">Викладає навчальні дисципліни:</h3>
+            <v-divider class="my-3"></v-divider>
+            <v-progress-linear
+            :active="loading"
+            :indeterminate="loading"
+            color="teal darken-4"
+            height="3"
+            ></v-progress-linear>
+            <p v-if="!gotData">Не знайдено відповідних записів</p>
+            <v-simple-table v-if="gotData">
+              <template v-slot:default>
+                <tbody>
+                  <tr v-for="(item, index) in subjects" :key="index">
+                    <td><v-divider vertical></v-divider></td>
+                    <td class="text-left">{{ item.subject }}</td>
+                    <td><v-divider vertical></v-divider></td>
+                  </tr>
+                </tbody>
+              </template>
+            </v-simple-table>
+            <v-divider class="mt-3 mb-5"></v-divider>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-divider class="my-3"></v-divider>
-        <h3 class="text--secondary">Викладає навчальні дисципліни:</h3>
-        <v-divider class="my-3"></v-divider>
-        <v-progress-linear
-        :active="loading"
-        :indeterminate="loading"
-        color="teal darken-4"
-        height="3"
-        ></v-progress-linear>
-        <p v-if="!gotData">Не знайдено відповідних записів</p>
-        <v-simple-table v-if="gotData">
-          <template v-slot:default>
-            <tbody>
-              <tr v-for="(item, index) in subjects" :key="index">
-                <td><v-divider vertical></v-divider></td>
-                <td class="text-left">{{ item.subject }}</td>
-                <td><v-divider vertical></v-divider></td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
-        <v-divider class="mt-3 mb-5"></v-divider>
-      </v-col>
-    </v-row>
+    <v-divider class="my-3"></v-divider>
   </div>
   `,
   data: () => ({
@@ -2452,6 +2464,32 @@ const TeachersPerson = {
     avatar: '',
     wasEdited: false
   }),
+  computed: {
+    subjectWatcher() {
+      return store.state.subjects
+    }
+  },
+  watch: {
+    subjectWatcher: {
+      handler() {
+        this.getData()
+          .then(data => {
+            this.subjects = data.loaded
+            this.loading = false
+            if (typeof data.loaded != 'undefined') {
+              if (data.loaded.length > 0) {
+                this.gotData = true
+              } else {
+                this.gotData = false
+              }
+            } else {
+              this.gotData = false
+            }
+          })
+      },
+      deep: true,
+    }
+  },
   mounted() {
     if (!store.state.authenticated) {
       router.replace({
