@@ -257,7 +257,7 @@
                   maxlength="5"
                   :rules="[store.state.rules.spaces(item.short_name),store.state.rules.min(1, item.short_name)]"
                   v-model="item.short_name"
-                  @input="wasEdited = true"
+                  @input="wasEdited = true;item.short_name = item.short_name.toUpperCase()"
                   color="teal darken-4"
                   :readonly="!editSpecialty"
                   ></v-text-field>

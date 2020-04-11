@@ -1085,6 +1085,11 @@ const AddGradeForm = Vue.component('new-grade-x',{
                 label="Навчальна дисципліна"
                 required
               ></v-select>
+              <div v-if="store.state.newGrade.disciplines.length === 0 && store.state.newGrade.semester" class="d-flex align-center text-center">
+                <p class="text-center">
+                  Доступних записів для обраного семестру не знайдено
+                </p>
+              </div>
             </v-col>
           </v-row>
           <v-row no-gutters>
@@ -2902,7 +2907,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/departments/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('GET_DEPARTMENTS', response.departments))
+            if (response.success) {
+              resolve(commit('GET_DEPARTMENTS', response.departments))
+            }
           })
       })
     },
@@ -2967,7 +2974,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/specialties/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('GET_SPECIALTIES', response.specialties))
+            if (response.success) {
+              resolve(commit('GET_SPECIALTIES', response.specialties))
+            }
           })
       })
     },
@@ -3323,7 +3332,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/students/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_STUDENTS', response.students))
+            if (response.success) {
+              resolve(commit('LOAD_STUDENTS', response.students))
+            }
           })
       })
     },
@@ -3332,7 +3343,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/teachers/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_TEACHERS', response.teachers))
+            if (response.success) {
+              resolve(commit('LOAD_TEACHERS', response.teachers))
+            }
           })
       })
     },
@@ -3344,7 +3357,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/subjects/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_SUBJECTS', response.subjects))
+            if (response.success) {
+              resolve(commit('LOAD_SUBJECTS', response.subjects))
+            }
           })
       })
     },
@@ -3449,7 +3464,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/semester/${code}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('GET_SEMESTERS', response.semesters))
+            if (response.success) {
+              resolve(commit('GET_SEMESTERS', response.semesters))
+            }
           })
       })
     },
@@ -3458,7 +3475,9 @@ let store = new Vuex.Store({
         fetch(`/api/app/groups/${state.schoolCode}`)
           .then(r => r.json())
           .then(response => {
-            resolve(commit('LOAD_GROUPS', response.groups))
+            if (response.success) {
+              resolve(commit('LOAD_GROUPS', response.groups))
+            }
           })
       })
     },
@@ -3471,7 +3490,9 @@ let store = new Vuex.Store({
             fetch(`/api/app/grades/${students[0].code}`)
               .then(r => r.json())
               .then(response => {
-                resolve(commit('LOAD_SEMESTERS', response))
+                if (response.success) {
+                  resolve(commit('LOAD_SEMESTERS', response))
+                }
               })
           })
         }
@@ -3808,9 +3829,19 @@ let store = new Vuex.Store({
     getListOfDiscipline: (state) => (find) => {
       const semesters =  state.newGrade.semesters.filter(semester => semester.semester === find)
       state.newGrade.disciplines = []
-      semesters[0].disciplines.forEach(semester => {
-        state.newGrade.disciplines.push(semester.subject)
-      })
+      if (state.status === 'Admin') {
+        semesters[0].disciplines.forEach(semester => {
+          state.newGrade.disciplines.push(semester.subject)
+        })
+      } else {
+        const teacher = JSON.parse(sessionStorage.getItem('profile'))
+        const subjects = semesters[0].disciplines.filter(subject => subject.teacher === teacher.fullname)
+        if (subjects) {
+          subjects.forEach(item => {
+            state.newGrade.disciplines.push(item.subject)
+          })
+        }
+      }
     },
     getListOfDepartmants: (state) => {
       let list = []
