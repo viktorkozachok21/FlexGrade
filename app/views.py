@@ -408,7 +408,7 @@ class SemestersView(APIView):
             number, short_name = group_number.split('-')
             specialty = get_object_or_404(Specialty, department__school=school, short_name=short_name)
             group = get_object_or_404(Group, number=number, specialty=specialty)
-            if Student.objects.filter(group=group, user__is_active=True).exists():
+            if Student.objects.filter(group=group, user__is_active=True, user__school=school).exists():
                 for student in Student.objects.filter(group=group, user__school=school, user__is_active=True):
                     students.append(student)
             else:

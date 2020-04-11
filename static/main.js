@@ -815,14 +815,14 @@ const AddSemesterForm = Vue.component('new-semester-x',{
     this.subjects = store.getters.getListOfSubjects
     const currentYear = new Date()
     let { firstYear, lastYear } = 0
-    if (currentYear.getMonth() < 8) {
+    if (currentYear.getMonth() < 6) {
       firstYear = currentYear.getFullYear()-1
       lastYear = currentYear.getFullYear()
     } else {
       firstYear = currentYear.getFullYear()
       lastYear = currentYear.getFullYear()+1
     }
-    for (let i = 1; i < 12; i++) {
+    for (let i = 1; i < 11; i++) {
       this.items.push(`${i}-й семестр ${firstYear}/${lastYear} навчального року`)
     }
   },
@@ -1948,22 +1948,49 @@ const StudentsPerson = {
             <span class="font-weight-bold ml-3">Група:</span> {{ person.group_number }}
           </div>
           <v-divider class="my-1"></v-divider>
-          <v-row>
-            <v-col cols="6">
+          <v-row no-gutters class="d-flex align-end justify-center">
+            <v-col cols="4" class="py-2">
               <v-sparkline
               v-if="scores"
               :value="scores"
               :labels="labels"
               color="rgba(4, 37, 34, 0.49)"
               smooth="1"
-              padding="15"
-              label-size="15"
+              padding="7"
+              label-size="14"
+              type="bar"
+              max-width="calc(100%-30px)"
+              auto-line-width
+              ></v-sparkline>
+            </v-col>
+            <v-col cols="8" class="py-2">
+              <v-sparkline
+              v-if="grades"
+              :value="grades"
+              :labels="semester"
+              color="rgba(4, 37, 34, 0.49)"
+              smooth="1"
+              padding="7"
+              label-size="7"
               type="bar"
               max-width="calc(100%-30px)"
               auto-line-width
               ></v-sparkline>
             </v-col>
             </v-row>
+            <v-divider v-if="scores && scores.length > 1" class="my-1"></v-divider>
+            <v-row>
+              <v-col cols="4" class="text-center py-0">
+              <p class="title" v-if="scores.length > 1">
+                Загальна успішність
+              </p>
+              </v-col>
+              <v-col cols="8" class="text-center py-0">
+                <p class="title" v-if="grades.length > 1">
+                  Середня успішність за семестр
+                </p>
+              </v-col>
+              </v-row>
           </v-col>
         </v-row>
       <v-row>
@@ -2033,6 +2060,8 @@ const StudentsPerson = {
     semesters: [],
     scores: [],
     labels: [],
+    grades: [],
+    semester: [],
     loading: true,
     edit: false,
     dialog: false,
@@ -2047,16 +2076,29 @@ const StudentsPerson = {
   watch: {
     semesters: {
       handler() {
-        let grades = []
+        const grades = []
+        let scores = []
         this.scores = []
         this.labels = []
+        this.semester = []
+        this.grades = []
+        const rate = {}
+        const reducer = (accumulator, currentValue) => accumulator + currentValue;
         if (this.semesters) {
           this.semesters.forEach(item => {
-            item.grades.forEach( function(item) {
-              if (item.grade) {
-                grades.push(item.grade)
+            semester = item.semester.split(' ')
+            item.grades.forEach( function(val) {
+              if (val.grade) {
+                grades.push(val.grade)
+                scores.push(parseInt(val.score))
               }
             })
+            if (scores.length > 0) {
+              let amount = scores.reduce(reducer)
+              amount = parseInt(amount) / parseInt(scores.length)
+              scores = []
+              rate[`${semester[0]}`] = parseInt(amount)
+            }
           })
           if (grades.length > 0) {
             const trend = compressArray(grades).sort(compareValues('value'))
@@ -2064,6 +2106,10 @@ const StudentsPerson = {
               this.labels.push(`${item.value} (${item.count})`)
               this.scores.push(item.count)
             })
+            for (let [key, value] of Object.entries(rate)) {
+              this.semester.push(`${key} (${value})`)
+              this.grades.push(value)
+            }
           }
         }
       },
@@ -3297,6 +3343,7 @@ let store = new Vuex.Store({
         Notiflix.Notify.Warning('Ви заповнили не всі поля або поля заповнені некоректно.')
       }
     },
+
     addSemester: ({ commit, state }, form) => {
       if (state.newSemester.semester != '') {
         if (state.newSemester.groups.length > 0) {
@@ -3358,6 +3405,7 @@ let store = new Vuex.Store({
     removeSubjectFromSemester: ({ commit }, index) => {
       commit('REMOVE_SUBJECT_FROM_SEMESTER', index)
     },
+
     getSemesters: ({ commit }, code) => {
       return new Promise((resolve, reject) => {
         fetch(`/api/app/semester/${code}`)
@@ -3643,6 +3691,7 @@ let store = new Vuex.Store({
       state.newGrade.scores = []
       state.newGrade.grades = []
       state.newGrade.update = true
+      state.newGrade.discipline = null
       props.form.resetValidation()
       Notiflix.Notify.Success(props.response.message)
     }
@@ -3701,7 +3750,7 @@ let store = new Vuex.Store({
       return state.subjects.filter(subject => subject.teacher_name === fullname)
     },
     checkDiscipline: (state) => {
-      return state.newSemester.subjects.filter(subject => subject.discipline === state.newSemester.discipline)
+      return state.newSemester.subjects.filter(subject => subject.discipline === state.newSemester.discipline.split('^')[1])
     },
     filterGroup: (state) => {
       if (state.selectedStudents.length > 0) {
