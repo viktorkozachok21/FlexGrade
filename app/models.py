@@ -104,13 +104,15 @@ class Student(models.Model):
     user = models.OneToOneField(FlexUser,on_delete=models.CASCADE,primary_key=True)
     book_number = models.CharField(max_length=10)
     group = models.ForeignKey(Group,models.SET_NULL,blank=True,null=True)
+    old_degree = models.CharField(max_length=50,blank=True,null=True)
 
     def __str__(self):
         return self.user.fullname
 
     def end(self):
+        self.old_degree = self.group.specialty.degree
         self.group = None
-        self.save(update_fields=['group'])
+        self.save(update_fields=['group','old_degree'])
 
     @property
     def group_number(self):
@@ -128,7 +130,7 @@ class Student(models.Model):
         if self.group != None:
             return f'{self.group.specialty.degree}'
         else:
-            return "Відраховані"
+            return f'{self.old_degree}'
 
 
 class Teacher(models.Model):

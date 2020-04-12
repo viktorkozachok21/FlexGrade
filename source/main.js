@@ -1373,45 +1373,44 @@ const AddSpecialtyForm = Vue.component('new-specialty-x',{
 const Login = {
   template: `
   <div class="text-center mx-3" v-if="form === true">
-    <h3 class="text--secondary">Авторизація</h3>
-    <v-text-field
-    hide-details="auto"
-    color="teal darken-4"
-    maxlength="30"
-    hint="Ім'я користувача"
-    placeholder="Введіть ім'я користувача"
-    single-line
-    :rules="[store.state.rules.spaces(username)]"
-    @keydown.native.space.prevent
-    prepend-inner-icon="mdi-face"
-    v-model="username"
-    @keypress.enter="userLogin"
-    class="my-5"
-    ></v-text-field>
-    <v-text-field
-    hide-details="auto"
-    :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
-    :type="show ? 'text' : 'password'"
-    color="teal darken-4"
-    maxlength="30"
-    hint="Пароль"
-    placeholder="Введіть пароль"
-    :rules="[store.state.rules.spaces(password)]"
-    @keydown.native.space.prevent
-    single-line
-    prepend-inner-icon="mdi-key"
-    v-model="password"
-    class="my-5"
-    @keypress.enter="userLogin"
-    @click:append="show = !show"
-    >
-    </v-text-field>
-    <v-progress-linear
-    :active="loading"
-    :indeterminate="loading"
-    color="teal darken-4"
-    height="3"
-    ></v-progress-linear>
+    <h2 class="text--secondary mt-3">Авторизація</h2>
+    <v-container id="login-form" fluid>
+      <v-text-field
+        color="teal darken-4"
+        maxlength="30"
+        hint="Ім'я користувача"
+        placeholder="Введіть ім'я користувача"
+        single-line
+        :rules="[store.state.rules.spaces(username)]"
+        @keydown.native.space.prevent
+        prepend-inner-icon="mdi-face"
+        v-model="username"
+        @keypress.enter="userLogin"
+        class="my-5"
+      ></v-text-field>
+      <v-text-field
+        :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+        :type="show ? 'text' : 'password'"
+        color="teal darken-4"
+        maxlength="30"
+        hint="Пароль"
+        placeholder="Введіть пароль"
+        :rules="[store.state.rules.spaces(password)]"
+        @keydown.native.space.prevent
+        single-line
+        prepend-inner-icon="mdi-key"
+        v-model="password"
+        class="my-5"
+        @keypress.enter="userLogin"
+        @click:append="show = !show"
+      ></v-text-field>
+      <v-progress-linear
+      :active="loading"
+      :indeterminate="loading"
+      color="teal darken-4"
+      height="3"
+      ></v-progress-linear>
+    </v-container>
     <v-btn @click.native="userLogin" class="home-link my-5" width="150" height="55">
       <v-icon icon title="Login" class="m-auto display-2">mdi-check</v-icon>
     </v-btn>
@@ -1889,6 +1888,7 @@ const StudentsList = {
   methods: {
     getData() {
       this.loading = true
+      this.search = ''
       return new Promise((resolve, reject) => {
         let { studyStatus, page } = this.options
         store.dispatch('checkStatus', studyStatus)
@@ -2048,7 +2048,7 @@ const StudentsPerson = {
           <v-span
           class="mdi mdi-24px mdi-printer home-link"
           @click="print"
-          v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewStudent"
+          v-if="person.is_active && (store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewStudent"
           title="Друк семестрів"
           ></v-span>
         </v-col>
@@ -2427,6 +2427,7 @@ const TeachersList = {
   methods: {
     getData() {
       this.loading = true
+      this.search = ''
       return new Promise((resolve, reject) => {
         let loaded = store.state.teachers
         let total = loaded.length
