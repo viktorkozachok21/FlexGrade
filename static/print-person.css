@@ -1,3 +1,7 @@
+@page {
+  size: landscape;
+}
+
 table th:first-child,
 table td:first-child,
 table th:last-child,
@@ -25,7 +29,7 @@ table td:nth-child(3), table td:nth-child(10) {
 .person {
   position: fixed;
   top: 1rem;
-  opacity: 0.65;
+  opacity: 0.63;
   letter-spacing: 0.1ch;
   font-size: 14pt;
   z-index: 99;

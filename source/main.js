@@ -1963,9 +1963,9 @@ const StudentsPerson = {
                     </v-row>
                     <v-card-actions class="my-0 py-0">
                       <v-spacer></v-spacer>
-                      <v-btn class="home-link my-3" v-if="wasEdited == true" @click="changeAvatar">Зареєструвати</v-btn>
+                      <v-btn text v-if="wasEdited == true" large class="home-link my-3" title="Підтвердити" @click="changeAvatar"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
                       <v-spacer></v-spacer>
-                      <v-btn class="home-link my-3" @click="dialog = false">Згорнути</v-btn>
+                      <v-btn text large class="home-link my-3" title="Згорнути" @click="dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
                       <v-spacer></v-spacer>
                     </v-card-actions>
                   </v-container>
@@ -2083,6 +2083,7 @@ const StudentsPerson = {
                       <th class="text-center">Оцінка</th>
                       <th class="text-center">Дата складання</th>
                       <th class="text-left">Викладач</th>
+                      <th class="d-none d-print-block">Підпис викладача</th>
                       <th><v-divider vertical></v-divider></th>
                     </tr>
                   </thead>
@@ -2100,6 +2101,7 @@ const StudentsPerson = {
                       <td class="text-center" v-else></td>
                       <td class="text-center">{{ item.discipline_date }}</td>
                       <td class="text-left">{{ item.teacher }}</td>
+                      <td class="d-none d-print-block"></td>
                       <td><v-divider vertical></v-divider></td>
                     </tr>
                   </tbody>
@@ -2469,11 +2471,11 @@ const TeachersList = {
 // The More Details About A Teacher
 const TeachersPerson = {
   template: `
-  <div class="mx-1 text-center">
-    <v-row>
-      <v-col cols="12">
-        <div class="text-center float-sm-left mr-sm-3 p-1">
-          <v-dialog v-model="dialog" persistent max-width="500px">
+  <div class="mx-1 py-2 text-center">
+      <v-row no-gutters>
+        <v-col cols="12">
+          <div class="text-center float-sm-left mr-sm-3 pa-1 mb-2">
+            <v-dialog v-model="dialog" persistent max-width="500px">
             <v-card class="text-center py-0 my-0">
               <v-title class="subtitle-2 text-center">
                 <span class="headline mx-auto">Змінити фото</span>
@@ -2496,11 +2498,11 @@ const TeachersPerson = {
                     </v-col>
                   </v-row>
                   <v-card-actions class="my-0 py-0">
-                    <v-spacer></v-spacer>
-                    <v-btn class="home-link my-3" v-if="wasEdited == true" @click="changeAvatar">Зареєструвати</v-btn>
-                    <v-spacer></v-spacer>
-                    <v-btn class="home-link my-3" @click="dialog = false">Згорнути</v-btn>
-                    <v-spacer></v-spacer>
+                  <v-spacer></v-spacer>
+                  <v-btn text v-if="wasEdited == true" large class="home-link my-3" title="Підтвердити" @click="changeAvatar"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
+                  <v-spacer></v-spacer>
+                  <v-btn text large class="home-link my-3" title="Згорнути" @click="dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
+                  <v-spacer></v-spacer>
                   </v-card-actions>
                 </v-container>
             </v-card>
