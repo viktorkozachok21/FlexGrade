@@ -120,6 +120,10 @@ class Student(models.Model):
             return "Відраховані"
 
     @property
+    def department(self):
+        return f'{self.group.specialty.department.manager_short}'
+
+    @property
     def degree(self):
         if self.group != None:
             return f'{self.group.specialty.degree}'

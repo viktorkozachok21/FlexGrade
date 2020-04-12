@@ -1381,7 +1381,6 @@ const Login = {
     hint="Ім'я користувача"
     placeholder="Введіть ім'я користувача"
     single-line
-    clerable
     :rules="[store.state.rules.spaces(username)]"
     @keydown.native.space.prevent
     prepend-inner-icon="mdi-face"
@@ -1397,7 +1396,6 @@ const Login = {
     maxlength="30"
     hint="Пароль"
     placeholder="Введіть пароль"
-    clerable
     :rules="[store.state.rules.spaces(password)]"
     @keydown.native.space.prevent
     single-line
@@ -1479,8 +1477,8 @@ const Login = {
 // The Home Page
 const Home = {
   template: `
-  <div class="container text-center mb-5">
-    <h2 class="display-2 my-5 text-weight-bold text-uppercase">Flex Grade</h2>
+  <div class="container text-center mb-3">
+    <h1 class="display-2 my-3 text-weight-bold text-uppercase">Flex Grade</h1>
     <router-link to="/students" class="mx-1">
       <v-btn class="home-link my-3" width="300" height="55">
         <v-icon icon class="m-auto mr-3">mdi-account-multiple-outline</v-icon>
@@ -1761,8 +1759,9 @@ const StudentsList = {
     :item-key="itemKey"
     :sort-by="sortBy"
     :search="search"
+    transition="fade-transition"
     no-results-text="Не знайдено відповідних записів"
-    no-data-text="Не знайдено відповідних записів"
+    no-data-text=""
     v-model="store.state.selectedStudents"
     :single-select="singleSelect"
     :show-select="store.state.showSelected"
@@ -1814,7 +1813,7 @@ const StudentsList = {
       studyStatus: true,
     },
     sortBy: 'fullname',
-    itemsPerPage: 30,
+    itemsPerPage: 35,
     selected: [],
     singleSelect: false,
     headers: [{
@@ -2049,7 +2048,7 @@ const StudentsPerson = {
           <v-span
           class="mdi mdi-24px mdi-printer home-link"
           @click="print"
-          v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher' || edit) && ($route.meta.showNewStudent || $route.meta.showPrint)"
+          v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewStudent"
           title="Друк семестрів"
           ></v-span>
         </v-col>
@@ -2064,9 +2063,11 @@ const StudentsPerson = {
           height="3"
           ></v-progress-linear>
           <p v-if="!gotData">Не знайдено відповідних записів</p>
-            <div v-if="gotData" v-for="(semester, index) in semesters" :key="index" class="mb-5">
-              <v-divider class="my-1"></v-divider>
-              <h5 class="title ml-5 my-3 text-left">{{ semester.semester }}</h5>
+            <div v-if="gotData" v-for="(semester, index) in semesters" :key="index" class="mb-5 semester">
+                <div class="text-justify">
+                  <h5 class="title d-inline ml-5 my-2 text-left">{{ semester.semester }}</h5>
+                  <span class="person d-none d-print-inline text-right">{{ person.fullname }}</span>
+                </div>
               <v-divider class="my-1"></v-divider>
               <v-simple-table>
                 <template v-slot:default>
@@ -2104,6 +2105,10 @@ const StudentsPerson = {
                   </tbody>
                 </template>
               </v-simple-table>
+              <div class="text-justify">
+                <span class="updated d-none d-print-inline text-left">Переведений(на) на <u class="underline">_____</u> курс</span>
+                <span class="department d-none d-print-inline text-right">Завідувач відділення <u class="underline">__________</u> {{ person.department }}</span>
+              </div>
               <v-divider class="my-1"></v-divider>
             </div>
           <v-divider class="mt-3 mb-5"></v-divider>
@@ -2316,11 +2321,12 @@ const TeachersList = {
     :sort-by="sortBy"
     id="teachers"
     :search="search"
+    transition="fade-transition"
     v-model="store.state.selectedTeachers"
     :single-select="singleSelect"
     :show-select="store.state.showSelected"
     no-results-text="Не знайдено відповідних записів"
-    no-data-text="Не знайдено відповідних записів"
+    no-data-text=""
     :page="page"
     :items-per-page="itemsPerPage"
     @page-count="pageCount = $event"
@@ -2366,7 +2372,7 @@ const TeachersList = {
     sortBy: 'fullname',
     selected: [],
     singleSelect: false,
-    itemsPerPage: 30,
+    itemsPerPage: 35,
     headers: [{
         text: 'П.І.П.',
         align: 'left',
@@ -2769,8 +2775,7 @@ const router = new VueRouter({
       path: '/student/:id',
       component: StudentsPerson,
       meta: {
-        showBack: true,
-        showPrint: true
+        showBack: true
       }
     },
     {

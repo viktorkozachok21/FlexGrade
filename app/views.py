@@ -120,6 +120,7 @@ class EditProfileView(APIView):
             response['avatar'] = user.photo
             response['book_number'] = student.book_number
             response['group_number'] = student.group_number
+            response['department'] = student.department
             return Response({"success":True,"profile":response,"message":"Інформацію успішно змінено."},status=200)
         else:
             return Response({"success":False,"message":"Error"},status=400)
@@ -169,6 +170,7 @@ class ActiveUserView(APIView):
             student = get_object_or_404(Student,user=active_user)
             response['book_number'] = student.book_number
             response['group_number'] = student.group_number
+            response['department'] = student.department
             return Response({"success":True,"profile":response},status=200)
         elif active_user.status == 'Teacher':
             response['email'] = active_user.email

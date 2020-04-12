@@ -1,7 +1,3 @@
-@page {
-  size: portrait;
-}
-
 table {
   counter-reset: rowNumber-1;
 }

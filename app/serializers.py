@@ -35,7 +35,7 @@ class StudentSerializer(ModelSerializer):
 
     class Meta:
         model = models.Student
-        fields = ('code','fullname','book_number','group_number','degree','is_active','registered', 'avatar')
+        fields = ('code','fullname','book_number','department','group_number','degree','is_active','registered', 'avatar')
 
 
 class GroupSerializer(ModelSerializer):
