@@ -91,13 +91,21 @@ class EditProfileView(APIView):
         user.last_name = info.get('last_name').strip().capitalize()
         user.sur_name = info.get('sur_name').strip().capitalize()
         user.save(update_fields=['first_name','last_name','sur_name'])
+        response = {}
+        response['school'] = user.school.pk
+        response['code'] = user.code
+        response['fullname'] = user.fullname
+        response['registered'] = user.registered
+        response['status'] = user.status
         if 'email' in info:
             user.email = info.get('email').strip()
             user.save(update_fields=['email'])
             if 'avatar' in request.FILES:
                 user.avatar = request.FILES['avatar']
                 user.save(update_fields=['avatar'])
-            return Response({"success":True,"message":"Інформацію успішно змінено."},status=200)
+            response['avatar'] = user.photo
+            response['email'] = user.email
+            return Response({"success":True,"profile":response,"message":"Інформацію успішно змінено."},status=200)
         elif 'book_number' in info:
             book_number = info.get('book_number').strip()
             if Student.objects.filter(book_number__iexact=book_number,user__is_active=True).exclude(user=user).exists():
@@ -109,7 +117,10 @@ class EditProfileView(APIView):
             if student.book_number != book_number:
                 student.book_number = book_number
                 student.save(update_fields=['book_number'])
-            return Response({"success":True,"message":"Інформацію успішно змінено."},status=200)
+            response['avatar'] = user.photo
+            response['book_number'] = student.book_number
+            response['group_number'] = student.group_number
+            return Response({"success":True,"profile":response,"message":"Інформацію успішно змінено."},status=200)
         else:
             return Response({"success":False,"message":"Error"},status=400)
 
@@ -277,7 +288,7 @@ class StudentListView(APIView):
     """Student view serializer to get the list of exists student"""
     def get(self, request, code):
         if Student.objects.filter(user__school__pk=code).exists():
-            students = StudentSerializer(get_list_or_404(Student,user__school__pk=code),many=True).data
+            students = StudentSerializer(get_list_or_404(Student.objects.order_by('-user__date_joined'),user__school__pk=code),many=True).data
             return Response({"success":True, "students":students}, status=200)
         else:
             return Response({"success":False,"message":"Error"},status=400)
@@ -287,7 +298,7 @@ class TeacherListView(APIView):
     """Teacher view serializer to get the list of exists teachers"""
     def get(self, request, code):
         if Teacher.objects.filter(user__school__pk=code).exists():
-            teachers = TeacherSerializer(get_list_or_404(Teacher,user__school__pk=code,user__is_active=True),many=True).data
+            teachers = TeacherSerializer(get_list_or_404(Teacher.objects.order_by('-user__date_joined'),user__school__pk=code,user__is_active=True),many=True).data
             return Response({"success":True,"teachers":teachers},status=200)
         else:
             return Response({"success":False,"message":"Error"},status=400)

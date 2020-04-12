@@ -1,0 +1,14 @@
+@page {
+  size: landscape;
+}
+
+table th:first-child,
+table td:first-child,
+table th:last-child,
+table td:last-child {
+  display: none;
+}
+
+table td:nth-child(3), table td:nth-child(10) {
+  text-align: justify;
+}

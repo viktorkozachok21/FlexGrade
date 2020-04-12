@@ -140,29 +140,29 @@ const Toolbar = Vue.component('toolbar-x', {
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length > 0 && store.state.studyStatus == true"></v-divider>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length > 0"></v-divider>
 
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editStudent;store.state.editStudent.dialog = true"
-      v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"
+      v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"
       title="Редагувати профіль студента"
       ></v-span>
       <edit-student-x ref="editStudentForm"></edit-student-x>
       <v-span
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editTeacher;store.state.editTeacher.dialog = true"
-      v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"
+      v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"
       title="Редагувати профіль викладача"
       ></v-span>
       <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedTeachers.length == 1 && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && store.state.selectedStudents.length == 1 && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
 
       <v-divider class="mx-2" inset vertical replace v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && (store.state.selectedStudents.length > 0 || $route.meta.showNewGrade) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-keyboard-close home-link"
-      @click="$route.meta.showNewGrade ? store.dispatch('loadSemesters', store.state.student) : store.dispatch('loadSemesters', store.state.selectedStudents)"
+      @click="$route.meta.showNewGrade ? store.dispatch('loadSemesters', store.state.person) : store.dispatch('loadSemesters', store.state.selectedStudents)"
       v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && (store.state.selectedStudents.length > 0 || $route.meta.showNewGrade) && store.state.studyStatus == true"
       title="Додати оцінки"
       ></v-span>
@@ -230,7 +230,7 @@ const Footer = Vue.component('footer-x', {
     }
   },
   template: `
-  <v-footer height="35">
+  <v-footer height="35" class="d-print-none">
     <p class="caption mb-0">&copy; {{ copyRight }} <span class="caption font-weight-black">Flex Grade</span></p>
     <a class="subtitle-2 mb-0 mr-3 home-link" href="https://www.linkedin.com/in/viktorkozachok" target="_blank" title="Developer">
       <span class="mdi mdi-linkedin"></span>
@@ -1026,7 +1026,7 @@ const AddGradeForm = Vue.component('new-grade-x',{
       return store.state.newGrade.dialog
     },
     showStudent() {
-      return store.state.student
+      return store.state.person
     }
   },
   watch: {
@@ -1041,7 +1041,7 @@ const AddGradeForm = Vue.component('new-grade-x',{
     },
     showStudent: {
       handler() {
-        this.students = store.state.student
+        this.students = store.state.person
       },
       deep: true,
     }
@@ -1087,7 +1087,7 @@ const AddGradeForm = Vue.component('new-grade-x',{
               ></v-select>
               <div v-if="store.state.newGrade.disciplines.length === 0 && store.state.newGrade.semester" class="d-flex align-center text-center">
                 <p class="text-center">
-                  Доступних записів для обраного семестру не знайдено
+                  Доступних дисциплін для обраного семестру не знайдено
                 </p>
               </div>
             </v-col>
@@ -1379,8 +1379,9 @@ const Login = {
     color="teal darken-4"
     maxlength="30"
     hint="Ім'я користувача"
-    placeholder="Ім'я користувача"
+    placeholder="Введіть ім'я користувача"
     single-line
+    clerable
     :rules="[store.state.rules.spaces(username)]"
     @keydown.native.space.prevent
     prepend-inner-icon="mdi-face"
@@ -1394,8 +1395,9 @@ const Login = {
     :type="show ? 'text' : 'password'"
     color="teal darken-4"
     maxlength="30"
-    hint="Введіть ваш пароль"
-    placeholder="Введіть ваш пароль"
+    hint="Пароль"
+    placeholder="Введіть пароль"
+    clerable
     :rules="[store.state.rules.spaces(password)]"
     @keydown.native.space.prevent
     single-line
@@ -1721,7 +1723,7 @@ const StudentsList = {
   <div>
     <v-row>
       <v-text-field
-      class="col-xs-12 col-md-9 px-5"
+      class="col-xs-12 col-md-8 px-5"
       v-model="search"
       append-icon="mdi-magnify"
       label="Пошук..."
@@ -1731,6 +1733,14 @@ const StudentsList = {
       single-line
       hide-details
       ></v-text-field>
+      <v-layout class="col-xs-1 d-flex align-center justify-center">
+        <v-span
+        class="mdi mdi-24px mdi-printer home-link"
+        @click="print"
+        v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewStudent"
+        title="Друк списку"
+        ></v-span>
+      </v-layout>
       <v-layout class="col-xs-3 d-flex align-center justify-center">
         <v-switch
         id="switch"
@@ -1745,11 +1755,11 @@ const StudentsList = {
     </v-row>
     <v-data-table
     v-if="students"
+    id="students"
     :headers="headers"
     :items="students"
     :item-key="itemKey"
     :sort-by="sortBy"
-    multi-sort
     :search="search"
     no-results-text="Не знайдено відповідних записів"
     no-data-text="Не знайдено відповідних записів"
@@ -1820,14 +1830,14 @@ const StudentsList = {
       },
       {
         text: 'Залікова книжка №',
-        align: 'left',
-        width: '15%',
+        align: 'center',
+        width: '17%',
         value: 'book_number',
       },
       {
         text: 'Рівень освіти',
-        align: 'left',
-        width: '12%',
+        align: 'center',
+        width: '15%',
         value: 'degree',
       },
       {
@@ -1853,10 +1863,11 @@ const StudentsList = {
             this.students = data.result
             this.totalItems = " Загальна кількість студентів: " + data.total
             this.loading = false
+            store.state.selectedStudents = []
           })
       },
       deep: true,
-    },
+    }
   },
   mounted() {
     if (!store.state.authenticated) {
@@ -1895,8 +1906,8 @@ const StudentsList = {
     moreInfo(student) {
       sessionStorage.removeItem("student")
       sessionStorage.setItem("student", JSON.stringify(student))
-      store.state.student = []
-      store.state.student.push(student)
+      store.state.person = []
+      store.state.person.push(student)
       router.push({
         name: 'student',
         params: {
@@ -1904,16 +1915,31 @@ const StudentsList = {
           'profile': student
         }
       })
+    },
+    print () {
+      const settings = {
+        name: '_blank',
+        specs: [
+          'fullscreen=yes',
+          'titlebar=yes',
+          'scrollbars=yes'
+        ],
+        'styles': [
+          '/static/print.css',
+          '/static/print-main.css'
+        ]
+      }
+      this.$htmlToPaper('students',settings)
     }
   }
 }
 // The More Details About A Student
 const StudentsPerson = {
   template: `
-  <div class="mx-1 text-center">
-      <v-row>
+  <div class="mx-1 py-2 text-center">
+      <v-row no-gutters>
         <v-col cols="12">
-          <div class="text-center float-sm-left mr-sm-3 p-1">
+          <div class="text-center float-sm-left mr-sm-3 pa-1 mb-2">
             <v-dialog v-model="dialog" persistent max-width="500px">
               <v-card class="text-center py-0 my-0">
                 <v-title class="subtitle-2 text-center">
@@ -1953,7 +1979,7 @@ const StudentsPerson = {
               width="250"
               >
               <v-span
-              class="mdi mdi-24px mdi-border-color home-link mr-1"
+              class="mdi mdi-24px mdi-border-color home-link mr-1 d-print-block"
               @click="dialog = true"
               v-if="edit == true"
               title="Змінити фото"
@@ -1967,10 +1993,10 @@ const StudentsPerson = {
           <div class="text-justify">
             <span class="font-weight-bold ml-3">Група:</span> {{ person.group_number }}
           </div>
+          <v-container class="my-0">
           <v-divider class="my-1"></v-divider>
-          <v-container>
           <v-row no-gutters class="d-flex align-end justify-center">
-            <v-col cols="4" class="text-center py-2">
+            <v-col cols="12" sm="12" md="4" class="text-center py-1">
               <v-sparkline
               v-if="scores"
               :value="scores"
@@ -1980,14 +2006,16 @@ const StudentsPerson = {
               padding="7"
               label-size="14"
               type="bar"
+              class="font-weight-black"
               max-width="calc(100%-30px)"
               auto-line-width
               ></v-sparkline>
-              <p class="title mt-1" v-if="scores.length > 1">
+              <v-divider v-if="scores.length > 1" class="my-2 mx-2"></v-divider>
+              <p class="body-1" v-if="scores.length > 1">
                 Загальна успішність
               </p>
             </v-col>
-            <v-col cols="8" class="text-center py-2">
+            <v-col cols="12" sm="12" md="8" class="text-center py-1">
               <v-sparkline
               v-if="grades"
               :value="grades"
@@ -1997,25 +2025,38 @@ const StudentsPerson = {
               padding="7"
               label-size="7"
               type="bar"
+              class="font-weight-black"
               max-width="calc(100%-30px)"
               auto-line-width
               ></v-sparkline>
-              <p class="title mt-1" v-if="grades.length > 1">
+              <v-divider v-if="grades.length > 1" class="my-2 mx-2"></v-divider>
+              <p class="body-1" v-if="grades.length > 1">
                 Середня успішність за семестр
               </p>
             </v-col>
             </v-row>
-            <v-divider v-if="scores && scores.length > 1" class="my-1"></v-divider>
             </v-container>
           </v-col>
         </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-divider class="my-2"></v-divider>
+        <v-divider class="mb-2"></v-divider>
+        <v-row no-gutters>
+        <v-col cols="10">
           <h3 class="text--secondary">
-            Заліки, екзамени, курсові роботи, практики
+          Заліки, екзамени, курсові роботи, практики
           </h3>
-          <v-divider class="my-2"></v-divider>
+        </v-col>
+        <v-col cols="2" class="d-flex align-center justify-center">
+          <v-span
+          class="mdi mdi-24px mdi-printer home-link"
+          @click="print"
+          v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher' || edit) && ($route.meta.showNewStudent || $route.meta.showPrint)"
+          title="Друк семестрів"
+          ></v-span>
+        </v-col>
+        </v-row>
+        <v-divider class="my-2"></v-divider>
+      <v-row id="person" no-gutters>
+        <v-col cols="12">
           <v-progress-linear
           :active="loading"
           :indeterminate="loading"
@@ -2087,6 +2128,9 @@ const StudentsPerson = {
   computed: {
     gradeWatcher() {
       return [ store.state.newGrade.grades, store.state.newSemester.update ]
+    },
+    profileWatcher() {
+      return store.state.editStudent.update
     }
   },
   watch: {
@@ -2152,6 +2196,13 @@ const StudentsPerson = {
             })
         }
       }
+    },
+    profileWatcher: {
+      handler() {
+        store.state.editStudent.update = false
+        this.person = store.state.person[0]
+      },
+      deep: true,
     }
   },
   mounted() {
@@ -2215,6 +2266,21 @@ const StudentsPerson = {
       } else {
         Notiflix.Notify.Info('Змін не виявлено.')
       }
+    },
+    print () {
+      const settings = {
+        name: '_blank',
+        specs: [
+          'fullscreen=yes',
+          'titlebar=yes',
+          'scrollbars=yes'
+        ],
+        'styles': [
+          '/static/print.css',
+          '/static/print-person.css'
+        ]
+      }
+      this.$htmlToPaper('person',settings)
     }
   }
 }
@@ -2224,7 +2290,7 @@ const TeachersList = {
   <div>
     <v-row>
       <v-text-field
-      class="col-xs-12 px-5"
+      class="col-10 px-5"
       v-model="search"
       append-icon="mdi-magnify"
       label="Пошук..."
@@ -2234,13 +2300,21 @@ const TeachersList = {
       single-line
       hide-details
       ></v-text-field>
+      <v-layout class="col-2 d-flex align-center justify-center">
+        <v-span
+        class="mdi mdi-24px mdi-printer home-link"
+        @click="print"
+        v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewTeacher"
+        title="Друк списку"
+        ></v-span>
+      </v-layout>
     </v-row>
     <v-data-table
     :headers="headers"
     :items="teachers"
     :item-key="itemKey"
     :sort-by="sortBy"
-    multi-sort
+    id="teachers"
     :search="search"
     v-model="store.state.selectedTeachers"
     :single-select="singleSelect"
@@ -2359,6 +2433,8 @@ const TeachersList = {
     moreInfo(teacher) {
       sessionStorage.removeItem("teacher")
       sessionStorage.setItem("teacher", JSON.stringify(teacher))
+      store.state.person = []
+      store.state.person.push(teacher)
       router.push({
         name: 'teacher',
         params: {
@@ -2366,6 +2442,21 @@ const TeachersList = {
           'profile': teacher
         }
       })
+    },
+    print () {
+      const settings = {
+        name: '_blank',
+        specs: [
+          'fullscreen=yes',
+          'titlebar=yes',
+          'scrollbars=yes'
+        ],
+        'styles': [
+          '/static/print.css',
+          '/static/print-main.css'
+        ]
+      }
+      this.$htmlToPaper('teachers',settings)
     }
   }
 }
@@ -2472,6 +2563,9 @@ const TeachersPerson = {
   computed: {
     subjectWatcher() {
       return store.state.subjects
+    },
+    profileWatcher() {
+      return store.state.editTeacher.update
     }
   },
   watch: {
@@ -2491,6 +2585,13 @@ const TeachersPerson = {
               this.gotData = false
             }
           })
+      },
+      deep: true,
+    },
+    profileWatcher: {
+      handler() {
+        store.state.editTeacher.update = false
+        this.person = store.state.person[0]
       },
       deep: true,
     }
@@ -2632,7 +2733,8 @@ const router = new VueRouter({
       meta: {
         showBack: true,
         showNewStudent: true,
-        showNewGrade: true
+        showNewGrade: true,
+        editStudent: true
       }
     },
     {
@@ -2650,7 +2752,8 @@ const router = new VueRouter({
       component: TeachersPerson,
       meta: {
         showBack: true,
-        showNewTeacher: true
+        showNewTeacher: true,
+        editTeacher: true
       }
     },
     {
@@ -2666,7 +2769,8 @@ const router = new VueRouter({
       path: '/student/:id',
       component: StudentsPerson,
       meta: {
-        showBack: true
+        showBack: true,
+        showPrint: true
       }
     },
     {
@@ -2743,7 +2847,7 @@ let store = new Vuex.Store({
     },
     departments: [],
     specialties: [],
-    student: [],
+    person: [],
     students: [],
     groups: [],
     teachers: [],
@@ -2777,7 +2881,8 @@ let store = new Vuex.Store({
       firstName: '',
       surName: '',
       bookNumber: '',
-      avatar: ''
+      avatar: '',
+      update: false
     },
     newTeacher: {
       valid: true,
@@ -2800,7 +2905,8 @@ let store = new Vuex.Store({
       firstName: '',
       surName: '',
       email: '',
-      avatar: ''
+      avatar: '',
+      update: false
     },
     newSubject: {
       valid: true,
@@ -3279,7 +3385,7 @@ let store = new Vuex.Store({
     },
     minusStudent: ({ commit, state, dispatch }) => {
       Notiflix.Confirm.Show(
-        'Підтвердіть дію', 'Виключити студента(ів) зі списку?', 'Так', 'Ні',
+        'Підтвердіть дію', `${state.selectedStudents.length === 1 ? 'Вилучити студента зі списку?' : 'Вилучити студентів зі списку?'}`, 'Так', 'Ні',
         function() {
           let students = []
           state.selectedStudents.forEach(item => {
@@ -3314,7 +3420,7 @@ let store = new Vuex.Store({
     },
     minusTeacher: ({ commit, state, dispatch }) => {
       Notiflix.Confirm.Show(
-        'Підтвердіть дію', 'Виключити викладача(ів) зі списку?', 'Так', 'Ні',
+        'Підтвердіть дію', `${state.selectedTeachers.length === 1 ? 'Вилучити викладача зі списку?' : 'Вилучити викладачів зі списку?'}`, 'Так', 'Ні',
         function() {
           let teachers = []
           state.selectedTeachers.forEach(item => {
@@ -3685,6 +3791,9 @@ let store = new Vuex.Store({
       props.form.resetValidation()
       state.editStudent.dialog = false
       state.selectedStudents = []
+      state.person = []
+      state.person.push(props.response.profile)
+      state.editStudent.update = true
       state.editStudent.wasEdited = false
       Notiflix.Notify.Success(props.response.message)
     },
@@ -3697,7 +3806,10 @@ let store = new Vuex.Store({
       props.form.resetValidation()
       state.editTeacher.dialog = false
       state.selectedTeachers = []
-      state.editStudent.wasEdited = false
+      state.person = []
+      state.person.push(props.response.profile)
+      state.editTeacher.update = true
+      state.editTeacher.wasEdited = false
       Notiflix.Notify.Success(props.response.message)
     },
     MINUS_USER: (state) => {
@@ -3781,12 +3893,22 @@ let store = new Vuex.Store({
       return state.students.filter(student => student.is_active === studyStatus)
     },
     editStudent: (state) => {
-      let fullname = state.selectedStudents[0].fullname.split(' ')
-      state.editStudent.code = state.selectedStudents[0].code
-      state.editStudent.lastName = fullname[0]
-      state.editStudent.firstName = fullname[1]
-      state.editStudent.surName = fullname[2]
-      state.editStudent.bookNumber = state.selectedStudents[0].book_number
+      if (state.selectedStudents.length > 0) {
+        let fullname = state.selectedStudents[0].fullname.split(' ')
+        state.editStudent.code = state.selectedStudents[0].code
+        state.editStudent.lastName = fullname[0]
+        state.editStudent.firstName = fullname[1]
+        state.editStudent.surName = fullname[2]
+        state.editStudent.bookNumber = state.selectedStudents[0].book_number
+      } else {
+        let fullname = state.person[0].fullname.split(' ')
+        state.editStudent.code = state.person[0].code
+        state.editStudent.lastName = fullname[0]
+        state.editStudent.firstName = fullname[1]
+        state.editStudent.surName = fullname[2]
+        state.editStudent.bookNumber = state.person[0].book_number
+        state.editStudent.update = false
+      }
     },
     getGroup: (state) => {
       return state.newStudent.group = state.groups[0]
@@ -3803,12 +3925,22 @@ let store = new Vuex.Store({
       return code[0].code
     },
     editTeacher: (state) => {
-      let fullname = state.selectedTeachers[0].fullname.split(' ')
-      state.editTeacher.code = state.selectedTeachers[0].code
-      state.editTeacher.lastName = fullname[0]
-      state.editTeacher.firstName = fullname[1]
-      state.editTeacher.surName = fullname[2]
-      state.editTeacher.email = state.selectedTeachers[0].email
+      if (state.selectedTeachers.length > 0) {
+        let fullname = state.selectedTeachers[0].fullname.split(' ')
+        state.editTeacher.code = state.selectedTeachers[0].code
+        state.editTeacher.lastName = fullname[0]
+        state.editTeacher.firstName = fullname[1]
+        state.editTeacher.surName = fullname[2]
+        state.editTeacher.email = state.selectedTeachers[0].email
+      } else {
+        let fullname = state.person[0].fullname.split(' ')
+        state.editTeacher.code = state.person[0].code
+        state.editTeacher.lastName = fullname[0]
+        state.editTeacher.firstName = fullname[1]
+        state.editTeacher.surName = fullname[2]
+        state.editTeacher.email = state.person[0].email
+        state.editTeacher.update = false
+      }
     },
     getListOfSubjects: (state) => {
       let list = []
@@ -3876,6 +4008,7 @@ let store = new Vuex.Store({
   }
 })
 // Main app initialization
+Vue.use(VueHtmlToPaper)
 const app = new Vue({
   router,
   vuetify: new Vuetify(),

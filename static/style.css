@@ -228,6 +228,11 @@ footer {
   bottom: 0;
 }
 
+@media only screen and (max-width: 1000px) {
+  text {
+    font-size: .55rem;
+  }
+}
 
 @media only screen and (max-width: 600px) {
   .navbar-x, .line {

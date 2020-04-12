@@ -1,0 +1,42 @@
+@page {
+  margin-top: .5cm;
+  margin-bottom: 1cm;
+  margin-right: 0.5cm;
+  margin-left: 0.5cm;
+}
+
+table {
+  border-collapse: collapse;
+  page-break-inside: avoid;
+  page-break-after: always;
+  min-width: 100%;
+}
+
+table th {
+  font-size: 12pt;
+}
+
+table td {
+  font-size: 14pt;
+}
+
+table th,
+table td {
+  text-align: center;
+  align-items: center;
+  background-color: transparent;
+  overflow: hidden;
+  border: 1px solid #000000;
+  padding: 3px;
+  color: #000000;
+}
+
+hr {
+  display: none;
+}
+
+h5 {
+  padding: 0;
+  font-size: 16pt;
+  margin: 10px;
+}
