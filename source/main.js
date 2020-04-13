@@ -1732,7 +1732,7 @@ const StudentsList = {
       ></v-text-field>
       <v-layout class="col-xs-1 d-flex align-center justify-center">
         <v-span
-        class="mdi mdi-24px mdi-printer home-link"
+        class="d-none d-sm-flex mdi mdi-24px mdi-printer home-link"
         @click="print"
         v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewStudent"
         title="Друк списку"
@@ -2039,14 +2039,14 @@ const StudentsPerson = {
         </v-row>
         <v-divider class="mb-2"></v-divider>
         <v-row no-gutters>
-        <v-col cols="10">
+        <v-col cols="12" :sm="(person.is_active && (store.state.status == 'Admin' || store.state.status == 'Teacher')) ? 10 : 12">
           <h3 class="text--secondary">
           Заліки, екзамени, курсові роботи, практики
           </h3>
         </v-col>
         <v-col cols="2" class="d-flex align-center justify-center">
           <v-span
-          class="mdi mdi-24px mdi-printer home-link"
+          class="d-none d-sm-flex mdi mdi-24px mdi-printer home-link"
           @click="print"
           v-if="person.is_active && (store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewStudent"
           title="Друк семестрів"
@@ -2297,7 +2297,7 @@ const TeachersList = {
   <div>
     <v-row>
       <v-text-field
-      class="col-10 px-5"
+      class="col-xs-12 col-sm-10 px-5"
       v-model="search"
       append-icon="mdi-magnify"
       label="Пошук..."
@@ -2309,7 +2309,7 @@ const TeachersList = {
       ></v-text-field>
       <v-layout class="col-2 d-flex align-center justify-center">
         <v-span
-        class="mdi mdi-24px mdi-printer home-link"
+        class="d-none d-sm-flex mdi mdi-24px mdi-printer home-link"
         @click="print"
         v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && $route.meta.showNewTeacher"
         title="Друк списку"
