@@ -1829,20 +1829,12 @@ const StudentsList = {
       {
         text: 'Залікова книжка №',
         align: 'center',
-        width: '17%',
         value: 'book_number',
       },
       {
         text: 'Рівень освіти',
         align: 'center',
-        width: '15%',
         value: 'degree',
-      },
-      {
-        text: 'Зареєстровано',
-        align: 'right',
-        width: '15%',
-        value: 'registered',
       }
     ],
   }),
@@ -1984,7 +1976,8 @@ const StudentsPerson = {
               title="Змінити фото"
               ></v-span>
             </v-img>
-              <span class="font-weight-bold mb-1">Дата реєстрації:</span> {{ person.registered }}
+              <span v-if="person.is_active" class="font-weight-bold mb-1">Дата реєстрації:</span> {{ person.registered }}
+              <span v-else class="font-weight-bold mb-1">Дата відрахування:</span> {{ person.registered }}
           </div>
           <h2 class="text--secondary">Електронна залікова книжка №: {{ person.book_number }}</h2>
           <h3 class="mb-1">{{ person.fullname }}</h3>
@@ -3652,7 +3645,7 @@ let store = new Vuex.Store({
             students.push(student.code)
           })
         } else {
-          students.push(state.student[0].code)
+          students.push(state.person[0].code)
         }
         const data = {
           'semester': semester[0].semester,

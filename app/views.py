@@ -97,6 +97,7 @@ class EditProfileView(APIView):
         response['fullname'] = user.fullname
         response['registered'] = user.registered
         response['status'] = user.status
+        response['is_active'] = user.is_active
         if 'email' in info:
             user.email = info.get('email').strip()
             user.save(update_fields=['email'])
@@ -166,6 +167,7 @@ class ActiveUserView(APIView):
         response['registered'] = active_user.registered
         response['avatar'] = active_user.photo
         response['status'] = active_user.status
+        response['is_active'] = active_user.is_active
         if active_user.status == 'Student':
             student = get_object_or_404(Student,user=active_user)
             response['book_number'] = student.book_number

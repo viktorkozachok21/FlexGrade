@@ -110,8 +110,10 @@ class Student(models.Model):
         return self.user.fullname
 
     def end(self):
+        self.user.date_joined = timezone.now()
         self.old_degree = self.group.specialty.degree
         self.group = None
+        self.user.save(update_fields=['date_joined'])
         self.save(update_fields=['group','old_degree'])
 
     @property
