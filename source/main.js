@@ -1348,7 +1348,7 @@ const AddSpecialtyForm = Vue.component('new-specialty-x',{
              <v-select
               :items="['Молодший бакалавр','Бакалавр','Молодший спеціаліст','Магістр','Спеціаліст']"
               v-model="store.state.newSpecialty.degree"
-              label="Рівень освіти*"
+              label="Ступінь освіти*"
               item-color="teal darken-4"
               color="teal darken-4"
               :rules="[store.state.rules.minGroup(1, store.state.newSpecialty.degree)]"
@@ -1832,7 +1832,7 @@ const StudentsList = {
         value: 'book_number',
       },
       {
-        text: 'Рівень освіти',
+        text: 'Ступінь освіти',
         align: 'center',
         value: 'degree',
       }
