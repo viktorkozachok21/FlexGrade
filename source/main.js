@@ -148,14 +148,31 @@ const Toolbar = Vue.component('toolbar-x', {
       v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"
       title="Редагувати профіль студента"
       ></v-span>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
+      <v-span
+      class="mdi mdi-account-key home-link"
+      @click="store.state.changePassword.dialog = true"
+      v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"
+      title="Змінити дані авторизації"
+      ></v-span>
       <edit-student-x ref="editStudentForm"></edit-student-x>
+      <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
+      <new-password-x ref="changePasswordForm"></new-password-x>
+      <v-span
+      class="mdi mdi-account-key home-link"
+      @click="store.state.changePassword.dialog = true"
+      v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"
+      title="Змінити дані авторизації"
+      ></v-span>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editTeacher;store.state.editTeacher.dialog = true"
       v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"
       title="Редагувати профіль викладача"
       ></v-span>
-      <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
 
@@ -1369,6 +1386,99 @@ const AddSpecialtyForm = Vue.component('new-specialty-x',{
   </v-dialog>
   `
 })
+const ChangePasswordForm = Vue.component('new-password-x',{
+  computed: {
+    showDialog() {
+      return store.state.changePassword.dialog
+    },
+    departments() {
+      return store.state.departments
+    },
+    codeWatcher() {
+      return [store.state.selectedStudents, store.state.selectedTeachers]
+    }
+  },
+  watch: {
+    showDialog: {
+      handler() {
+        if (typeof this.$root.$refs.toolbar.$refs.changePasswordForm.$refs.form != 'undefined') {
+          this.$root.$refs.toolbar.$refs.changePasswordForm.$refs.form.resetValidation()
+        }
+      }
+    },
+    codeWatcher: {
+      handler() {
+        store.state.changePassword.username = ''
+        store.state.changePassword.password = ''
+        if (store.state.selectedStudents.length > 0) {
+          store.state.changePassword.code = store.state.selectedStudents[0].code
+        } else if (store.state.selectedTeachers.length > 0) {
+          store.state.changePassword.code = store.state.selectedTeachers[0].code
+        }
+      },
+      deep: true,
+    }
+  },
+  template: `
+  <v-dialog v-model="store.state.changePassword.dialog" persistent max-width="700px">
+    <v-card id="changePasswordForm" class="text-center pt-3">
+      <v-title class="subtitle-2 text-center">
+        <span class="headline mx-auto font-weight-bold teal--text text--darken-4">Змінити дані авторизації</span>
+      </v-title>
+        <v-container>
+          <v-form
+            ref="form"
+            v-model="store.state.changePassword.valid"
+            :lazy-validation="store.state.changePassword.lazy"
+            >
+          <v-row no-gutters>
+            <v-col cols="12" class="px-2 py-2">
+              <v-text-field
+              label="Введіть новий пароль*"
+              maxlength="30"
+              :rules="[store.state.rules.spaces(store.state.changePassword.password),store.state.rules.min(8, store.state.changePassword.password)]"
+              v-model="store.state.changePassword.password"
+              color="teal darken-4" required
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        <v-divider v-if="store.state.changePassword.username && store.state.changePassword.password" class="my-1" replace></v-divider>
+        <h3 v-if="store.state.changePassword.username && store.state.changePassword.password" class="text--secondary">Дані для авторизації</h3>
+        <v-divider v-if="store.state.changePassword.username && store.state.changePassword.password" class="my-1" replace></v-divider>
+        <v-row no-gutters>
+          <v-col cols="12" v-if="store.state.changePassword.username && store.state.changePassword.password" class="px-2 py-2">
+            <v-text-field
+            label="Ім'я користувача"
+            maxlength="30"
+            v-model="store.state.changePassword.username"
+            color="teal darken-4"
+            readonly
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" v-if="store.state.changePassword.username && store.state.changePassword.password" class="px-2 py-2">
+            <v-text-field
+            label="Новий пароль"
+            maxlength="30"
+            v-model="store.state.changePassword.password"
+            color="teal darken-4"
+            readonly
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-divider v-if="store.state.changePassword.username && store.state.changePassword.password" class="my-1" replace></v-divider>
+          <v-card-actions class="my-0 py-0">
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Підтвердити" @click="store.dispatch('changePassword', $root.$refs.toolbar.$refs.changePasswordForm.$refs.form)"><span class="mdi mdi-36px mdi-check-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+            <v-btn text large class="home-link my-3" title="Згорнути" @click="store.state.changePassword.dialog = false"><span class="mdi mdi-36px mdi-minus-circle-outline"></span></v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
+        </v-form>
+        </v-container>
+    </v-card>
+  </v-dialog>
+  `
+})
 // The Login Form
 const Login = {
   template: `
@@ -1763,7 +1873,7 @@ const StudentsList = {
     no-data-text=""
     v-model="store.state.selectedStudents"
     :single-select="singleSelect"
-    :show-select="store.state.showSelected"
+    :show-select="options.studyStatus ? store.state.showSelectedStudents : false"
     :options.sync="options"
     :items-per-page="itemsPerPage"
     @page-count="pageCount = $event"
@@ -1895,17 +2005,20 @@ const StudentsList = {
       })
     },
     moreInfo(student) {
-      sessionStorage.removeItem("student")
-      sessionStorage.setItem("student", JSON.stringify(student))
-      store.state.person = []
-      store.state.person.push(student)
-      router.push({
-        name: 'student',
-        params: {
-          'code': student.code,
-          'profile': student
-        }
-      })
+      if (store.state.status == 'Admin' || store.state.status == 'Teacher') {
+        sessionStorage.removeItem("student")
+        sessionStorage.setItem("student", JSON.stringify(student))
+        store.state.person = []
+        store.state.person.push(student)
+        store.state.changePassword.code = student.code
+        router.push({
+          name: 'student',
+          params: {
+            'code': student.code,
+            'profile': student
+          }
+        })
+      }
     },
     print () {
       const settings = {
@@ -2319,7 +2432,7 @@ const TeachersList = {
     transition="fade-transition"
     v-model="store.state.selectedTeachers"
     :single-select="singleSelect"
-    :show-select="store.state.showSelected"
+    :show-select="store.state.showSelectedTeachers"
     no-results-text="Не знайдено відповідних записів"
     no-data-text=""
     :page="page"
@@ -2437,6 +2550,7 @@ const TeachersList = {
       sessionStorage.setItem("teacher", JSON.stringify(teacher))
       store.state.person = []
       store.state.person.push(teacher)
+      store.state.changePassword.code = teacher.code
       router.push({
         name: 'teacher',
         params: {
@@ -2807,9 +2921,18 @@ const router = new VueRouter({
 Vue.use(Vuex)
 let store = new Vuex.Store({
   state: {
-    showSelected: false,
+    showSelectedStudents: false,
+    showSelectedTeachers: false,
     authenticated: false,
     schoolCode: '',
+    changePassword: {
+      valid: true,
+      lazy: true,
+      dialog: false,
+      code: '',
+      username: '',
+      password: ''
+    },
     rules: {
       spaces(v) {
         if (v) {
@@ -3215,6 +3338,34 @@ let store = new Vuex.Store({
             }))
           })
       })
+    },
+    changePassword: ({ commit, state }) => {
+      Notiflix.Confirm.Show(
+        'Підтвердіть дію', 'Змінити пароль для обраного користувача?', 'Так', 'Ні',
+        function() {
+          let csrftoken = getCookie('csrftoken')
+          return new Promise((resolve, reject) => {
+            fetch(`/api/app/registration/${state.changePassword.code}`, {
+                method: 'PUT',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({'password':state.changePassword.password})
+              })
+              .then(r => r.json())
+              .then(response => {
+                if (response.success) {
+                  resolve(commit('CHANGE_PASSWORD', response.profile))
+                  Notiflix.Notify.Success(response.message)
+                } else if (!response.success) {
+                  Notiflix.Notify.Failure(response.message)
+                }
+              })
+          })
+        },
+        function() {})
     },
     addStudent: ({ commit, state, dispatch }, form) => {
       if (form.validate()) {
@@ -3706,14 +3857,17 @@ let store = new Vuex.Store({
             state.status = props.response.profile.status
             state.schoolCode = props.response.profile.school
               if (state.status === 'Teacher') {
-                  state.showSelected = true
+                  state.showSelectedStudents = true
+                  state.showSelectedTeachers = false
               } else {
-                  state.showSelected = false
+                  state.showSelectedStudents = false
+                  state.showSelectedTeachers = false
               }
             } else if (props.response.status) {
                 state.status = props.response.status
                 state.schoolCode = props.response.school
-                state.showSelected = true
+                state.showSelectedStudents = true
+                state.showSelectedTeachers = true
             } else {
               Notiflix.Notify.Failure(props.response.message)
           }
@@ -3724,6 +3878,9 @@ let store = new Vuex.Store({
     GET_PASSWORD: (state, props) => {
       props.person.username = props.result.username
       props.person.password = props.result.password
+    },
+    CHANGE_PASSWORD: (state, profile) => {
+      state.changePassword.username = profile.username
     },
     GET_ADMINS: (state, response) => {
       state.admins = response

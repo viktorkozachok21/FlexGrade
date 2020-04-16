@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
 from .models import *
 from .serializers import *
 import random
@@ -34,11 +35,11 @@ class RegistrationView(APIView):
         last_name = info.get('last_name').strip().capitalize()
         sur_name = info.get('sur_name').strip().capitalize()
         # if email in request then register a teacher
+        if FlexUser.objects.filter(username__iexact=username,is_active=True).exists():
+            return Response({"success":False,"message":"Надане ім'я користувача вже використовується."},status=200)
         if 'email' in info:
             email = info.get('email').strip()
-            if FlexUser.objects.filter(username__iexact=username).exists():
-                return Response({"success":False,"message":"Надане ім'я користувача вже використовується."},status=200)
-            elif Teacher.objects.filter(user__school=school,user__last_name__iexact=last_name,user__first_name__iexact=first_name,user__sur_name__iexact=sur_name).exists():
+            if Teacher.objects.filter(user__school=school,user__last_name__iexact=last_name,user__first_name__iexact=first_name,user__sur_name__iexact=sur_name).exists():
                 return Response({"success":False, "message":"Викладач з наданим П.І.Б. вже зареєстровий."}, status=200)
             user = FlexUser.objects.create(school=school,username=username,email=email,first_name=first_name,last_name=last_name,sur_name=sur_name,status='Teacher')
             user.set_password(str(info.get('password')))
@@ -51,9 +52,7 @@ class RegistrationView(APIView):
         # if book number in request then register a student
         elif 'book_number' in info:
             book_number = info.get('book_number').strip()
-            if FlexUser.objects.filter(username__iexact=username).exists():
-                return Response({"success":False,"message":"Надане ім'я користувача вже використовується."},status=200)
-            elif Student.objects.filter(user__school=school, book_number__iexact=book_number, user__is_active=True).exists():
+            if Student.objects.filter(user__school=school, book_number__iexact=book_number, user__is_active=True).exists():
                 return Response({"success":False,"message":"Студент з наданим номером залікової книжки вже зареєстрований."},status=200)
             user = FlexUser.objects.create(school=school,username=username,first_name=first_name,last_name=last_name,sur_name=sur_name,status='Student')
             user.set_password(str(info.get('password')))
@@ -78,6 +77,17 @@ class RegistrationView(APIView):
             return Response({"success":True,"message":"Нового користувача успішно зареєстровано."},status=200)
         else:
             return Response({"success":False,"message":"Error"},status=400)
+
+    def put(self, request, code):
+        user = get_user_model().objects.get(code=code)
+        user.set_password(request.data.get('password'))
+        user.save()
+        print("Password has been changed successfully")
+        response = {
+            'username': user.get_username(),
+            'password': user.password
+        }
+        return Response({"success":True,"profile":response,"message":"Дані успішно змінено."},status=200)
 
 
 class EditProfileView(APIView):
