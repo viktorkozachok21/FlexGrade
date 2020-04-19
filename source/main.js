@@ -150,31 +150,31 @@ const Toolbar = Vue.component('toolbar-x', {
       ></v-span>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
       <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
+      <edit-student-x ref="editStudentForm"></edit-student-x>
+      <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
       <v-span
       class="mdi mdi-account-key home-link"
       @click="store.state.changePassword.dialog = true"
       v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"
       title="Змінити дані авторизації"
       ></v-span>
-      <edit-student-x ref="editStudentForm"></edit-student-x>
-      <edit-teacher-x ref="editTeacherForm"></edit-teacher-x>
       <new-password-x ref="changePasswordForm"></new-password-x>
-      <v-span
-      class="mdi mdi-account-key home-link"
-      @click="store.state.changePassword.dialog = true"
-      v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"
-      title="Змінити дані авторизації"
-      ></v-span>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
       <v-span
       class="mdi mdi-account-edit home-link"
       @click="store.getters.editTeacher;store.state.editTeacher.dialog = true"
       v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"
       title="Редагувати профіль викладача"
       ></v-span>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher) && store.state.studyStatus == true"></v-divider>
-      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent) && store.state.studyStatus == true"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher)"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher)"></v-divider>
+      <v-span
+      class="mdi mdi-account-key home-link"
+      @click="store.state.changePassword.dialog = true"
+      v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher)"
+      title="Змінити дані авторизації"
+      ></v-span>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedTeachers.length == 1 || $route.meta.editTeacher)"></v-divider>
+      <v-divider class="mx-2" inset vertical replace v-if="store.state.status == 'Admin' && (store.state.selectedStudents.length == 1 || $route.meta.editStudent)"></v-divider>
 
       <v-divider class="mx-2" inset vertical replace v-if="(store.state.status == 'Admin' || store.state.status == 'Teacher') && (store.state.selectedStudents.length > 0 || $route.meta.showNewGrade) && store.state.studyStatus == true"></v-divider>
       <v-span
@@ -1531,7 +1531,8 @@ const Login = {
     password: "",
     show: false,
     loading: false,
-    form: false
+    form: false,
+    attemps: 5
   }),
   mounted() {
     store.dispatch('checkAuth')
@@ -1546,6 +1547,11 @@ const Login = {
           store.dispatch('loadSubjects')
         } else {
           this.form = true
+          if (sessionStorage.getItem("attemps") === null) {
+            sessionStorage.setItem('attemps', 5)
+          } else {
+            this.attemps = sessionStorage.getItem("attemps")
+          }
         }
       })
   },
@@ -1558,20 +1564,36 @@ const Login = {
             password: this.password
           }
           this.loading = true
-          sessionStorage.setItem('username', this.username)
-          store.dispatch('loginUser', data)
-            .then(result => {
-              if (!result.key) {
-                Notiflix.Notify.Failure('Не вдається авторизуватися за допомогою наданих облікових даних.')
-              } else if (typeof result.key != 'undefined') {
-                sessionStorage.setItem("auth_token", result.key)
-                router.replace({
-                  name: "home"
-                })
-                Notiflix.Notify.Success('Авторизація пройшла успішно.')
-              }
-              this.loading = false
-            })
+          if (this.attemps >= 1) {
+            store.dispatch('loginUser', data)
+              .then(result => {
+                if (!result.key) {
+                  this.attemps -= 1
+                  sessionStorage.removeItem('attemps')
+                  sessionStorage.setItem('attemps', this.attemps)
+                  if (this.attemps === 0) {
+                    Notiflix.Notify.Failure('Ви вичерпали ліміт авторизацій.')
+                  } else {
+                    Notiflix.Notify.Failure(`Не вдається авторизуватися за допомогою наданих облікових даних. Залишилося спроб - ${this.attemps}`)
+                  }
+                } else if (typeof result.key != 'undefined') {
+                  sessionStorage.removeItem('username')
+                  sessionStorage.setItem('username', this.username)
+                  sessionStorage.removeItem('auth_token')
+                  sessionStorage.setItem("auth_token", result.key)
+                  router.replace({
+                    name: "home"
+                  })
+                  Notiflix.Notify.Success('Авторизація пройшла успішно.')
+                  sessionStorage.removeItem('attemps')
+                  sessionStorage.setItem('attemps', 5)
+                }
+                this.loading = false
+              })
+          } else {
+            Notiflix.Notify.Failure('Ви вичерпали ліміт авторизацій.')
+            this.loading = false
+          }
         } else {
           this.loading = false
           Notiflix.Notify.Warning('Поле "пароль" не може бути порожнім.')
@@ -3367,6 +3389,7 @@ let store = new Vuex.Store({
         },
         function() {})
     },
+
     addStudent: ({ commit, state, dispatch }, form) => {
       if (form.validate()) {
         Notiflix.Block.Circle('div#addStudentForm', 'Зачекайте, будь ласка ...')

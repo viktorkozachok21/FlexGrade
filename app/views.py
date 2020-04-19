@@ -8,6 +8,7 @@ from .models import *
 from .serializers import *
 import random
 import string
+from django.utils import timezone
 
 
 def app(request):
@@ -79,8 +80,12 @@ class RegistrationView(APIView):
             return Response({"success":False,"message":"Error"},status=400)
 
     def put(self, request, code):
+        today = timezone.now().date()
         user = get_user_model().objects.get(code=code)
+        if user.change_limit == today:
+            return Response({"success":False,"message":"Дані авторизації можна змінювати один раз на день."},status=200)
         user.set_password(request.data.get('password'))
+        user.change_limit = today
         user.save()
         print("Password has been changed successfully")
         response = {

@@ -28,6 +28,7 @@ class FlexUser(AbstractUser):
     avatar = models.ImageField(default="avatars/default.webp",upload_to="avatars")
     STATUS = Choices('Admin','Teacher','Student')
     status = StatusField(choices_name='STATUS')
+    change_limit = models.DateField(default=timezone.now)
 
     def __str__(self):
         return f'{self.username} ({self.fullname})'
