@@ -7,3 +7,4 @@ media
 source
 venv
 flexgrade/local_settings.py
+prepros.config

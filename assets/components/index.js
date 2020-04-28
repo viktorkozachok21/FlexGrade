@@ -1,0 +1,13 @@
+// @prepros-prepend navbar.js
+// @prepros-prepend toolbar.js
+// @prepros-prepend footer.js
+// @prepros-prepend addstudent.js
+// @prepros-prepend editstudent.js
+// @prepros-prepend addteacher.js
+// @prepros-prepend editteacher.js
+// @prepros-prepend addsubject.js
+// @prepros-prepend addsemester.js
+// @prepros-prepend addgrade.js
+// @prepros-prepend adddepartment.js
+// @prepros-prepend addspecialty.js
+// @prepros-prepend changepassword.js

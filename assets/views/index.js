@@ -1,0 +1,9 @@
+// @prepros-prepend login.js
+// @prepros-prepend home.js
+// @prepros-prepend studentslist.js
+// @prepros-prepend studentperson.js
+// @prepros-prepend teacherslist.js
+// @prepros-prepend teacherperson.js
+// @prepros-prepend profile.js
+// @prepros-prepend directory.js
+// @prepros-prepend contacts.js
